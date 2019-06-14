@@ -61,7 +61,9 @@ import com.lilithsthrone.world.Season;
 import com.lilithsthrone.world.Weather;
 import com.lilithsthrone.world.places.PlaceUpgrade;
 
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
+
+import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory;
+//import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -6294,10 +6296,13 @@ public class UtilText {
 	
 	public static void initScriptEngine() {
 		
-		NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
+//		NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
+		GraalJSEngineFactory factory = new GraalJSEngineFactory();
+
 		// http://hg.openjdk.java.net/jdk8/jdk8/nashorn/rev/eb7b8340ce3a
-		engine = factory.getScriptEngine("-strict", "--no-java", "--no-syntax-extensions", "-scripting");
-		
+//		engine = factory.getScriptEngine("-strict", "--no-java", "--no-syntax-extensions", "-scripting");
+		engine = factory.getScriptEngine();
+
 //		ScriptEngineManager manager = new ScriptEngineManager();
 //		engine = manager.getEngineByName("javascript");
 		
