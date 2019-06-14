@@ -79,8 +79,8 @@ public class Main extends Application {
 	 */
 	public final static boolean DEBUG = Boolean.valueOf(System.getProperty("debug", "false"));
 
-	public static final Image WINDOW_IMAGE = new Image("/com/lilithsthrone/res/images/windowIcon32.png");
-	
+	public static Image WINDOW_IMAGE;
+
 	private static Properties properties;
 	
 	public static String patchNotes =
@@ -213,6 +213,8 @@ public class Main extends Application {
 	public static Generation gen;
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		WINDOW_IMAGE = new Image("/com/lilithsthrone/res/images/windowIcon32.png");
+		loadAfterStart();
 
 		CheckForDataDirectory();
 		CheckForResFolder();
@@ -643,6 +645,12 @@ public class Main extends Application {
 				e.printStackTrace();
 			}
 		}
+
+		
+		launch(args);
+	}
+
+	private void loadAfterStart() {
 		// Load properties:
 		if (new File("data/properties.xml").exists()) {
 			try {
@@ -655,8 +663,6 @@ public class Main extends Application {
 			properties = new Properties();
 			properties.savePropertiesAsXML();
 		}
-		
-		launch(args);
 	}
 	
 	/**
