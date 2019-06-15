@@ -64,7 +64,6 @@ public class DominionSuccubusAttacker extends NPC {
 		if(!isImported) {
 			this.setLocation(Main.game.getPlayer(), true);
 			
-			
 			if(!Gender.getGenderFromUserPreferences(false, false).isFeminine()) {
 				this.setBody(Gender.M_P_MALE, Subspecies.DEMON, RaceStage.GREATER);
 				this.setGenderIdentity(Gender.M_P_MALE);
@@ -103,6 +102,9 @@ public class DominionSuccubusAttacker extends NPC {
 			this.addSpell(Spell.ARCANE_AROUSAL);
 			this.addSpell(Spell.TELEPATHIC_COMMUNICATION);
 			this.addSpellUpgrade(SpellUpgrade.TELEPATHIC_COMMUNICATION_1);
+
+			// Set starting perks based on the character's race
+			initPerkTreeAndBackgroundPerks();
 			
 			setMana(getAttributeValue(Attribute.MANA_MAXIMUM));
 			setHealth(getAttributeValue(Attribute.HEALTH_MAXIMUM));
@@ -178,7 +180,6 @@ public class DominionSuccubusAttacker extends NPC {
 	}
 
 	// Combat:
-
 
 	@Override
 	public String getMainAttackDescription(GameCharacter target, boolean isHit) {
