@@ -115,6 +115,7 @@ import com.lilithsthrone.game.character.persona.SexualOrientation;
 import com.lilithsthrone.game.character.persona.SexualOrientationPreference;
 import com.lilithsthrone.game.character.race.FurryPreference;
 import com.lilithsthrone.game.character.race.Subspecies;
+import com.lilithsthrone.game.combat.Combat;
 import com.lilithsthrone.game.combat.CombatMove;
 import com.lilithsthrone.game.combat.DamageType;
 import com.lilithsthrone.game.combat.Spell;
@@ -240,6 +241,34 @@ public class MainControllerInitMethod {
 					"Export Character",
 					"Export the currently displayed character to the 'data/characters' folder. Exported characters can be imported at the auction block in Slaver Alley."), false);
 		}
+		
+		if(Main.game.isInCombat()) {
+			for(GameCharacter combatant : Combat.getAllCombatants(true)) {
+				for(DamageType dt : DamageType.values()) {
+					id = combatant.getId()+"_COMBAT_SHIELD_"+dt;
+					
+					if (MainController.document.getElementById(id) != null) {
+						MainController.addEventListener(MainController.document, id, "mousemove", MainController.moveTooltipListener, false);
+						MainController.addEventListener(MainController.document, id, "mouseleave", MainController.hideTooltipListener, false);
+
+						MainController.addEventListener(MainController.document, id, "mouseenter", new TooltipInformationEventListener().setInformation(
+								Util.capitaliseSentence(dt.getName())+" shielding",
+								dt==DamageType.HEALTH
+									? UtilText.parse(combatant, "[npc.Name] will block incoming damage from any non-lust source by this amount."
+											+ " Other damage type shielding will be used first, with health shielding used as the last resort."
+											+ " Negative values have no effect.")
+									: dt!=DamageType.LUST
+										? UtilText.parse(combatant, "[npc.Name] will block incoming "+dt.getName()+" damage by this amount."
+												+ " Once this shielding is broken, health shielding will be used, and once that's broken, damage will be dealt [npc.her] health."
+												+ " Negative values have no effect.")
+										: UtilText.parse(combatant, "[npc.Name] will block incoming "+dt.getName()+" damage by this amount."
+												+ " Once this shielding is broken, incoming "+dt.getName()+" damage will cause [npc.her] lust to rise."
+												+ " Negative values have no effect.")),
+								false);
+					}
+				}
+			}
+		}
 
 		if(Main.game.getCurrentDialogueNode().equals(CharactersPresentDialogue.MENU)
 				|| Main.game.getCurrentDialogueNode().equals(PhoneDialogue.CONTACTS_CHARACTER)
@@ -356,7 +385,7 @@ public class MainControllerInitMethod {
 		
 		// -------------------- Debug menu -------------------- //
 		
-		if(Main.game.getCurrentDialogueNode().equals(DebugDialogue.SPAWN_MENU) || Main.game.getCurrentDialogueNode().equals(DebugDialogue.ALL_ITEMS_VIEW)) {
+		if(Main.game.getCurrentDialogueNode().equals(DebugDialogue.SPAWN_MENU) || Main.game.getCurrentDialogueNode().equals(DebugDialogue.ITEM_VIEWER)) {
 			id = "";
 			
 			for(AbstractClothingType clothingType : ClothingType.getAllClothing()) {
@@ -1266,7 +1295,7 @@ public class MainControllerInitMethod {
 						 
 							Main.mainController.getWebEngine().executeScript("document.getElementById('hiddenFieldName').innerHTML=document.getElementById('slaveSurnameInput').value;");
 							if(Main.mainController.getWebEngine().getDocument()!=null) {
-								if (Main.mainController.getWebEngine().getDocument().getElementById("hiddenFieldName").getTextContent().length() == 0
+								if (Main.mainController.getWebEngine().getDocument().getElementById("hiddenFieldName").getTextContent().length() < 1
 										|| Main.mainController.getWebEngine().getDocument().getElementById("hiddenFieldName").getTextContent().length() > 32)
 									unsuitableName = true;
 								else {
@@ -4669,11 +4698,12 @@ public class MainControllerInitMethod {
 
 			
 			for(AbstractPerk perk : Perk.getAllPerks()) {
-				GameCharacter character = Main.game.getCurrentDialogueNode() == PhoneDialogue.CHARACTER_LEVEL_UP
-						?Main.game.getPlayer()
-						:(Main.game.getCurrentDialogueNode() == OccupantManagementDialogue.SLAVE_MANAGEMENT_PERKS
-							?OccupantManagementDialogue.characterSelected()
-							:CharactersPresentDialogue.characterViewed);
+				GameCharacter character =
+						(Main.game.getCurrentDialogueNode() == PhoneDialogue.CHARACTER_LEVEL_UP || Main.game.getCurrentDialogueNode() == PhoneDialogue.CHARACTER_APPEARANCE)
+							?Main.game.getPlayer()
+							:(Main.game.getCurrentDialogueNode() == OccupantManagementDialogue.SLAVE_MANAGEMENT_PERKS
+								?OccupantManagementDialogue.characterSelected()
+								:CharactersPresentDialogue.characterViewed);
 
 				boolean availableForSelection =
 						Main.game.getCurrentDialogueNode() != PhoneDialogue.CONTACTS_CHARACTER
@@ -5326,13 +5356,7 @@ public class MainControllerInitMethod {
 		if (Main.game.getCurrentDialogueNode() == OptionsDialogue.CONTENT_PREFERENCE
 				|| Main.game.getCurrentDialogueNode() == CharacterCreation.CONTENT_PREFERENCES
 				|| Main.game.getCurrentDialogueNode() == OptionsDialogue.OPTIONS) {
-			createToggleListener("ARTWORK_ON", PropertyValue.artwork, true);
-			createToggleListener("ARTWORK_OFF", PropertyValue.artwork, false);
-			createToggleListener("SILLY_ON", PropertyValue.sillyMode, true);
-			createToggleListener("SILLY_OFF", PropertyValue.sillyMode, false);
-			createToggleListener("THUMBNAIL_ON", PropertyValue.thumbnail, true);
-			createToggleListener("THUMBNAIL_OFF", PropertyValue.thumbnail, false);
-
+			
 			for(Artist artist : Artwork.allArtists) {
 				id = "ARTIST_"+artist.getFolderName();
 				if (((EventTarget) MainController.document.getElementById(id)) != null) {
@@ -5365,7 +5389,10 @@ public class MainControllerInitMethod {
 			}
 			
 			Map<String, PropertyValue> settingsMap = Util.newHashMapOfValues(
+					new Value<>("ENCHANTMENT_LIMITS", PropertyValue.enchantmentLimits),
 					new Value<>("ARTWORK", PropertyValue.artwork),
+					new Value<>("THUMBNAIL", PropertyValue.thumbnail),
+					new Value<>("SILLY", PropertyValue.sillyMode),
 					new Value<>("AUTO_SEX_CLOTHING_MANAGEMENT", PropertyValue.autoSexClothingManagement),
 					new Value<>("NON_CON", PropertyValue.nonConContent),
 					new Value<>("VOLUNTARY_NTR", PropertyValue.voluntaryNTR),

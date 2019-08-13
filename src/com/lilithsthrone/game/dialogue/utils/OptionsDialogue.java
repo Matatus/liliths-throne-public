@@ -695,8 +695,7 @@ public class OptionsDialogue {
 						Main.saveProperties();
 						
 						for(NPC npc : Main.game.getAllNPCs()) {
-							if(Main.game.isInCombat() && (Combat.getEnemies().contains(npc) || Combat.getAllies().contains(npc))) {
-							} else {
+							if(!Main.game.isInCombat() || !Combat.getAllCombatants(false).contains(npc)) {
 								npc.setMana(npc.getAttributeValue(Attribute.MANA_MAXIMUM));
 								npc.setHealth(npc.getAttributeValue(Attribute.HEALTH_MAXIMUM));
 							}
@@ -1769,6 +1768,13 @@ public class OptionsDialogue {
 			UtilText.nodeContentSB.append("</div></div>");
 			
 			UtilText.nodeContentSB.append(getContentPreferenceDiv(
+								"ENCHANTMENT_LIMITS",
+								Colour.GENERIC_ARCANE,
+								"Enchantment Capacity",
+								"Toggle the 'enchantment capacity' mechanic, which restricts how many enchanted items you can wear. This is on by default, and you will potentially break the balance of the game's combat by turning it off.",
+								Main.getProperties().hasValue(PropertyValue.enchantmentLimits)));
+			
+			UtilText.nodeContentSB.append(getContentPreferenceDiv(
 								"ARTWORK",
 								Colour.BASE_BLUE_LIGHT,
 								"Artwork",
@@ -1830,7 +1836,7 @@ public class OptionsDialogue {
 							"OPPORTUNISTIC_ATTACKERS",
 							Colour.BASE_CRIMSON,
 							"Opportunistic attackers",
-							"This makes random attacks more likely when you're high on lust, low on energy, covered in fluids, exposed, or drunk.",
+							"This makes random attacks more likely when you're high on lust, low on health, covered in fluids, exposed, or drunk.",
 							Main.game.isOpportunisticAttackersEnabled()));
 			
 			UtilText.nodeContentSB.append(getContentPreferenceDiv(

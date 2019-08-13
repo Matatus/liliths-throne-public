@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.lilithsthrone.game.PropertyValue;
@@ -78,10 +79,6 @@ public interface SexManagerInterface {
 	public default String getStartSexDescription() {
 		return "";
 	}
-
-	public default boolean isPlayerAbleToSwapPositions() {
-		return true;
-	}
 	
 	public default SexType getForeplayPreference(NPC character, GameCharacter targetedCharacter) {
 		return character.getForeplayPreference(targetedCharacter);
@@ -117,6 +114,10 @@ public interface SexManagerInterface {
 	 */
 	public default boolean isSelfTransformDisabled(GameCharacter character) {
 		return false;
+	}
+
+	public default boolean isSwapPositionAllowed(GameCharacter character, GameCharacter target) {
+		return character.isPlayer() && isPositionChangingAllowed(character);
 	}
 	
 	/**
@@ -230,29 +231,51 @@ public interface SexManagerInterface {
 	 * @return true if this character is able to remove other people's clothing in sex.
 	 */
 	public default boolean isAbleToRemoveOthersClothing(GameCharacter character, AbstractClothing clothing) {
-		if(clothing!=null
-				&& !Sex.isDom(character)
-				&& clothing.getClothingType().isSexToy()) {
-			return false;
-		}
+		// Is now handled in SexManager as of v0.3.3.8
+//		if(clothing!=null
+//				&& !Sex.isDom(character)
+//				&& clothing.getClothingType().isSexToy()) {
+//			return false;
+//		}
 		
-		if(character.isPlayer()) {
-			return true;
-		}
+//		if(character.isPlayer()) {
+//			return true;
+//		}
+//		
+//		return Sex.getSexControl(character)==SexControl.FULL;
 		
-		return Sex.getSexControl(character)==SexControl.FULL;
+		// The only thing that should limit this is overridden special conditions:
+		return true;
 	}
 	
 	public default boolean isItemUseAvailable() {
 		return true;
 	}
 	
-	public default boolean isPlayerStartNaked() {
+	public default boolean isCharacterStartNaked(GameCharacter character) {
 		return false;
 	}
-
-	public default boolean isPartnerStartNaked() {
-		return false;
+	
+	/**
+	 * @return A mapping of characters to the areas which they should have exposed at the start of sex.
+	 *  The initial Boolean is to determine if clothing is to be removed (true), or displaced (false).
+	 *  The inner map's key is which area is to be exposed, while the value (a list of InventorySlots) corresponds to what slots should not be touched while exposing this area.
+	 *  To see how it's used, reference GameCharacter's displaceClothingForAccess() method.
+	 */
+	public default Map<Boolean, Map<GameCharacter, Map<CoverableArea, List<InventorySlot>>>> exposeAtStartOfSexMapExtendedInformation() {
+		Map<Boolean, Map<GameCharacter, Map<CoverableArea, List<InventorySlot>>>> map = new HashMap<>();
+		
+		map.put(false, new HashMap<>());
+		
+		for(Entry<GameCharacter, List<CoverableArea>> e : this.exposeAtStartOfSexMap().entrySet()) {
+			map.get(false).put(e.getKey(), new HashMap<>());
+			
+			for(CoverableArea c : e.getValue()) {
+				map.get(false).get(e.getKey()).put(c, null);
+			}
+		}
+			
+		return map;
 	}
 	
 	public default Map<GameCharacter, List<CoverableArea>> exposeAtStartOfSexMap() {

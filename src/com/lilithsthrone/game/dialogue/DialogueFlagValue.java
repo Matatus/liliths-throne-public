@@ -2,7 +2,7 @@ package com.lilithsthrone.game.dialogue;
 
 /**
  * @since 0.1.89
- * @version 0.3.1
+ * @version 0.3.3.10
  * @author Innoxia
  */
 public enum DialogueFlagValue {
@@ -23,6 +23,12 @@ public enum DialogueFlagValue {
 	foundHappiness,
 	visitedSubmission,
 	mommyFound,
+	
+	daddyFound,
+	rudeToDaddy,
+	flirtingWithDaddy,
+	talkedWithDaddy,
+	daddySendingReward,
 	
 	// Gym:
 	gymIntroduced,

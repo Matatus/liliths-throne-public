@@ -1,10 +1,15 @@
 package com.lilithsthrone.game.sex.sexActions.submission;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import com.lilithsthrone.game.character.GameCharacter;
 import com.lilithsthrone.game.character.attributes.CorruptionLevel;
 import com.lilithsthrone.game.character.body.CoverableArea;
 import com.lilithsthrone.game.character.npc.submission.FortressAlphaLeader;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
+import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
+import com.lilithsthrone.game.inventory.clothing.DisplacementType;
 import com.lilithsthrone.game.sex.ArousalIncrease;
 import com.lilithsthrone.game.sex.Sex;
 import com.lilithsthrone.game.sex.SexAreaOrifice;
@@ -146,7 +151,12 @@ public class FortressAlphaLeaderSA {
 		public void applyEffects(){
 			GameCharacter otherTarget = getOtherTarget();
 			
-			otherTarget.displaceClothingForAccess(CoverableArea.MOUTH);
+			Map<AbstractClothing, DisplacementType> clothingTouched = otherTarget.displaceClothingForAccess(CoverableArea.MOUTH, null);
+			for(Entry<AbstractClothing, DisplacementType> e : clothingTouched.entrySet()) {
+				if(e.getValue()==DisplacementType.REMOVE_OR_EQUIP) {
+					Main.game.getPlayerCell().getInventory().addClothing(e.getKey());
+				}
+			}
 			
 			Sex.stopAllOngoingActions(otherTarget, SexAreaOrifice.MOUTH, otherTarget, false);
 			
@@ -166,7 +176,8 @@ public class FortressAlphaLeaderSA {
 					Sex.getCharacterPerformingAction(),
 					SexAreaPenetration.PENIS,
 					otherTarget,
-					SexAreaOrifice.MOUTH);
+					SexAreaOrifice.MOUTH,
+					true);
 		}
 	};
 	
@@ -258,7 +269,12 @@ public class FortressAlphaLeaderSA {
 		public void applyEffects(){
 			GameCharacter otherTarget = getOtherTarget();
 
-			otherTarget.displaceClothingForAccess(CoverableArea.MOUTH);
+			Map<AbstractClothing, DisplacementType> clothingTouched = otherTarget.displaceClothingForAccess(CoverableArea.MOUTH, null);
+			for(Entry<AbstractClothing, DisplacementType> e : clothingTouched.entrySet()) {
+				if(e.getValue()==DisplacementType.REMOVE_OR_EQUIP) {
+					Main.game.getPlayerCell().getInventory().addClothing(e.getKey());
+				}
+			}
 			
 			Sex.stopAllOngoingActions(otherTarget, SexAreaOrifice.MOUTH, otherTarget, false);
 			
@@ -278,7 +294,8 @@ public class FortressAlphaLeaderSA {
 					Sex.getCharacterPerformingAction(),
 					SexAreaPenetration.PENIS,
 					otherTarget,
-					SexAreaOrifice.MOUTH);
+					SexAreaOrifice.MOUTH,
+					true);
 		}
 	};
 
