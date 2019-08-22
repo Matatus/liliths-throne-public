@@ -38,9 +38,9 @@ import com.lilithsthrone.game.inventory.enchanting.TFEssence;
 import com.lilithsthrone.game.inventory.item.AbstractItemType;
 import com.lilithsthrone.game.inventory.item.ItemType;
 import com.lilithsthrone.game.sex.Sex;
-import com.lilithsthrone.game.sex.managers.universal.SMChair;
+import com.lilithsthrone.game.sex.managers.universal.SMSitting;
 import com.lilithsthrone.game.sex.managers.universal.SMGeneric;
-import com.lilithsthrone.game.sex.positions.SexSlotOther;
+import com.lilithsthrone.game.sex.positions.slots.SexSlotSitting;
 import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.Colour;
 import com.lilithsthrone.utils.Util;
@@ -283,61 +283,63 @@ public class Lab {
 				});
 			}
 		}
-		if(Main.game.getPlayer().getQuest(QuestLine.SIDE_DADDY) == Quest.DADDY_ACCEPTED) {
-			if(!Daddy.isAvailable()) {
-				generatedResponses.add(new Response("Meeting [daddy.name]", Daddy.getAvailabilityText(), null));
-				
-			} else if(Main.game.getPlayer().hasCompanions()) {
-				generatedResponses.add(new Response("Meeting [daddy.name]",
-						"[style.italicsBad(You cannot ask Lilaya to go with you and meet [daddy.name] while you have companions in your party!)]",
-						null));
-				
-			} else {
-				generatedResponses.add(new Response("Meeting [daddy.name]", "Convince Lilaya to go out for dinner with you and [daddy.name].", DaddyDialogue.CONVINCING_LILAYA) {
-					@Override
-					public void effects() {
-						setEntryFlags();
-						Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().setQuestProgress(QuestLine.SIDE_DADDY, Quest.DADDY_LILAYA_MEETING));
-					}
-				});
-				
-			}
-
-		} else if(Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.SIDE_DADDY, Quest.DADDY_LILAYA_MEETING)) {
-			if(!Daddy.isAvailable()) {
-				generatedResponses.add(new Response("Visit [daddy.name]", Daddy.getAvailabilityText(), null));
-				
-			} else if(Main.game.getPlayer().hasCompanions()) {
-				generatedResponses.add(new Response("Visit [daddy.name]",
-						"[style.italicsBad(You cannot ask Lilaya to go with you and vist [daddy.name] while you have companions in your party!)]",
-						null));
-				
-			} else  {
-				generatedResponses.add(new Response("Visit [daddy.name]", "Ask Lilaya if she'd like to join you in paying [daddy.name] a visit.", DaddyDialogue.MEETING) {
-					@Override
-					public int getSecondsPassed() {
-						return 30*60;
-					}
-					@Override
-					public void effects() {
-						setEntryFlags();
-						((Lilaya) Main.game.getNpc(Lilaya.class)).applyDinnerDateChange();
-						
-						Main.game.getPlayer().setLocation(WorldType.DADDYS_APARTMENT, PlaceType.DADDY_APARTMENT_ENTRANCE);
-						Main.game.getNpc(Lilaya.class).setLocation(Main.game.getPlayer(), false);
-
-						if(Main.game.getPlayer().isVisiblyPregnant() && !Main.game.getPlayer().isCharacterReactedToPregnancy(Main.game.getNpc(Daddy.class))) {
-							Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().incrementMoney(500));
+		
+		if(Main.game.getPlayer().hasQuest(QuestLine.SIDE_DADDY)) {
+			if(Main.game.getPlayer().getQuest(QuestLine.SIDE_DADDY) == Quest.DADDY_ACCEPTED) {
+				if(!Daddy.isAvailable()) {
+					generatedResponses.add(new Response("Meeting [daddy.name]", Daddy.getAvailabilityText(), null));
+					
+				} else if(Main.game.getPlayer().hasCompanions()) {
+					generatedResponses.add(new Response("Meeting [daddy.name]",
+							"[style.italicsBad(You cannot ask Lilaya to go with you and meet [daddy.name] while you have companions in your party!)]",
+							null));
+					
+				} else {
+					generatedResponses.add(new Response("Meeting [daddy.name]", "Convince Lilaya to go out for dinner with you and [daddy.name].", DaddyDialogue.CONVINCING_LILAYA) {
+						@Override
+						public void effects() {
+							setEntryFlags();
+							Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().setQuestProgress(QuestLine.SIDE_DADDY, Quest.DADDY_LILAYA_MEETING));
 						}
-						if(Main.game.getNpc(Lilaya.class).isVisiblyPregnant() && !Main.game.getNpc(Lilaya.class).isCharacterReactedToPregnancy(Main.game.getNpc(Daddy.class))) {
-							Main.game.getTextEndStringBuilder().append(Main.game.getNpc(Lilaya.class).incrementMoney(500));
+					});
+					
+				}
+	
+			} else if(Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.SIDE_DADDY, Quest.DADDY_LILAYA_MEETING)) {
+				if(!Daddy.isAvailable()) {
+					generatedResponses.add(new Response("Visit [daddy.name]", Daddy.getAvailabilityText(), null));
+					
+				} else if(Main.game.getPlayer().hasCompanions()) {
+					generatedResponses.add(new Response("Visit [daddy.name]",
+							"[style.italicsBad(You cannot ask Lilaya to go with you and vist [daddy.name] while you have companions in your party!)]",
+							null));
+					
+				} else  {
+					generatedResponses.add(new Response("Visit [daddy.name]", "Ask Lilaya if she'd like to join you in paying [daddy.name] a visit.", DaddyDialogue.MEETING) {
+						@Override
+						public int getSecondsPassed() {
+							return 30*60;
 						}
-					}
-				});
-				
+						@Override
+						public void effects() {
+							setEntryFlags();
+							((Lilaya) Main.game.getNpc(Lilaya.class)).applyDinnerDateChange();
+							
+							Main.game.getPlayer().setLocation(WorldType.DADDYS_APARTMENT, PlaceType.DADDY_APARTMENT_ENTRANCE);
+							Main.game.getNpc(Lilaya.class).setLocation(Main.game.getPlayer(), false);
+	
+							if(Main.game.getPlayer().isVisiblyPregnant() && !Main.game.getPlayer().isCharacterReactedToPregnancy(Main.game.getNpc(Daddy.class))) {
+								Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().incrementMoney(500));
+							}
+							if(Main.game.getNpc(Lilaya.class).isVisiblyPregnant() && !Main.game.getNpc(Lilaya.class).isCharacterReactedToPregnancy(Main.game.getNpc(Daddy.class))) {
+								Main.game.getTextEndStringBuilder().append(Main.game.getNpc(Lilaya.class).incrementMoney(500));
+							}
+						}
+					});
+					
+				}
 			}
 		}
-
 		
 		
 		return generatedResponses;
@@ -1216,9 +1218,9 @@ public class Lab {
 							"Start having sex with Lilaya.",
 							Util.newArrayListOfValues(Fetish.FETISH_INCEST), null, CorruptionLevel.FOUR_LUSTFUL, null, null, null,
 							true, true,
-							new SMChair(
-									Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), SexSlotOther.SITTING)),
-									Util.newHashMapOfValues(new Value<>(Main.game.getNpc(Lilaya.class), SexSlotOther.SITTING_IN_LAP))),
+							new SMSitting(
+									Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), SexSlotSitting.SITTING)),
+									Util.newHashMapOfValues(new Value<>(Main.game.getNpc(Lilaya.class), SexSlotSitting.SITTING_IN_LAP))),
 							null,
 							null,
 							LILAYA_END_SEX,
@@ -1343,9 +1345,9 @@ public class Lab {
 								:"You know that this can only end one way. Although Lilaya reminds you of your [lilaya.relation(pc)] Lily, you don't think it will get in the way of you enjoying this...",
 							Util.newArrayListOfValues(Fetish.FETISH_INCEST), null, CorruptionLevel.FOUR_LUSTFUL, null, null, null,
 							true, true,
-							new SMChair(
-									Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), SexSlotOther.SITTING)),
-									Util.newHashMapOfValues(new Value<>(Main.game.getNpc(Lilaya.class), SexSlotOther.SITTING_IN_LAP))),
+							new SMSitting(
+									Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), SexSlotSitting.SITTING)),
+									Util.newHashMapOfValues(new Value<>(Main.game.getNpc(Lilaya.class), SexSlotSitting.SITTING_IN_LAP))),
 							null,
 							null,
 							LILAYA_END_SEX,

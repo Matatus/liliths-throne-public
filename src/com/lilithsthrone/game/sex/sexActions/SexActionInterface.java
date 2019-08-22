@@ -33,7 +33,7 @@ import com.lilithsthrone.game.sex.SexControl;
 import com.lilithsthrone.game.sex.SexPace;
 import com.lilithsthrone.game.sex.SexParticipantType;
 import com.lilithsthrone.game.sex.SexType;
-import com.lilithsthrone.game.sex.positions.SexSlotGeneric;
+import com.lilithsthrone.game.sex.positions.slots.SexSlotGeneric;
 import com.lilithsthrone.game.sex.sexActions.baseActionsMisc.GenericActions;
 import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.Colour;
@@ -906,7 +906,8 @@ public interface SexActionInterface {
 	
 	public default SexActionCategory getCategory() {
 		if(this.getSexAreaInteractions().isEmpty()) {
-			if(getActionType() == SexActionType.POSITIONING) {
+			if(getActionType() == SexActionType.POSITIONING
+					|| getActionType() == SexActionType.POSITIONING_MENU) {
 				return SexActionCategory.POSITIONING;
 			} else {
 				return SexActionCategory.MISCELLANEOUS;
@@ -922,7 +923,7 @@ public interface SexActionInterface {
 	}
 	
 	public default Response convertToResponse() {
-		if(getCategory() != SexActionCategory.CHARACTER_SWITCH) {
+		if(getCategory()!=SexActionCategory.CHARACTER_SWITCH && getActionType()!=SexActionType.POSITIONING_MENU) {
 			
 //			if(getActionDescription()==null) {
 //				System.out.println(this.getClass().getName());
@@ -959,10 +960,13 @@ public interface SexActionInterface {
 				}
 				@Override
 				public boolean isSexPositioningHighlight() {
-					return getActionType()==SexActionType.POSITIONING || SexActionInterface.this.equals(GenericActions.PLAYER_STOP_SEX);
+					return SexActionInterface.this.getActionType()==SexActionType.POSITIONING || SexActionInterface.this.equals(GenericActions.PLAYER_STOP_SEX);
 				}
 				@Override
 				public Colour getHighlightColour() {
+					if(SexActionInterface.this.getActionType()==SexActionType.POSITIONING_MENU) {
+						return Colour.BASE_LILAC;
+					}
 					if(isSexPenetrationHighlight()) {
 						if(SexActionInterface.this.getPerformingCharacterAreas().stream().anyMatch((area) -> area.isPenetration())) {
 							return Colour.GENERIC_SEX_AS_DOM;
@@ -1008,8 +1012,18 @@ public interface SexActionInterface {
 					Main.game.updateResponses();
 				}
 				@Override
+				public boolean isSexPositioningHighlight() {
+					return SexActionInterface.this.getActionType()==SexActionType.POSITIONING;
+				}
+				@Override
 				public Colour getHighlightColour() {
-					return Colour.BASE_PURPLE_LIGHT;
+					if(SexActionInterface.this.getActionType()==SexActionType.POSITIONING_MENU) {
+						return Colour.BASE_LILAC;
+					}
+					if(getCategory()==SexActionCategory.CHARACTER_SWITCH) {
+						return Colour.BASE_PURPLE_LIGHT;
+					}
+					return super.getHighlightColour();
 				}
 				@Override
 				public SexPace getSexPace() {
@@ -1329,7 +1343,7 @@ public interface SexActionInterface {
 	// This is in the SexAction Interface, as it might be necessary in some special actions to override this to prevent condom breaks.
 	public default CondomFailure getCondomFailure(GameCharacter condomWearer, GameCharacter cumTarget) {
 		AbstractClothing condom = condomWearer.getClothingInSlot(InventorySlot.PENIS);
-		if(condom==null || !condom.isCondom()) {
+		if(condom==null || !condom.isCondom(InventorySlot.PENIS)) {
 			return CondomFailure.NONE;
 		}
 		

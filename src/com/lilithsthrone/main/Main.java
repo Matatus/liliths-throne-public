@@ -69,7 +69,7 @@ public class Main extends Application {
 	
 	public static final String AUTHOR = "Innoxia";
 	public static final String GAME_NAME = "Lilith's Throne";
-	public static final String VERSION_NUMBER = "0.3.3.10";
+	public static final String VERSION_NUMBER = "0.3.3.11";
 	public static final String VERSION_DESCRIPTION = "Alpha";
 	
 	/**
@@ -97,8 +97,8 @@ public class Main extends Application {
 		+ "</p>"
 			
 		+ "<p>"
-			+ "Anyway, regarding this update, I got some bugs fixed, some Father's day content added (rather late, due to the issue of not being here throughout July), balance changes applied, and some otehr minor things."
-			+ " I've also got the full support for multiple characters interacting with one targeted character's sex area finished, although I've only added actions & descriptions for this related to up to three cahracters performing a blowjob on one target so far."
+			+ "Anyway, regarding this update, I got some bugs fixed, some Father's day content added (rather late, due to the issue of not being here throughout July), balance changes applied, and some other minor things."
+			+ " I've also got the full support for multiple characters interacting with one targeted character's sex area finished, although I've only added actions & descriptions for this related to up to three characters performing a blowjob on one target so far."
 			+ " I'm going to revamp the way positioning actions work in sex for the next release, so it will be a lot easier to get these multiple-character situations started in future (I think it's impossible to see this multiple-character blowjob outside of the one sex scene in the new Father's day content so far)."
 		+ "</p>"
 			
@@ -297,6 +297,10 @@ public class Main extends Application {
 		credits.add(new CreditsSlot("luka_fateburn", "", 0, 0, 0, 0, Subspecies.DEMON));
 		credits.add(new CreditsSlot("CinnamonSuccubus", "", 0, 0, 0, 0, Subspecies.DEMON));
 		credits.add(new CreditsSlot("Luka_Fateburn", "", 0, 0, 0, 0, Subspecies.DEMON));
+		credits.add(new CreditsSlot("Phlarx", "", 0, 0, 0, 0, Subspecies.DEMON));
+		credits.add(new CreditsSlot("Moro", "", 0, 0, 0, 0, Subspecies.DEMON));
+		credits.add(new CreditsSlot("Neo", "", 0, 0, 0, 0, Subspecies.DEMON));
+		credits.add(new CreditsSlot("Abaddon_TMZ", "", 0, 0, 0, 0, Subspecies.DEMON));
 		
 		
 		
@@ -339,7 +343,7 @@ public class Main extends Application {
 		credits.add(new CreditsSlot("BloodsailXXII", "", 0, 0, 0, 19));
 		credits.add(new CreditsSlot("Burt", "", 0, 0, 6, 0));
 		credits.add(new CreditsSlot("Atroykus", "", 0, 0, 0, 6));
-		credits.add(new CreditsSlot("Calrak", "", 0, 0, 0, 18));
+		credits.add(new CreditsSlot("Calrak", "", 0, 0, 0, 18, Subspecies.DEMON));
 		credits.add(new CreditsSlot("CancerMage", "", 0, 0, 12, 0));
 		credits.add(new CreditsSlot("Captain_Sigmus", "", 0, 0, 7, 0));
 		credits.add(new CreditsSlot("Casper &quot;Cdaser&quot; D.", "", 0, 0, 10, 0));
@@ -443,7 +447,7 @@ public class Main extends Application {
 		credits.add(new CreditsSlot("Littlemankitten", "", 0, 0, 0, 12));
 		credits.add(new CreditsSlot("LadyofFoxes", "", 0, 0, 2, 0));
 		credits.add(new CreditsSlot("Mr L", "", 0, 0, 4, 1));
-		credits.add(new CreditsSlot("loveless", "", 0, 0, 0, 19));
+		credits.add(new CreditsSlot("loveless", "", 0, 0, 0, 19, Subspecies.DEMON));
 		credits.add(new CreditsSlot("Vaddex", "", 0, 0, 0, 5));
 		credits.add(new CreditsSlot("Kitsune Lyn", "", 0, 0, 0, 10));
 		credits.add(new CreditsSlot("Manwhore", "", 0, 0, 0, 3));
@@ -878,7 +882,7 @@ public class Main extends Application {
 			Main.game.flashMessage(Colour.GENERIC_BAD, "Name too long!");
 			return;
 		}
-		if (!name.matches("[a-zA-Z0-9]+[a-zA-Z0-9' _]*")) {
+		if (name.contains("\"")) {//!name.matches("[a-zA-Z0-9]+[a-zA-Z0-9' _]*")) {
 			Main.game.flashMessage(Colour.GENERIC_BAD, "Incompatible characters!");
 			return;
 		}
@@ -916,6 +920,10 @@ public class Main extends Application {
 		if (isLoadGameAvailable(name)) {
 			Game.importGame(name);
 		}
+	}
+
+	public static void loadGame(File f) {
+		Game.importGame(f);
 	}
 	
 	public static void deleteGame(String name) {

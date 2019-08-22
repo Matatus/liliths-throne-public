@@ -743,9 +743,15 @@ public class TooltipInformationEventListener implements EventListener {
 
 					// GREATER:
 					tooltipSB.append(getBodyPartDivFace(owner, "Face", owner.getFaceRace(), owner.getFaceCovering(), owner.isFaceBestial()));
-					tooltipSB.append(getBodyPartDiv(owner, "Torso", owner.getSkinRace(), owner.getSkinCovering(), owner.isSkinBestial(), "Height: [unit.sizeShort(" + owner.getHeightValue()+ ")]"));
+					tooltipSB.append(getBodyPartDiv(owner, "Torso", owner.getSkinRace(), owner.getSkinCovering(), owner.isSkinBestial(),
+							(owner.isSizeDifferenceShorterThan(Main.game.getPlayer())
+							?"<span style='color:"+Colour.BODY_SIZE_ONE.toWebHexString()+";'>"
+							:(owner.isSizeDifferenceTallerThan(Main.game.getPlayer())
+								?"<span style='color:"+Colour.BODY_SIZE_FOUR.toWebHexString()+";'>"
+								:"<span>"))
+							+"Height: [unit.sizeShort(" + owner.getHeightValue()+ ")]</span>"));
 					
-	
+					
 					// LESSER:
 					tooltipSB.append(getBodyPartDiv(owner, Util.capitaliseSentence(Util.intToString(owner.getArmRows()*2))+" arms", owner.getArmRace(), owner.getArmCovering(), owner.isArmBestial()));
 					tooltipSB.append(getBodyPartDiv(owner, Util.capitaliseSentence(Util.intToString(owner.getLegCount()))+" legs", owner.getLegRace(), owner.getLegCovering(), owner.isLegBestial()));
@@ -809,13 +815,13 @@ public class TooltipInformationEventListener implements EventListener {
 					if(!owner.isPlayer() && !owner.isAreaKnownByCharacter(CoverableArea.NIPPLES, Main.game.getPlayer())) {
 						tooltipSB.append(getEmptyBodyPartDiv("Nipples",
 								"Unknown!",
-								Util.capitaliseSentence(Util.intToString(owner.getBreastRows()*2))+" "+(owner.getBreastRawSizeValue()>0?(owner.getBreastSize().getCupSizeName() + "-cup breasts"):null)));
+								Util.capitaliseSentence(Util.intToString(owner.getBreastRows()*2))+" "+(owner.getBreastRawSizeValue()>0?(owner.getBreastSize().getCupSizeName() + "-cup breasts"):(owner.isFeminine()?"flat breasts":"pecs"))));
 					} else {
 						tooltipSB.append(getBodyPartDiv(owner, "Nipples",
 								owner.getBreastRace(),
 								owner.getBreastType().getNippleType().getBodyCoveringType(owner),
 								owner.isNippleBestial(),
-								Util.capitaliseSentence(Util.intToString(owner.getBreastRows()*2))+" "+(owner.getBreastRawSizeValue()>0?(owner.getBreastSize().getCupSizeName() + "-cup breasts"):null)));
+								Util.capitaliseSentence(Util.intToString(owner.getBreastRows()*2))+" "+(owner.getBreastRawSizeValue()>0?(owner.getBreastSize().getCupSizeName() + "-cup breasts"):(owner.isFeminine()?"flat breasts":"pecs"))));
 					}
 
 					if(crotchBreasts) {
