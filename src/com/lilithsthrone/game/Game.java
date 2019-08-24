@@ -1535,8 +1535,7 @@ public class Game implements XMLSaving {
 			}
 			
 			if(npc.isPendingTransformationToGenderIdentity()
-					&& !npc.getLocation().equals(Main.game.getPlayer().getLocation())
-					) {
+					&& !npc.getLocation().equals(Main.game.getPlayer().getLocation())) {
 				boolean assVirgin = npc.isAssVirgin();
 				boolean faceVirgin = npc.isFaceVirgin();
 				boolean nippleVirgin = npc.isNippleVirgin();
@@ -3084,7 +3083,7 @@ public class Game implements XMLSaving {
 					return date.substring(0, date.length()-5);
 				}
 			}
-			return "Unknown";
+			return UtilText.parse("[style.colourMinorBad(Unknown date)]");
 		}
 		
 		if(withYear) {
@@ -3677,5 +3676,9 @@ public class Game implements XMLSaving {
 	
 	public boolean isBypassSexActions() {
 		return Main.getProperties().hasValue(PropertyValue.bypassSexActions);
+	}
+	
+	public boolean isBraxMainQuestComplete() {
+		return Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_1_C_WOLFS_DEN);
 	}
 }
