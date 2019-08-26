@@ -13,5 +13,5 @@ target/
 # Ignore all generic character images
 res/images/characters/generic/
 
-
 !.mvn
+!.mvn/wrapper/maven-wrapper.jar
