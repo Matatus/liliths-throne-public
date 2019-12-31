@@ -11,7 +11,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
-		<graalvm.version>19.2.0.1</graalvm.version>
+		<graalvm.version>19.3.0.2</graalvm.version>
 		<javafx.version>13</javafx.version>
 		<mainClass>com.lilithsthrone.main.Main</mainClass>
 		<launcher>com.lilithsthrone.main.Launcher</launcher>
@@ -26,7 +26,7 @@
 			</resource>
 			<resource>
 				<directory>res</directory>
-				<targetPath>res</targetPath>
+				<targetPath>${project.build.directory}/res</targetPath>
 			</resource>
 		</resources>
 		<plugins>
