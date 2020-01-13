@@ -9,10 +9,11 @@
 	<name>lilithsthrone</name>
 
 	<properties>
+		<java.version>13</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
 		<graalvm.version>19.3.0.2</graalvm.version>
-		<javafx.version>13</javafx.version>
+		<javafx.version>13.0.1</javafx.version>
 		<mainClass>com.lilithsthrone.main.Main</mainClass>
 		<launcher>com.lilithsthrone.main.Launcher</launcher>
 	</properties>
@@ -30,24 +31,11 @@
 			</resource>
 		</resources>
 		<plugins>
-<!--			<plugin>-->
-<!--				<groupId>org.apache.maven.plugins</groupId>-->
-<!--				<artifactId>maven-jar-plugin</artifactId>-->
-<!--				<version>3.0.2</version>-->
-<!--				<configuration>-->
-<!--					<archive>-->
-<!--						<manifest>-->
-<!--							<mainClass>com.lilithsthrone.main.Main</mainClass>-->
-<!--						</manifest>-->
-<!--					</archive>-->
-<!--				</configuration>-->
-<!--			</plugin>-->
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.7.0</version>
 				<configuration>
-					<source>13</source>
-					<target>13</target>
+					<release>8</release>
 					<useIncrementalCompilation>false</useIncrementalCompilation>
 				</configuration>
 			</plugin>
@@ -58,7 +46,7 @@
 				<configuration>
 <!--					<source>13</source>-->
 <!--					<target>13</target>-->
-<!--					<release>13</release>-->
+					<release>8</release>
 					<jlinkImageName>lilithsthrone</jlinkImageName>
 					<launcher>${launcher}</launcher>
 					<mainClass>${mainClass}</mainClass>
@@ -83,6 +71,52 @@
 									<mainClass>${launcher}</mainClass>
 								</transformer>
 							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>com.akathist.maven.plugins.launch4j</groupId>
+				<artifactId>launch4j-maven-plugin</artifactId>
+				<version>1.7.25</version>
+				<executions>
+					<execution>
+						<id>l4j-gui</id>
+						<phase>package</phase>
+						<goals><goal>launch4j</goal></goals>
+						<configuration>
+							<headerType>console</headerType>
+							<outfile>target/LilithsThrone.exe</outfile>
+							<jar>target/game-fatJar.jar</jar>
+							<errTitle>Please install java first.</errTitle>
+							<downloadUrl>https://adoptopenjdk.net/</downloadUrl>
+							<stayAlive>true</stayAlive>
+							<classPath>
+								<mainClass>${launcher}</mainClass>
+							</classPath>
+							<jre>
+<!--								<path>jre</path>-->
+<!--								<bundledJre64Bit>true</bundledJre64Bit>-->
+								<minVersion>1.8</minVersion>
+								<opts>
+									<opt>-Ddebug=true</opt>
+									<opt>-XX:+UseParallelGC</opt>
+								</opts>
+<!--								<initialHeapSize>256</initialHeapSize>-->
+<!--								<maxHeapSize>2048</maxHeapSize>-->
+							</jre>
+							<versionInfo>
+								<fileVersion>3.5.9.0</fileVersion>
+								<txtFileVersion>txt file version?</txtFileVersion>
+								<fileDescription>Lilith's Throne</fileDescription>
+								<copyright>Copyright 2016 Innoxia (innoxia7@gmail.com) all rights reserved.</copyright>
+								<productVersion>3.5.9.0</productVersion>
+								<txtProductVersion>txt product version</txtProductVersion>
+								<productName>Lilith's Throne</productName>
+								<internalName>Lilith's Throne</internalName>
+								<originalFilename>LilithsThrone.exe</originalFilename>
+							</versionInfo>
 						</configuration>
 					</execution>
 				</executions>
