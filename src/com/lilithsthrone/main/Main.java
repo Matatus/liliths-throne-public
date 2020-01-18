@@ -59,19 +59,19 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
 	public static Game game;
-	public static Sex sexEngine;
+	public static Sex sex;
 
 	public static MainController mainController;
 
 	public static Scene mainScene;
 
 	public static Stage primaryStage;
-	
+
 	public static final String AUTHOR = "Innoxia";
 	public static final String GAME_NAME = "Lilith's Throne";
-	public static final String VERSION_NUMBER = "0.3.5.9";
+	public static final String VERSION_NUMBER = "0.3.5.11";
 	public static final String VERSION_DESCRIPTION = "Alpha";
-	
+
 	/**
 	 * To turn it on, just add -Ddebug=true to java's VM options. (You should be able to do this in Eclipse through Run::Run Configurations...::Arguments tab::VM Arguments).
 	 * Help page: https://help.eclipse.org/mars/index.jsp?topic=%2Forg.eclipse.pde.doc.user%2Fguide%2Ftools%2Flaunchers%2Farguments.htm
@@ -82,26 +82,26 @@ public class Main extends Application {
 	public static Image WINDOW_IMAGE;
 
 	private static Properties properties;
-	
+
 	public static String patchNotes =
-		
+
 		"<p>"
 			+ "Hello again!"
 		+ "</p>"
-		
+
 		+ "<p>"
 			+ "I was a little busier over the Christmas period than I expected, so I didn't really get much time in which I could sit down and get on with the writing for Axel's quest."
 			+ " I did manage to grab time here and there in which to fix bugs, however, and then over this weekend I've got as much writing done as I could, but there is still a lot left to add..."
 		+ "</p>"
-			
+
 		+ "<p>"
 			+ "So, with that in mind, please be aware that there is still a lot of placeholder dialogue in this version of Axel's quest."
 			+ " [style.italicsBad(I would advise only playing through Axel's quest if you want a sneak peek of the sort of content involved!)]"
 			+ " A more polished version (v0.3.6) will be released as soon as possible!"
 		+ "</p>"
-			
+
 		+ "<br/>"
-			
+
 		+ "<p>"
 			+ "Thank you all for playing Lilith's Throne, and a very big thank you to all of you who support development by reporting bugs, making PRs, or backing me on SubscribeStar!"
 			+ " If you wanted to ask me any specific questions about the game, you can either find me on my blog, or on the Lilith's Throne Discord. You can find a link to the discord on my blog. ^^"
@@ -116,14 +116,14 @@ public class Main extends Application {
 			+"<ul>Fixed several bugs and typos. (PR#1250 by LewdAlt)</ul>"
 			+"<ul>Added finger to crotch-nipple interactions. (PR#1243 by LewdAlt)</ul>"
 			+"<ul>Fixed issue with sex in an apartment being public when the occupant has just moved in. (PR#1251 by AceXP)</ul>"
-			
+
 			+"<li>Artwork:</li>"
 			+"<ul>Added artwork of Meraxis, drawn by FriendlyAlienFriend. There are 6 images of her as a half-demon, and 6 variations for when she's a full demon. These include pregnant and non-pregnant variations.</ul>"
-			
+
 			+"<li>Gameplay:</li>"
 			+"<ul>Filled in some of the Axel's quest placeholders, although there are still a lot of placeholders left (will all be filled in for the next update).</ul>"
 			+"<ul>Added 'slovenly' speech modifier, which converts all speech into a representation of speaking with poor pronunciation. There is a 25% chance for muggers and alleyway prostitutes to have this modifier.</ul>"
-			
+
 			+"<li>Items:</li>"
 			+"<ul>Moved demonstone melee weapons out into external res folder.</ul>"
 			+"<ul>Added support for weapon mods to have spells based on their damage type, and also a variable to set whether spells should regenerate when the weapon's damage type is changed.</ul>"
@@ -131,7 +131,7 @@ public class Main extends Application {
 			+"<ul>Slightly improved the 'arm wraps' icon.</ul>"
 			+"<ul>Moved all 'head' slot clothing items out into external res folder. Slightly tweaked some base values of these items, and the 'circlet' is now unisex. Added dye options to the 'antler headband'.</ul>"
 			+"<ul>Added 'paw-print' and 'horse-shoe' tattoos.</ul>"
-			
+
 			+"<li>Other:</li>"
 			+"<ul>Added 'pale pink' as a skin colour, and changed default rat tail skin colour from light pink to pale pink.</ul>"
 			+"<ul>Random attackers in Submission's tunnels now have a 5% chance to be taurs.</ul>"
@@ -147,7 +147,7 @@ public class Main extends Application {
 			+"<ul>Slightly improved 'Object of desire' perk icon, and changed 'Convincing requests' perk icon.</ul>"
 			+"<ul>Added 'orgasmic level drain' perk, which allows you (and NPCs) to drain levels from orgasming partners in sex. (NPCs will not randomly spawn with this perk, and you can disable unique NPC usage of this perk in the content settings.)</ul>"
 			+"<ul>Amber now drains your levels in sex while you're wearing her collar (but only if the 'Level drain' setting is enabled).</ul>"
-			
+
 			+"<li>Bugs:</li>"
 			+"<ul>Typo and parsing fixes.</ul>"
 			+"<ul>Fixed issues with fetish tease attack descriptions not making much sense when enemies were using them.</ul>"
@@ -184,9 +184,9 @@ public class Main extends Application {
 			+"<ul>Friendly occupants who have a job are now correctly displayed as generating 100 flames per day (to cover their room's upkeep cost).</ul>"
 			+"<ul>Fixed an issue in clothing displacement method which could sometimes cause bugs.</ul>"
 		+ "</list>"
-			
+
 		+ "<br/>"
-			
+
 		+ "<list>"
 			+ "<h6>v0.3.5.8</h6>"
 			+"<li>Axel's quest:</li>"
@@ -198,17 +198,17 @@ public class Main extends Application {
 			+"<ul>Murk now wields a metal bat.</ul>"
 			+"<ul>If involuntary NTR is off, you now get the option to have your companion escape at the end of combat losses.</ul>"
 			+"<ul>You can now save the game when Murk's captive (at night, when you can move around).</ul>"
-			
+
 			+"<li>Items:</li>"
 			+"<ul>Added: 'Wooden bat' and 'Metal bat' melee weapons. One-handed, sold by Vicky. Muggers can sometimes be found using them.</ul>"
-			
+
 			+"<li>Sex:</li>"
 			+"<ul>Orifice elasticity is now factored into the calculation of whether a penetration is too big to fit comfortably into an orifice. The stretch calculation also now more accurately takes into consideration the penetrating object's size.</ul>"
 			+"<ul>At lower elasticity values, orifices now stretch out slower and stretch out to sizes closer to the penetrating object's size (due to the change above).</ul>"
 			+"<ul>Penis girth is now factored in when calculating if a penis is too large for an orifice.</ul>"
 			+"<ul>NPCs will no longer start sucking their own tail during sex unless they have an oral fetish.</ul>"
 			+"<ul>Crotch-nipples now have stretch effects when being penetrated in sex like all other orifices.</ul>"
-			
+
 			+"<li>Other:</li>"
 			+"<ul>The 'locked in bondage' clothing set is now activated when wearing at least 3 set items instead of at least 4.</ul>"
 			+"<ul>Zebra, leopard, and lion morphs now have 5 Fire shielding. Snow leopard morphs now have 5 Cold shielding.</ul>"
@@ -218,15 +218,15 @@ public class Main extends Application {
 			+"<ul>Swapped 'thin' and 'slender' penis girth decriptors (so 'thin' is now the thinnest).</ul>"
 			+"<ul>Character view's capacity descriptors for anus and vagina are now coloured according to their capacity.</ul>"
 			+"<ul>Added inverted nipples as a new nipple shape. There's a 2.5% chance for characters with breasts to spawn in with inverted nipples. Added a transformation for inverted nipple shape.</ul>"
-			
+
 			+"<li>Bugs:</li>"
 			+"<ul>Parsing fixes.</ul>"
 			+"<ul>Fixes issue with 'Anal control' action being unlocked by having an internally-muscled vagina, instead of internally-muscled anus.</ul>"
 			+"<ul>Fixed some (harmless) background errors being thrown when half-demon characters were generated.</ul>"
 		+ "</list>"
-		
+
 		+ "<br/>"
-		
+
 		+ "<list>"
 			+ "<h6>v0.3.5.7</h6>"
 			+"<li>Contributions:</li>"
@@ -234,15 +234,15 @@ public class Main extends Application {
 			+"<ul>Fixed several issues with random attacker dialogue not displaying correctly. (PR#1231 by triples941)</ul>"
 			+"<ul>Made some slight adjustments to Maven configuration. (PR#1235 by Zsar)</ul>"
 			+"<ul>Fixed issue with NPC sex positioning sometimes causing a game-breaking bug in sex. (by Rist)</ul>"
-			
+
 			+"<li>Gameplay:</li>"
 			+"<ul>Added a new quest for Axel. (There is a lot of placeholder dialogue for now, and is still very rough around the edges. It will be improved for the next update!)</ul>"
 			+"<ul>Added a 'Quick Sex' action to sex, under the 'Misc. Actions' tab. Selecting this will immediately end sex, but apply all effects as though (some basic) sex had taken place. A short description of the sex actions performed will be displayed.</ul>"
 			+"<ul>Added a 'Gape content' preference, which by default is turned on (keeping the game's behaviour as it always has been). When turned off, 'gaping' descriptions of orifices are replaced with less extreme descriptions (such as just 'loose'), and any special gape-related content will be hidden.</ul>"
-			
+
 			+"<li>Artwork:</li>"
 			+"<ul>Added: 16 images for Lyssieth drawn by FriendlyAlienFriend. These include variations for human/lilin forms, pregnancy, and futa.</ul>"
-			
+
 			+"<li>Other:</li>"
 			+"<ul>Demons no longer spawn with tentacles in their anus and vagina. (I'll add those for different demon varieties in the jungle and some other places later on.)</ul>"
 			+"<ul>Improved generic sex effects (such as when slaves are having sex when you are not present) to take into account girlcum and milk being drunk, condoms being used, orifices being stretched, and body parts being dirtied by cum.</ul>"
@@ -257,7 +257,7 @@ public class Main extends Application {
 			+"<ul>Added 'Mute' personality trait, which at the moment is unavailable to the player, and has a 0.01% of being given to a random NPC.</ul>"
 			+"<ul>Added options to have repeat sex with Lyssieth in her lilin form after you've been transformed into a demon.</ul>"
 			+"<ul>Improved Lyssieth's sex preferences when having repeat sex with her in her office.</ul>"
-			
+
 			+"<li>Items:</li>"
 			+"<ul>Added: 'Pistol crossbow' (common, one-handed, ranged, sold by Vicky).</ul>"
 			+"<ul>Updated: Chaos feather (rare) to 'rough arcane feather', and Chaos feather (Epic) to 'arcane feather'. Updated icons for each, and increased their value.</ul>"
@@ -268,7 +268,7 @@ public class Main extends Application {
 			+"<ul>Added 'removal' as a secondary modifier for breast transformation potions, which completely flattens breasts when used.</ul>"
 			+"<ul>Moved all leg clothing into external res folder, and slightly improved several leg clothing icons (skirt, miniskirt, pleated microskirt, belted microskirt, bike shorts, hotpants, tight jeans, jeans).</ul>"
 			+"<ul>Added a requirements element to tattoo xml files, so you can limit tattoo availability based on the target who is receiving it. (See the 'heart womb' tattoo xml file for an example.)</ul>"
-			
+
 			+"<li>Bugs:</li>"
 			+"<ul>Fixed background error sometimes being thrown when generating half-demons, which was blocking randomly-spawned characters from being half-demons.</ul>"
 			+"<ul>Quite a few typo, parsing, and formatting fixes.</ul>"
@@ -303,9 +303,9 @@ public class Main extends Application {
 			+"<ul>Fixed some incorrect skin colours on Axel.</ul>"
 			+"<ul>Fixed 'Offer body' in the post-loss dice poker scene being available even if the gambler is not attracted to you.</ul>"
 		+ "</list>"
-			
+
 		+ "<br/>"
-		
+
 		+ "<list>"
 			+ "<h6>v0.3.5.4</h6>"
 			+"<li>Engine:</li>"
@@ -438,9 +438,9 @@ public class Main extends Application {
 			+"<ul>Blaze and Crystal (the Slime Queen's guards) are now correctly identified in the code as being siblings (but only if you have incest content turned on).</ul>"
 			+"<ul>Fixed bug where post-sex dialogue after beating and then submitting to the imps in the Dark Siren's fortress would be the 'defeated' variant instead of the correct 'victory' variant.</ul>"
 		+ "</list>"
-		
+
 	;
-	
+
 	public static String disclaimer = "<h6 style='text-align: center; color:"+Colour.GENERIC_ARCANE.toWebHexString()+";'>You must read and agree to the following in order to play this game!</h6>"
 
 			+ "<p>This game is a <b>fictional</b> text-based erotic RPG. All content contained within this game forms part of a fictional universe that is not related to real-life places, people or events.<br/><br/>"
@@ -461,7 +461,7 @@ public class Main extends Application {
 
 			+ "As a final note, the creators of this game wish to stress that the content presented within is entirely fictional and does not reflect any of their personal views or opinions."
 			+ " This game has been made in the spirit of creating a piece of artistic interactive literature, and it is imperative that you maintain a clear distinction between reality and the fictional events depicted in this game.</p>";
-	
+
 	public static List<CreditsSlot> credits = new ArrayList<>();
 
 	// World generation:
@@ -473,11 +473,11 @@ public class Main extends Application {
 
 		CheckForDataDirectory();
 		CheckForResFolder();
-		
+
 		credits.add(new CreditsSlot("Anonymous", "", 99, 99, 99, 99));
 
-		
-		
+
+
 		credits.add(new CreditsSlot("Kyle S P", "", 0, 0, 0, 0, Subspecies.DEMON));
 		credits.add(new CreditsSlot("Paradoxiso", "", 0, 0, 0, 0, Subspecies.DEMON));
 		credits.add(new CreditsSlot("luka_fateburn", "", 0, 0, 0, 0, Subspecies.DEMON));
@@ -492,8 +492,8 @@ public class Main extends Application {
 		credits.add(new CreditsSlot("GentleTark", "", 0, 0, 0, 0, Subspecies.DEMON));
 		credits.add(new CreditsSlot("QW", "", 0, 0, 0, 0, Subspecies.DEMON));
 		credits.add(new CreditsSlot("Master Isami", "", 0, 0, 0, 0, Subspecies.DEMON));
-		
-		
+
+
 		credits.add(new CreditsSlot("Adhana Konker", "", 0, 0, 3, 0));
 		credits.add(new CreditsSlot("Akira", "", 0, 0, 0, 2));
 		credits.add(new CreditsSlot("Aleskah", "", 0, 0, 0, 1));
@@ -756,14 +756,14 @@ public class Main extends Application {
 		credits.add(new CreditsSlot("Zakarin", "", 0, 0, 0, 14, Subspecies.DEMON));
 		credits.add(new CreditsSlot("Zaya", "", 0, 0, 5, 0));
 		credits.add(new CreditsSlot("Zero_One", "", 0, 0, 4, 0));
-		
-		
-		
+
+
+
 		credits.sort(Comparator.comparing((CreditsSlot a) -> a.getName().toLowerCase()));
-		
-		
+
+
 		Main.primaryStage = primaryStage;
-		
+
 		Main.primaryStage.focusedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) {
@@ -778,7 +778,7 @@ public class Main extends Application {
 		Main.primaryStage.setTitle(GAME_NAME+" " + VERSION_NUMBER + " " + VERSION_DESCRIPTION+(DEBUG?" (Debug Mode)":""));
 
 		loadFonts();
-		
+
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/lilithsthrone/res/fxml/main.fxml"));
 
 		Pane pane = loader.load();
@@ -795,8 +795,8 @@ public class Main extends Application {
 		Main.primaryStage.setScene(mainScene);
 		Main.primaryStage.show();
 		Main.game = new Game();
-		Main.sexEngine = new Sex();
-		
+		Main.sex = new Sex();
+
 		loader = new FXMLLoader(getClass().getResource("/com/lilithsthrone/res/fxml/main.fxml"));
 		try {
 			if (Main.mainScene == null) {
@@ -815,11 +815,11 @@ public class Main extends Application {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		Main.game.setContent(new Response("", "", OptionsDialogue.MENU));
-		
+
 	}
-	
+
 	protected static void CheckForDataDirectory() {
 		File dir = new File("data/");
 		if(!dir.exists()) {
@@ -836,7 +836,7 @@ public class Main extends Application {
 			 });
 		}
 	}
-	
+
 	protected static void CheckForResFolder() {
 		File dir = new File("res/");
 		if(!dir.exists()) {
@@ -893,7 +893,7 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
-		
+
 		// Create folders:
 		File dir = new File("data/");
 		dir.mkdir();
@@ -901,7 +901,7 @@ public class Main extends Application {
 		dir.mkdir();
 		dir = new File("data/characters");
 		dir.mkdir();
-		
+
 		// Open error log
 		if(!DEBUG) {
 			System.out.println("Printing to error.log");
@@ -912,13 +912,13 @@ public class Main extends Application {
 				System.err.println("Version: "+VERSION_NUMBER);
 				System.err.println("Java: "+System.getProperty("java.version"));
 //				System.err.println("OS: "+System.getProperty("os.name"));
-				
+
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
 		}
 
-		
+
 		launch(args);
 	}
 
@@ -936,14 +936,14 @@ public class Main extends Application {
 			properties.savePropertiesAsXML();
 		}
 	}
-	
+
 	/**
 	 * Starts a completely new game. Runs a new World Generation.
 	 */
 	public static void startNewGame(DialogueNode startingDialogueNode) {
-		
+
 		Main.game = new Game();
-		
+
 		// Generate world:
 		if (!(gen == null))
 			if (gen.isRunning()) {
@@ -955,7 +955,7 @@ public class Main extends Application {
 		gen.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent t) {
-				
+
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/lilithsthrone/res/fxml/main.fxml"));
 				Pane pane;
 				try {
@@ -975,7 +975,7 @@ public class Main extends Application {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				
+
 				Main.game.setPlayer(new PlayerCharacter(new NameTriplet("Player"), 1, null, Gender.M_P_MALE, Subspecies.HUMAN, RaceStage.HUMAN, WorldType.MUSEUM, PlaceType.MUSEUM_ENTRANCE));
 
 				Main.game.initNewGame(startingDialogueNode);
@@ -986,40 +986,40 @@ public class Main extends Application {
 		});
 		new Thread(gen).start();
 	}
-	
+
 	public static boolean isVersionOlderThan(String versionToCheck, String versionToCheckAgainst) {
 		String[] v1 = versionToCheck.split("\\.");
 		String[] v2 = versionToCheckAgainst.split("\\.");
-		
+
 		try {
 			int maxLength = (v1.length > v2.length) ? v1.length : v2.length;
 			for (int i = 0; i < maxLength; i++) {
 				int v1i;
 				int v2i;
-				
+
 				if(v1[1].charAt(0)=='1') { // Versions prior to 0.2.x used an old system of the format: 0.1.10.1 being a lower version than 0.1.9.1:
 					v1i = (i < v1.length) ? Integer.valueOf((v1[i]+"00").substring(0, 3)) : 0;
 					v2i = (i < v2.length) ? Integer.valueOf((v2[i]+"00").substring(0, 3)) : 0;
-					
+
 				} else { // Versions of 0.2.x and higher use a new system of the format: 0.2.10.1 being a higher version than 0.2.9.1:
 					v1i = (i < v1.length) ? Integer.valueOf(v1[i]) : 0;
 					v2i = (i < v2.length) ? Integer.valueOf(v2[i]) : 0;
 				}
-				
+
 				if (v1i < v2i) {
 					return true;
 				} else if (v1i > v2i) {
 					return false;
-				} 
+				}
 			}
-			
+
 		} catch(Exception ex) {
 			return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	public static int getFontSize() {
 		return properties.fontSize;
 	}
@@ -1028,21 +1028,21 @@ public class Main extends Application {
 		properties.fontSize = size;
 		properties.savePropertiesAsXML();
 	}
-	
-	
+
+
 	public static void quickSaveGame() {
 		if (Main.game.isInCombat()) {
 			Main.game.flashMessage(Colour.GENERIC_BAD, "Cannot quicksave while in combat!");
-			
+
 		} else if (Main.game.isInSex()) {
 			Main.game.flashMessage(Colour.GENERIC_BAD, "Cannot quicksave while in sex!");
-			
+
 		} else if (Main.game.getCurrentDialogueNode().getDialogueNodeType()!=DialogueNodeType.NORMAL) {
 			Main.game.flashMessage(Colour.GENERIC_BAD, "Can only quicksave in a normal scene!");
-			
+
 		} else if (!Main.game.isStarted() || !Main.game.getCurrentDialogueNode().equals(Main.game.getDefaultDialogue(false))) {
 			Main.game.flashMessage(Colour.GENERIC_BAD, "Cannot save in this scene!");
-			
+
 		} else {
 			Main.getProperties().lastQuickSaveName = "QuickSave_"+Main.game.getPlayer().getName(false);
 			saveGame("QuickSave_"+Main.game.getPlayer().getName(false), true);
@@ -1051,7 +1051,7 @@ public class Main extends Application {
 
 	public static void quickLoadGame() {
 		String name = "QuickSave_"+Main.game.getPlayer().getName(false);
-		
+
 //		if(new File("data/saves/"+name+".lts").exists()) {
 			loadGame(name);
 //		} else {
@@ -1062,7 +1062,7 @@ public class Main extends Application {
 	public static boolean isSaveGameAvailable() {
 		return Main.game.isStarted() && Main.game.getSavedDialogueNode() == Main.game.getDefaultDialogue(false);
 	}
-	
+
 	public static void saveGame(String name, boolean allowOverwrite) {
 		if (name.length()==0) {
 			Main.game.flashMessage(Colour.GENERIC_BAD, "Name too short!");
@@ -1076,7 +1076,7 @@ public class Main extends Application {
 			Main.game.flashMessage(Colour.GENERIC_BAD, "Incompatible characters!");
 			return;
 		}
-		
+
 		Game.exportGame(name, allowOverwrite);
 
 		try {
@@ -1105,7 +1105,7 @@ public class Main extends Application {
 
 		return file.exists();
 	}
-	
+
 	public static void loadGame(String name) {
 		if (isLoadGameAvailable(name)) {
 			Game.importGame(name);
@@ -1115,7 +1115,7 @@ public class Main extends Application {
 	public static void loadGame(File f) {
 		Game.importGame(f);
 	}
-	
+
 	public static void deleteGame(String name) {
 		File file = new File("data/saves/"+name+".xml");
 
@@ -1126,12 +1126,12 @@ public class Main extends Application {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
-			
+
 		} else {
 			Main.game.flashMessage(Colour.GENERIC_BAD, "File not found...");
 		}
 	}
-	
+
 	public static void deleteExportedGame(String name) {
 		File file = new File("data/saves/"+name+".xml");
 
@@ -1142,12 +1142,12 @@ public class Main extends Application {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
-			
+
 		} else {
 			Main.game.flashMessage(Colour.GENERIC_BAD, "File not found...");
 		}
 	}
-	
+
 	public static void deleteExportedCharacter(String name) {
 		File file = new File("data/characters/"+name+".xml");
 
@@ -1158,15 +1158,15 @@ public class Main extends Application {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
-			
+
 		} else {
 			Main.game.flashMessage(Colour.GENERIC_BAD, "File not found...");
 		}
 	}
-	
+
 	public static List<File> getSavedGames() {
 		List<File> filesList = new ArrayList<>();
-		
+
 		File dir = new File("data/saves");
 		if (dir.isDirectory()) {
 			File[] directoryListing = dir.listFiles((path, name) -> name.endsWith(".xml"));
@@ -1176,13 +1176,13 @@ public class Main extends Application {
 		}
 
 		filesList.sort(Comparator.comparingLong(File::lastModified).reversed());
-		
+
 		return filesList;
 	}
-	
+
 	public static List<File> getCharactersForImport() {
 		List<File> filesList = new ArrayList<>();
-		
+
 		File dir = new File("data/characters");
 		if (dir.isDirectory()) {
 			File[] directoryListing = dir.listFiles((path, name) -> name.endsWith(".xml"));
@@ -1192,13 +1192,13 @@ public class Main extends Application {
 		}
 
 		filesList.sort(Comparator.comparingLong(File::lastModified).reversed());
-		
+
 		return filesList;
 	}
-	
+
 	public static List<File> getSlavesForImport() {
 		List<File> filesList = new ArrayList<>();
-		
+
 		File dir = new File("data/characters");
 		if (dir.isDirectory()) {
 			File[] directoryListing = dir.listFiles((path, name) -> name.endsWith(".xml"));
@@ -1206,15 +1206,15 @@ public class Main extends Application {
 				filesList.addAll(Arrays.asList(directoryListing));
 			}
 		}
-		
+
 		filesList.sort(Comparator.comparingLong(File::lastModified).reversed());
-		
+
 		return filesList;
 	}
-	
+
 	public static List<File> getGamesForImport() {
 		List<File> filesList = new ArrayList<>();
-		
+
 		File dir = new File("data/saves");
 		if (dir.isDirectory()) {
 			File[] directoryListing = dir.listFiles((path, name) -> name.endsWith(".xml"));
@@ -1224,10 +1224,10 @@ public class Main extends Application {
 		}
 
 		filesList.sort(Comparator.comparingLong(File::lastModified).reversed());
-		
+
 		return filesList;
 	}
-	
+
 	public static void importCharacter(File file) {
 		if (file != null) {
 			try {
@@ -1242,10 +1242,10 @@ public class Main extends Application {
 						CharacterImportSetting.CLEAR_COMBAT_HISTORY,
 						CharacterImportSetting.CLEAR_SEX_HISTORY,
 						CharacterImportSetting.REMOVE_RACE_CONCEALED));
-				
+
 				Main.game.getPlayer().getSlavesOwned().clear();
 				Main.game.getPlayer().endPregnancy(false);
-				
+
 				Main.game.setRenderAttributesSection(true);
 				Main.game.clearTextStartStringBuilder();
 				Main.game.clearTextEndStringBuilder();
@@ -1255,7 +1255,7 @@ public class Main extends Application {
 				Main.game.getPlayer().calculateStatusEffects(0);
 
 				Main.game.initNewGame(CharacterCreation.START_GAME_WITH_IMPORT);
-				
+
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
