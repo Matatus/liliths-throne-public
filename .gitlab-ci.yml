@@ -11,15 +11,14 @@ cache:
     - target/
 
 build-window:
-  image: adoptopenjdk:11-hotspot-windowsservercore-1809
+  image: adoptopenjdk:11-hotspot
   stage: build
   script:
-    - mvnw.cmd $MAVEN_CLI_OPTS package
+    - mvnw.cmd $MAVEN_CLI_OPTS -f pom-win.xml package
   artifacts:
     paths:
       - target/game-fatJar.jar
       - target/res/*
-      - target/LilithsThrone*
       
 build-linux:
   image: adoptopenjdk:11-hotspot
