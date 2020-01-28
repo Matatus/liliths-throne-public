@@ -1586,8 +1586,8 @@ public class UtilText {
 				true,
 				true,
 				"",
-				"Prints out the most important name of this character's relation towards their party's leader (it will cut off multiple relation names) for half of the time. The other half will return 'companion'."
-				+ " e.g. If the player's companion is their daughter, then 'npc.companion' would print 'daughter', otherwise 'companion'."){
+				"Prints out the most important name of this character's relation towards their party's leader (it will cut off multiple relation names) for half of the time. The other half will return 'companion' or 'slave' (if applicable)."
+				+ " e.g. If the player's companion is their daughter, then 'npc.companion' would print 'daughter', otherwise 'companion' or 'slave' (if applicable)."){
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
 				try {
@@ -1599,6 +1599,9 @@ public class UtilText {
 					if(set.size()>=1 && Math.random()<0.5f) {
 						return set.iterator().next().getName(character);
 					} else {
+						if(character.isSlave() && character.getOwner().equals(targetedCharacter) && Math.random()<0.5f) {
+							return "slave";
+						}
 						return "companion";
 					}
 
@@ -1943,6 +1946,37 @@ public class UtilText {
 				return (parseCapitalise
 						?Util.capitaliseSentence(Femininity.getFemininityName(character.getFemininityValue(), pronoun))
 						:Femininity.getFemininityName(character.getFemininityValue(), pronoun))+" "+character.getRaceStage().getName()+" "+getSubspeciesName(character.getSubspecies(),character);
+			}
+			@Override
+			protected String applyDeterminer(String descriptor, String input) {
+				return input;
+			}
+		});
+
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"fullRaces",
+						"racesFull",
+						"femininityRaces"),
+				true,
+				true,
+				"(coloured)",
+				"Returns a full description of this characters pluralised race (including femininity). Pass in 'true' to colour the text."){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				boolean pronoun = parseAddPronoun;
+				parseAddPronoun = false;
+				if(arguments!=null && Boolean.valueOf(arguments)) {
+					return "<span style='color:"+character.getFemininity().getColour().toWebHexString()+";'>"
+							+ (parseCapitalise
+									?Util.capitaliseSentence(Femininity.getFemininityName(character.getFemininityValue(), pronoun))
+									:Femininity.getFemininityName(character.getFemininityValue(), pronoun))+"</span>"
+							+ " <span style='color:"+character.getRaceStage().getColour().toWebHexString()+";'>" +character.getRaceStage().getName()+"</span>"
+							+ " <span style='color:"+character.getSubspecies().getColour(character).toWebHexString()+";'>" +  getSubspeciesNamePlural(character.getSubspecies(),character) + "</span>";
+				}
+				return (parseCapitalise
+						?Util.capitaliseSentence(Femininity.getFemininityName(character.getFemininityValue(), pronoun))
+						:Femininity.getFemininityName(character.getFemininityValue(), pronoun))+" "+character.getRaceStage().getName()+" "+getSubspeciesNamePlural(character.getSubspecies(),character);
 			}
 			@Override
 			protected String applyDeterminer(String descriptor, String input) {
@@ -6453,6 +6487,15 @@ public class UtilText {
 				}
 			}
 
+			if(Main.game.isStarted() && Main.game.getPlayer().hasCompanions()) {
+				for(int i = 0; i<Main.game.getPlayer().getCompanions().size(); i++) {
+					if(i==0) {
+						engine.put("com", Main.game.getPlayer().getCompanions().get(i));
+					}
+					engine.put("com"+(i+1), Main.game.getPlayer().getCompanions().get(i));
+				}
+			}
+
 			try {
 				if(suppressOutput) {
 					engine.eval(command);
@@ -6483,6 +6526,15 @@ public class UtilText {
 					engine.put("npc", ParserTarget.NPC.getCharacter("npc", specialNPCs));
 				} catch(Exception ex) {
 //					System.err.println("Parsing error: Could not initialise npc 2");
+				}
+			}
+
+			if(Main.game.getPlayer().hasCompanions()) {
+				for(int i = 0; i<Main.game.getPlayer().getCompanions().size(); i++) {
+					if(i==0) {
+						engine.put("com", Main.game.getPlayer().getCompanions().get(i));
+					}
+					engine.put("com"+(i+1), Main.game.getPlayer().getCompanions().get(i));
 				}
 			}
 		}
@@ -6826,6 +6878,15 @@ public class UtilText {
 //				System.out.println("specialNPCList is empty");
 			} catch(Exception ex) {
 //				System.err.println("Parsing error 2: Could not initialise npc");
+			}
+		}
+
+		if(Main.game.getPlayer().hasCompanions()) {
+			for(int i = 0; i<Main.game.getPlayer().getCompanions().size(); i++) {
+				if(i==0) {
+					engine.put("com", Main.game.getPlayer().getCompanions().get(i));
+				}
+				engine.put("com"+(i+1), Main.game.getPlayer().getCompanions().get(i));
 			}
 		}
 
