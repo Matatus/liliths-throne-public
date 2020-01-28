@@ -14,7 +14,7 @@ build-window:
   image: adoptopenjdk:11-hotspot
   stage: build
   script:
-    - mvnw.cmd $MAVEN_CLI_OPTS -f pom-win.xml package
+    - sh mvnw $MAVEN_CLI_OPTS -f pom-win.xml package
   artifacts:
     paths:
       - target/game-fatJar.jar
