@@ -1,0 +1,40 @@
+
+stages:
+  - compile
+  - build
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+cache:
+  paths:
+    - .m2/repository/
+    - target/
+
+build-window:
+  image: adoptopenjdk:11-hotspot-windowsservercore
+  stage: build
+  script:
+    - mvnw.cmd $MAVEN_CLI_OPTS package
+  artifacts:
+    paths:
+      - target/game-fatJar.jar
+      - target/res/*
+      - target/LilithsThrone*
+      
+build-linux:
+  image: adoptopenjdk:11-hotspot
+  stage: build
+  script:
+    - sh mvnw $MAVEN_CLI_OPTS package
+  artifacts:
+    paths:
+      - target/game-fatJar.jar
+      - target/res/*
+      - target/LilithsThrone*
+      
+compile:
+  image: adoptopenjdk:11-hotspot
+  stage: compile
+  script:
+    - sh mvnw $MAVEN_CLI_OPTS compile
