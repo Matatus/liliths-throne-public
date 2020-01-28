@@ -1,4 +1,3 @@
-
 stages:
   - compile
   - build
@@ -12,7 +11,7 @@ cache:
     - target/
 
 build-window:
-  image: adoptopenjdk:11-hotspot-windowsservercore
+  image: adoptopenjdk:11-hotspot-windowsservercore-1809
   stage: build
   script:
     - mvnw.cmd $MAVEN_CLI_OPTS package
