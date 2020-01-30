@@ -1,5 +1,4 @@
 stages:
-  - compile
   - build
 
 variables:
@@ -8,7 +7,7 @@ variables:
 cache:
   paths:
     - .m2/repository/
-    - target/
+    #- target/
 
 build-window:
   image: adoptopenjdk:11-hotspot
@@ -30,9 +29,3 @@ build-linux:
       - target/game-fatJar.jar
       - target/res/*
       - target/LilithsThrone*
-      
-compile:
-  image: adoptopenjdk:11-hotspot
-  stage: compile
-  script:
-    - sh mvnw $MAVEN_CLI_OPTS compile
