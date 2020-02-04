@@ -86,6 +86,10 @@ import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothingType;
 import com.lilithsthrone.game.inventory.clothing.ClothingType;
 import com.lilithsthrone.game.inventory.enchanting.TFEssence;
+import com.lilithsthrone.game.inventory.item.AbstractItemType;
+import com.lilithsthrone.game.inventory.item.ItemType;
+import com.lilithsthrone.game.inventory.weapon.AbstractWeaponType;
+import com.lilithsthrone.game.inventory.weapon.WeaponType;
 import com.lilithsthrone.game.occupantManagement.SlavePermissionSetting;
 import com.lilithsthrone.game.settings.ForcedFetishTendency;
 import com.lilithsthrone.game.settings.ForcedTFTendency;
@@ -385,10 +389,6 @@ public class UtilText {
 		return descriptionSB.toString();
 	}
 
-	public static String formatAsMoney(int money) {
-		return formatAsMoney(money, "b");
-	}
-
 	public static String getCurrencySymbol() {
 //		return "&#9679;"; // Circle
 		return "&#164;"; // 'Generic' currency symbol
@@ -396,6 +396,10 @@ public class UtilText {
 
 	public static String getPentagramSymbol() {
 		return "&#9737;"; // Java doesn't support unicode 6 ;_;   No pentagram for me... ;_;  "&#9956";
+	}
+
+	public static String applyGlow(String input, Colour colour) {
+		return "<span style='color:"+colour.toWebHexString()+"; text-shadow: 0px 0px 4px "+colour.getShades()[4]+";'>"+input+"</span>";
 	}
 
 	public static String formatAsEssencesUncoloured(int amount, String tag, boolean withOverlay) {
@@ -413,59 +417,51 @@ public class UtilText {
 				+ " <"+tag+" style='color:"+Colour.GENERIC_ARCANE.toWebHexString()+";'>"+Units.number(amount)+"</"+tag+">";
 	}
 
-	public static String formatAsMoney(int money, String tag) {
-		return formatAsMoney(money, tag, null);
-	}
+	// Money formatting:
 
-	/**
-	 * Just used for values like "?". <b>Do not</b> use for numerical values.
-	 */
-	public static String formatAsMoney(String money, String tag) {
-		return "<" + tag + " style='color:" + Colour.CURRENCY_GOLD.toWebHexString() + "; padding-right:2px;'>" + getCurrencySymbol() + "</" + tag + ">"
-				+ "<" + tag + " style='color:" + Colour.TEXT.getShades(8)[3] + ";'>" + money + "</" + tag + ">";
-	}
+	public static String formatAsItemPrice(int money) {
+		String moneyString = Units.number(money);
 
-	public static String applyGlow(String input, Colour colour) {
-		return "<span style='color:"+colour.toWebHexString()+"; text-shadow: 0px 0px 4px "+colour.getShades()[4]+";'>"+input+"</span>";
-	}
+		if(money > 1_000_000) {
+			float moneyAbbreviated = money/1_000_000f;
+			moneyString = Units.number(moneyAbbreviated, 1, 1)+"M";
+			return formatAsMoney(moneyString, "b", Colour.CURRENCY_GOLD);
 
-	public static String formatAsMoney(int money, String tag, Colour amountColour) {
-		String tagColour;
-//		int copper = Math.abs(money%100);
-//		int silver = Math.abs((money%10000)/100);
-//		int gold = Math.abs(money/10000);
-
-		if(amountColour==null) {
-			tagColour = Colour.TEXT.getShades(8)[3];
-		} else {
-			tagColour = amountColour.toWebHexString();
+		} else if(money > 1_000) {
+			float moneyAbbreviated = money/1_000f;
+			int precision = money < 10_000?1:0;
+			moneyString = Units.number(moneyAbbreviated, precision, precision)+"k";
+			return formatAsMoney(moneyString, "b", Colour.CURRENCY_SILVER);
 		}
 
-//		return (money<0?"<b style='color:" + tagColour + ";'>-</b>":"")
-//				+(gold!=0
-//					?"<" + tag + " style='color:" + (amountColour==Colour.TEXT?Colour.TEXT.toWebHexString():Colour.CURRENCY_GOLD.toWebHexString()) + "; padding-right:2px;'>" + getCurrencySymbol() + "</" + tag + ">"
-//						+ "<" + tag + " style='color:" + tagColour + ";'>" + Units.number(moneyString) + "</" + tag + ">"
-//					:"")
-//				+(silver!=0
-//					?"<" + tag + " style='color:" + (amountColour==Colour.TEXT?Colour.TEXT.toWebHexString():Colour.CURRENCY_SILVER.toWebHexString()) + "; padding-right:2px;'>" + getCurrencySymbol() + "</" + tag + ">"
-//						+ "<" + tag + " style='color:" + tagColour + ";'>" + silver + "</" + tag + ">"
-//					:"")
-//				+(copper!=0 || money==0
-//					?"<" + tag + " style='color:" + (amountColour==Colour.TEXT?Colour.TEXT.toWebHexString():Colour.CURRENCY_COPPER.toWebHexString()) + "; padding-right:2px;'>" + getCurrencySymbol() + "</" + tag + ">"
-//						+ "<" + tag + " style='color:" + tagColour + ";'>" + copper + "</" + tag + ">"
-//					:"");
+		return formatAsMoney(moneyString, "b", Colour.CURRENCY_COPPER);
+	}
 
-		return "<" + tag + " style='color:" + (amountColour==Colour.TEXT?Colour.TEXT.toWebHexString():Colour.CURRENCY_GOLD.toWebHexString()) + "; padding-right:2px;'>" + getCurrencySymbol() + "</" + tag + ">"
-					+ "<" + tag + " style='color:" + tagColour + ";'>" + Units.number(money) + "</" + tag + ">";
+	public static String formatAsMoney(int money) {
+		return formatAsMoney(money, "b");
 	}
 
 	public static String formatAsMoneyUncoloured(int money, String tag) {
+		return formatAsMoney(money, tag, null);
+	}
+
+	public static String formatAsMoney(int money, String tag) {
 		return formatAsMoney(money, tag, Colour.TEXT);
 	}
 
-	public static String formatAsItemPrice(int money) {
-		return formatAsMoney(money, "b");
+	public static String formatAsMoney(String money, String tag) {
+		return formatAsMoney(money, tag, Colour.TEXT);
 	}
+
+	public static String formatAsMoney(int money, String tag, Colour amountColour) {
+		return formatAsMoney(Units.number(money), tag, amountColour);
+		}
+
+	public static String formatAsMoney(String money, String tag, Colour amountColour) {
+		return "<" + tag + " style='color:" + (amountColour==null?Colour.TEXT.toWebHexString():Colour.CURRENCY_GOLD.toWebHexString()) + "; padding-right:2px;'>" + getCurrencySymbol() + "</" + tag + ">"
+				+ "<" + tag + " style='color:" + (amountColour==null?Colour.TEXT.toWebHexString():amountColour.toWebHexString()) + ";'>" + money + "</" + tag + ">";
+	}
+
 
 	public static String formatVirginityLoss(String s) {
 		return "<p style='text-align:center; color:"+Colour.GENERIC_TERRIBLE.toWebHexString()+";'><i>"+s+"</i></p>";
@@ -1008,7 +1004,9 @@ public class UtilText {
 				resultBuilder.append(input.substring(startedParsingSegmentAt, input.length()));
 			}
 
-			return resultBuilder.toString();
+			String result = resultBuilder.toString();
+			result = result.replaceAll("german", "German"); // This is needed as the subspecies 'german-shepherd-morph' needs to use a lowercase 'g' for generic name determiner detection.
+			return result;
 		} catch(Exception ex) {
 			System.err.println("Failed to parse: "+input);
 			ex.printStackTrace();
@@ -1557,6 +1555,19 @@ public class UtilText {
 				return parseCapitalise
 						?Util.capitaliseSentence((pronoun?UtilText.generateSingularDeterminer(gender.getName())+" ":"")+gender.getName())
 						:(pronoun?UtilText.generateSingularDeterminer(gender.getName())+" ":"")+gender.getName();
+			}
+		});
+
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"orientation"),
+				true,
+				true,
+				"",
+				"Returns the name of this cahracter's sexual orientation."){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				return character.getSexualOrientation().getName();
 			}
 		});
 
@@ -4332,7 +4343,7 @@ public class UtilText {
 				BodyPartType.CUM);
 
 		addStandardParsingCommands(
-				Util.newArrayListOfValues("skin"),
+				Util.newArrayListOfValues("skin"), // Will usually return the plural anyway...
 				Util.newArrayListOfValues("skinPlural"),
 				BodyPartType.SKIN);
 
@@ -6661,6 +6672,17 @@ public class UtilText {
 			engine.put("SPECIAL_PARSE_"+i, specialParsingStrings.get(i));
 		}
 
+		// Items:
+		for(AbstractWeaponType weaponType : WeaponType.getAllWeapons()) {
+			engine.put("WEAPON_"+WeaponType.getIdFromWeaponType(weaponType), weaponType);
+		}
+		for(AbstractClothingType clothingType : ClothingType.getAllClothing()) {
+			engine.put("CLOTHING_"+ClothingType.getIdFromClothingType(clothingType), clothingType);
+		}
+		for(AbstractItemType itemType : ItemType.getAllItems()) {
+			engine.put("ITEM_"+ItemType.getIdFromItemType(itemType), itemType);
+		}
+
 		// Enums:
 		for(Race race : Race.values()) {
 			engine.put("RACE_"+race.toString(), race);
@@ -7150,6 +7172,9 @@ public class UtilText {
 				bodyPart){
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				if(bodyPart==BodyPartType.SKIN) {
+					return getBodyPartFromType(bodyPart,character).getName(character); // Skin replacements (such as scales, feathers, fur), should use the default plurality.
+				}
 				return getBodyPartFromType(bodyPart,character).getNameSingular(character);
 			}
 		});
