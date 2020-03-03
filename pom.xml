@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.lilithsthrone</groupId>
 	<artifactId>game</artifactId>
@@ -12,8 +12,8 @@
 		<java.version>13</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
-		<graalvm.version>19.3.0.2</graalvm.version>
-		<javafx.version>13.0.1</javafx.version>
+		<graalvm.version>20.0.0</graalvm.version>
+		<javafx.version>13.0.2</javafx.version>
 		<mainClass>com.lilithsthrone.main.Main</mainClass>
 		<launcher>com.lilithsthrone.main.Launcher</launcher>
 	</properties>
@@ -33,7 +33,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.7.0</version>
+				<version>3.8.0</version>
 				<configuration>
 					<release>8</release>
 					<useIncrementalCompilation>false</useIncrementalCompilation>
@@ -44,8 +44,6 @@
 				<artifactId>javafx-maven-plugin</artifactId>
 				<version>0.0.4</version>
 				<configuration>
-<!--					<source>13</source>-->
-<!--					<target>13</target>-->
 					<release>8</release>
 					<jlinkImageName>lilithsthrone</jlinkImageName>
 					<launcher>${launcher}</launcher>
@@ -96,22 +94,22 @@
 								<mainClass>${launcher}</mainClass>
 							</classPath>
 							<jre>
-<!--								<path>jre</path>-->
-<!--								<bundledJre64Bit>true</bundledJre64Bit>-->
+								<!--								<path>jre</path>-->
+								<!--								<bundledJre64Bit>true</bundledJre64Bit>-->
 								<minVersion>1.8</minVersion>
 								<opts>
 									<opt>-Ddebug=true</opt>
 									<opt>-XX:+UseParallelGC</opt>
 								</opts>
-<!--								<initialHeapSize>256</initialHeapSize>-->
-<!--								<maxHeapSize>2048</maxHeapSize>-->
+								<!--								<initialHeapSize>256</initialHeapSize>-->
+								<!--								<maxHeapSize>2048</maxHeapSize>-->
 							</jre>
 							<versionInfo>
-								<fileVersion>3.5.9.0</fileVersion>
+								<fileVersion>0.3.6.9</fileVersion>
 								<txtFileVersion>txt file version?</txtFileVersion>
 								<fileDescription>Lilith's Throne</fileDescription>
 								<copyright>Copyright 2016 Innoxia (innoxia7@gmail.com) all rights reserved.</copyright>
-								<productVersion>3.5.9.0</productVersion>
+								<productVersion>0.3.6.9</productVersion>
 								<txtProductVersion>txt product version</txtProductVersion>
 								<productName>Lilith's Throne</productName>
 								<internalName>Lilith's Throne</internalName>
