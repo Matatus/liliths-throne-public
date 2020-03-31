@@ -9,11 +9,10 @@
 	<name>lilithsthrone</name>
 
 	<properties>
-		<java.version>13</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
+		<maven-shade-plugin.version>3.2.2</maven-shade-plugin.version>
 		<graalvm.version>20.0.0</graalvm.version>
-		<javafx.version>13.0.2</javafx.version>
+		<javafx.version>14</javafx.version>
 		<mainClass>com.lilithsthrone.main.Main</mainClass>
 		<launcher>com.lilithsthrone.main.Launcher</launcher>
 	</properties>
@@ -33,7 +32,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.0</version>
+				<version>3.8.1</version>
 				<configuration>
 					<release>8</release>
 					<useIncrementalCompilation>false</useIncrementalCompilation>
@@ -105,11 +104,11 @@
 								<!--								<maxHeapSize>2048</maxHeapSize>-->
 							</jre>
 							<versionInfo>
-								<fileVersion>0.3.6.9</fileVersion>
+								<fileVersion>0.3.7.0</fileVersion>
 								<txtFileVersion>txt file version?</txtFileVersion>
 								<fileDescription>Lilith's Throne</fileDescription>
 								<copyright>Copyright 2016 Innoxia (innoxia7@gmail.com) all rights reserved.</copyright>
-								<productVersion>0.3.6.9</productVersion>
+								<productVersion>0.3.7.0</productVersion>
 								<txtProductVersion>txt product version</txtProductVersion>
 								<productName>Lilith's Throne</productName>
 								<internalName>Lilith's Throne</internalName>
