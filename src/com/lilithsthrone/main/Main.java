@@ -30,8 +30,8 @@ import com.lilithsthrone.game.dialogue.story.CharacterCreation;
 import com.lilithsthrone.game.dialogue.utils.OptionsDialogue;
 import com.lilithsthrone.game.inventory.enchanting.TFEssence;
 import com.lilithsthrone.game.sex.Sex;
-import com.lilithsthrone.utils.Colour;
 import com.lilithsthrone.utils.CreditsSlot;
+import com.lilithsthrone.utils.colours.PresetColour;
 import com.lilithsthrone.world.Generation;
 import com.lilithsthrone.world.WorldType;
 import com.lilithsthrone.world.places.PlaceType;
@@ -69,7 +69,7 @@ public class Main extends Application {
 
 	public static final String AUTHOR = "Innoxia";
 	public static final String GAME_NAME = "Lilith's Throne";
-	public static final String VERSION_NUMBER = "0.3.6.9";
+	public static final String VERSION_NUMBER = "0.3.7";
 	public static final String VERSION_DESCRIPTION = "Alpha";
 
 	/**
@@ -90,12 +90,7 @@ public class Main extends Application {
 		+ "</p>"
 
 		+ "<p>"
-			+ "Sorry about all the delays leading up to this version; I kept on getting sidetracked by fixing/adjusting things which kept on cropping up during the work on Helena's romance quest."
-			+ " As a result of all these unexpected issues eating up my time, her content still isn't finished, and so I've disabled the action which starts her quest until the next version (when it should all be finished)."
-		+ "</p>"
-			
-		+ "<p>"
-			+ "I'll try to get the next update out in about a week from this release, but if it's going to take a little longer to get all of the content added which I have planned, then it might be delayed..."
+			+ "Sorry about the unfinished state of this release. I'll try to get a more polished version out as soon as I can!"
 		+ "</p>"
 
 		+ "<br/>"
@@ -107,19 +102,79 @@ public class Main extends Application {
 
 		+ "<br/>"
 		+ "<list>"
+		+ "<h6>v0.3.7</h6>"
+			+"<li>Engine:</li>"
+			+"<ul>Converted Colour Enum into a 'PresetColour' class, which contains static Colour classes.</ul>"
+			+"<ul>Added parsing commands for toy inserted into character's vagina.</ul>"
+
+			+"<li>Gameplay:</li>"
+			+"<ul>Added first section of Helena's romance quest.</ul>"
+			+"<ul>The alleyway tile immediately to the north of Slaver Alley is now a 'safe' alleyway tile. Any NPC which was present in this tile has been moved to one of two new back alley tiles to the south-west of Dominion.</ul>"
+			+"<ul>You can now enter the cafes in Slaver Alley, and the descriptions of the inaccessible slaver stores have been slightly altered.</ul>"
+
+			+"<li>Items:</li>"
+			+"<ul>Added: 'Velvet choker' (androgynous, neck slot, sold by Nyan).</ul>"
+			+"<ul>Added: 'Dangle chain earrings' (feminine, ear piercing slot, sold by Kate).</ul>"
+			+"<ul>Added: 'Plunge-neck clubbing dress' (feminine, torso slot, sold by Nyan).</ul>"
+			+"<ul>Added: 'Strapless bra' (feminine, chest slot, sold by Nyan).</ul>"
+			+"<ul>Added: 'Diamond necklace' (feminine, neck slot, sold by Nyan).</ul>"
+			+"<ul>Added item tag 'CHOKER_SNAP', which causes the item worn to snap when the wearer's throat bulges too much during sex. (Applied to the new 'velvet choker' item.)</ul>"
+			+"<ul>'Angel's Tears' now reduces the drinker's lust to their resting lust level.</ul>"
+
+			+"<li>Sex:</li>"
+			+"<ul>The capacity of the 'throat' orifice now behaves in the same manner as other orifices, and will stretch/recover based on its plasticity/elasticity. (The references to 'blowjob ability' in character's description screens will be restored later on once I add effects for fetish experience.)</ul>"
+			+"<ul>Characters can now receive paizuri from the character they are sitting on while in the 'cowgirl' position (provided that they aren't riding that person's cock).</ul>"
+			+"<ul>Characters performing oral in missionary position (with their face between their partner's legs) can now force their partner to cum inside them.</ul>"
+			+"<ul>NPCs who are fucking someone (using their penis) will no longer start fingering their own anus/vagina.</ul>"
+			+"<ul>'Orgasm cum lock' actions are no longer available if the sex manager is setting a special pullout condition for the other NPC. (This will only affect a few special sex scenes.)</ul>"
+			+"<ul>The character lying underneath in the 69 position can now perform anilingus on their partner who's on top.</ul>"
+
+			+"<li>Other:</li>"
+			+"<ul>Added 'grey-green' as a natural iris colour.</ul>"
+			+"<ul>Randomly-spawned fox-morphs should now correctly have orange-white, tan-white, grey-white, or black fur.</ul>"
+			+"<ul>Added penis diameter to characters' body overview tooltip.</ul>"
+			+"<ul>The 'dirty clothing' and 'dirty body' status effects now give +5 corruption each, instead of -2 arcane.</ul>"
+			+"<ul>Horse-morphs with anthro horse-morph faces now spawn in with 'natural' hair styles (representing a mane) if they are not feminine. If feminine, they have a 50% chance of having a mane.</ul>"
+			+"<ul>Randomly-selected hair styles are now additionally filtered by femininity. (This does not affect anything other than random NPC spawns.)</ul>"
+			+"<ul>Debug menu's '+50 essences' action is now '+1000 essences'.</ul>"
+			+"<ul>Slightly improved formatting of furry preferences screen.</ul>"
+			+"<ul>Reduced values of racial food items.</ul>"
+			+"<ul>Added button to randomise name in slave renaming management screen.</ul>"
+			+"<ul>Added throat capacity, depth, elasticity, and plasticity to self-transformation menu.</ul>"
+			+"<ul>Improved the UI for changing covering colours, as well as for the other options in Kate's shop.</ul>"
+
+			+"<li>Bugs:</li>"
+			+"<ul>Parsing fixes.</ul>"
+			+"<ul>Fixed incorrectly displaying 'dense crowds' as being present on Dominion's boulevard tiles during an arcane storm.</ul>"
+			+"<ul>Fixed incorrect name formatting for clothing which had a colour pattern.</ul>"
+			+"<ul>Performing/receiving paizuri will no longer output an error message to the error.log file.</ul>"
+			+"<ul>Fixed UI bug where the inventory overview panel's bottom border would grow when clicking on clothing during combat or sex.</ul>"
+			+"<ul>The ordering of the event log is no longer reversed when loading a game.</ul>"
+			+"<ul>Losing to Sean in his challenge now correctly moves you over to the public stocks tile.</ul>"
+			+"<ul>Fixed bug where knotting descriptions would sometimes incorrectly describe a character's tail as being the penetration type that had a knot instead of their penis.</ul>"
+			+"<ul>Fixed bug where you couldn't offer your ass to Scarlett when she was attracted to you, but you could if she wasn't attracted to you. Also fixed related bug where 'Offer ass' would be displayed in every response slot when it was available.</ul>"
+			+"<ul>Scarlett's sex scene in her nest is no longer treated as being 'public sex', and she will now correctly want to continue fucking your ass once started.</ul>"
+			+"<ul>Characters in unique sex scenes will no longer move into positions in which they can't satisfy their sex desires.</ul>"
+			+"<ul>Fixed minor bug where setting penis/vagina sex experience in character creation, then going back to remove your vagina/penis wouldn't reset the underlying sex experience.</ul>"
+			+"<ul>Fixed bug where some coloured words would not be capitalised as intended.</ul>"
+		+"</list>"
+
+		+"<br/>"
+
+		+ "<list>"
 		+ "<h6>v0.3.6.9</h6>"
 			+"<li>Contributors:</li>"
 			+"<ul>Added sleeveless Enforcer over-torso clothing variations (intended for Enforcers who cannot wear regular jackets, due to having wing-arms). This includes 5 'waistcoat' and 2 'sweater vest' variations. (by DSG)</ul>"
 			+"<ul>Added 'Short-sleeved combat shirt' and 'Enforcer's short-sleeved combat shirt' as short-sleeved variations for the two combat shirts. (by DSG)</ul>"
 			+"<ul>Typo fix. (PR#1290 by TadUnlikely)</ul>"
 			+"<ul>Fixed bug where you couldn't orgasm when having sex with Amber when not wearing any neck clothing. (PR#1298 by triples941)</ul>"
-	
+
 			+"<li>Engine/Code:</li>"
 			+"<ul>Converted the following Enums into classes: AntennaType, AnusType, EyeType, TongueType, MouthType, FaceType, and TailType.</ul>"
 			+"<ul>Body class now additionally saves the version it was created in.</ul>"
 			+"<ul>Reformatted all of the Orifice classes.</ul>"
 			+"<ul>Moved all piercing clothing items into external res files.</ul>"
-	
+
 			+"<li>Gameplay:</li>"
 			+"<ul>Added 'Argus's DIY Depot' as a new location in Dominion (several tiles south of Slaver Alley, next to the canal). (I have plans for this location to be involved in property improvement content later on.)</ul>"
 			+"<ul>Added 'Warehouse District' as a new location in Dominion (several tiles north of Slaver Alley, next to the canal). (I also have plans for this area later on.)</ul>"
@@ -127,7 +182,7 @@ public class Main extends Application {
 			+"<ul>Vaginal virginity can no longer ever be regained. Removing/regrowing a vagina now only restores your hymen, not the concept of virginity itself. Regrowing a hymen in this way (and also losing your hymen via using sex toys) applies modifiers to the 'pure virgin' status effect.</ul>"
 			+"<ul>Edited and updated all of Helena's and Scarlett's dialogue.</ul>"
 			+"<ul>Updated some of Helena's and Scarlett's stats, fetishes, and clothing.</ul>"
-	
+
 			+"<li>Penetrative size-difference:</li>"
 			+"<ul>Fixed bug where diameters of tails and penises could be less than or equal to zero.</ul>"
 			+"<ul>Tails' diameter now tapers off from the base, depending on the tail type's tapering factor. Demonic tails have an exponential taper, alligator tails have linear tapering, and most furry tails have no tapering. You can see the diameter tapering in the body stats menu.</ul>"
@@ -150,7 +205,7 @@ public class Main extends Application {
 			+"<ul>Updated body stats page and body description with new depth values.</ul>"
 			+"<ul>Resisting characters will no longer act as through they are eagerly taking big penetrations.</ul>"
 			+"<ul>Penetrations are now considered to be 'too short' if they are 33% or less the length of the orifice's depth (instead of 50%).</ul>"
-	
+
 			+"<li>Items:</li>"
 			+"<ul>Added: 'Horseshoe necklace' (neck/wrist slot, sold by Nyan).</ul>"
 			+"<ul>Added: 'Thick-rimmed glasses' (eyes slot, sold by Nyan).</ul>"
@@ -170,14 +225,14 @@ public class Main extends Application {
 			+"<ul>Tongue barbell is now called 'basic barbell' and can now also be equipped into the ear piercing slot (representing an 'industrial' piercing).</ul>"
 			+"<ul>Nipple barbells are now called 'basic barbells' and can now also be equipped into the ear piercing slot (representing 'industrial' piercings).</ul>"
 			+"<ul>Gemstone and ringed barbells can now be fit into either the navel or vaginal piercing slots.</ul>"
-	
+
 			+"<li>Sex toys:</li>"
 			+"<ul>Clothing which is able to be inserted into orifices no longer uses the old 'DILDO' tags to define their length. Instead, clothing xml files now have a couple of extra sections which are used to define length, girth, and modifiers of penetrative sex toys.</ul>"
 			+"<ul>For an example of how this works (if you are wanting to make a modded sex toy item), see either the 'mods/innoxia/item/clothing/template/socks.xml' or the 'res/clothing/innoxia/buttPLugs/butt_plug.xml' file.</ul>"
 			+"<ul>Sex toys now stretch the orifice they are inserted into, and if penetration length content is turned on, toys which are too long cause discomfort to the wearer.</ul>"
 			+"<ul>Sex toys inserted into the vagina now tear any hymen which is present.</ul>"
 			+"<ul>Non-slave NPCs will automatically remove clothing which is uncomfortable for them to be wearing.</ul>"
-	
+
 			+"<li>Sex:</li>"
 			+"<ul>Fixed issue where random attackers would consider you to be an equal partner in sex where you 'offer body', meaning that they would never end sex if you didn't orgasm at least once.</ul>"
 			+"<ul>Fixed issue with character targeting during creampie action sometimes not working correctly.</ul>"
@@ -193,7 +248,7 @@ public class Main extends Application {
 			+"<ul>A character's asshole is now correctly revealed if they are presenting a cloaca to a glory hole.</ul>"
 			+"<ul>Fixed bug where the 'fondle balls' action would never be available.</ul>"
 			+"<ul>Added some minor variations to the penis masturbation sex action descriptions for if the cock is precumming.</ul>"
-	
+
 			+"<li>Other:</li>"
 			+"<ul>Increased default length of most non-human tongues.</ul>"
 			+"<ul>Added Encyclopedia reset button to debug menu (in 'stats' tab). Also moved 'Unlock Encyclopedia' button to the 'Stats' tab.</ul>"
@@ -219,7 +274,7 @@ public class Main extends Application {
 			+"<ul>Added 'demonic-horse' as an alternate leg type for demons. It is similar to the 'demonic-hoofed' leg type, except that they are covered in horse-like hair. Demonic taurs now have this leg type by default.</ul>"
 			+"<ul>Demonic horse tails are now separately coloured from the character's hair by using the 'demon horse hair' colour.</ul>"
 			+"<ul>Added weighting to covering pattern spawns (so there will be more consistently-coloured fur for horses, foxes, and a few other races), and also removed 'blonde', 'ginger', and 'jet black' from natural fur colours.</ul>"
-	
+
 			+"<li>Bugs:</li>"
 			+"<ul>Parsing, formatting, and typo fixes.</ul>"
 			+"<ul>Fixed the 'Throat control' sex action not working.</ul>"
@@ -255,9 +310,9 @@ public class Main extends Application {
 			+"<ul>Fixed bug where characters could spawn in with covering patterns of the same colour. (e.g. 'Brown, brown-striped fur' or 'Blue-and-blue heterochromatic irises'.)</ul>"
 			+"<ul>Fixed issue where orgasming in sex would apply any special orgasm effects multiple times in the background (potentially causing issues for Lyssieth's and Lilaya's sex scenes).</ul>"
 		+"</list>"
-		
+
 		+"<br/>"
-		
+
 		+ "<list>"
 			+ "<h6>v0.3.6.8</h6>"
 			+"<li>Contributors:</li>"
@@ -270,20 +325,20 @@ public class Main extends Application {
 			+"<ul>Fixed bug where CoverableArea.MOUTH could never be discovered, blocking knowledge of NPCs' oral skills. (PR#1260 by AceXP)</ul>"
 			+"<ul>Altered race tooltip to better reflect knowledge from 'observant', and improved some of the related text in the full appearance description page. (PR#1236 by NoStepOnSneks)</ul>"
 			+"<ul>Fixed bug where you could become an angel by self-transforming into the appearance of one while being a slime, and then solidifying into flesh via a TF potion. (PR#1292 by NoStepOnSneks)</ul>"
-			
+
 			+"<li>Engine/Code:</li>"
 			+"<ul>Tidied up the default enslavement dialogue node and moved related text out into external txt files (into the txt/characters and txt/characters/offspring files).</ul>"
 			+"<ul>Moved fluid modifier ingestion effects out of GameCharacter's ingestFluid method and into the corresponding FluidModifier Enum values.</ul>"
 			+"<ul>Added methods in Game class for detection of metric sizes, weights, and fluids, so that these values can easily be found out when using the parsing engine.</ul>"
 			+"<ul>Added hooks to item, weapon, and clothing types in the parser, under ITEM_id, WEAPON_id, and CLOTHING_id, where 'id' is the id of the item you want to reference.</ul>"
 			+"<ul>Added functionality for NPCs to use items during sex.</ul>"
-			
+
 			+"<li>Gameplay:</li>"
 			+"<ul>Added 'construction worker' as a background that can be chosen during character creation. It offers some physical attribute buffs, as well as halving all room upgrade costs.</ul>"
 			+"<ul>Slightly altered friendly occupant job search mechanics. You can now prevent friendly occupants who don't have their own apartment from getting a job, and suggest to them that they quit their current job if they've already found one.</ul>"
 			+"<ul>'Orgasmic level drain' is now an equippable trait.</ul>"
 			+"<ul>The 'Hypno watch' which you get from Arthur can now be enchanted to add or remove lisp, stutter, and slovenely speech. (Only works on random NPCs and yourself.)</ul>"
-			
+
 			+"<li>Penetrative size-difference:</li>"
 			+"<ul>Changed orifice capacity (and therefore related stretch mechanics) to be based on penetrative objects' diameter, not length.</ul>"
 			+"<ul>Added calculation for penis diameter, based on a character's penis length, girth, and modifiers (flared gives +5% diameter, tapered gives -5%).</ul>"
@@ -296,7 +351,7 @@ public class Main extends Application {
 			+"<ul>Characters in the 'rough' pace in sex will penetrate past the 'comfortable' depth limit, but all other paces will stop before passing into the 'uncomfortable' depth.</ul>"
 			+"<ul>Added a 'size-queen' fetish, which makes all depth values for that character's orifices considered to be 'comfortable'.</ul>"
 			+"<ul>Added 'extra-deep' orifice TF modifier, which doubles the depth of the orifice. This can be applied via the self-TF menu or by crafting TF potions.</ul>"
-			
+
 			+"<li>Sex:</li>"
 			+"<ul>NPCs will now use pills during sex, depending on their fetishes, ongoing actions, mouth access, and whether or not they actually have any pills in their inventory.</ul>"
 			+"<ul>When performing oral on any orifice, the performing character will now swallow fluids previously deposited in that orifice, at a rate of 25ml per turn.</ul>"
@@ -306,7 +361,7 @@ public class Main extends Application {
 			+"<ul>Added 'throat control' sex action for if a character is performing a blowjob and has the 'internal muscles' orifice modifier for their throat.</ul>"
 			+"<ul>Characters now get +0.5 arousal/turn from an orifice they're penetrating being very tight, instead of -1/turn.</ul>"
 			+"<ul>Masochists now gain arousal per turn, instead of losing it, while their orifices are being stretched or penetrated too deeply.</ul>"
-			
+
 			+"<li>Other:</li>"
 			+"<ul>Added quicksave and quickload buttons in the bottom-right of the game window, which grey-out when unavailable.</ul>"
 			+"<ul>Humans are no longer listed in the 'Races Present' tooltip for Enforcers present in tiles.</ul>"
@@ -331,7 +386,7 @@ public class Main extends Application {
 			+"<ul>The 'milk maid' clothing set bonus now has a far more powerful alternative version for if your background occupation is that of a maid. (In the same way that the basic 'maid' set bonus is buffed.)</ul>"
 			+"<ul>Slightly improved formatting of body description screen.</ul>"
 			+"<ul>Removed '+10 aura' effect from the crossdresser fetish.</ul>"
-			
+
 			+"<li>Bugs:</li>"
 			+"<ul>Parsing and typo fixes.</ul>"
 			+"<ul>Fixed issue of the debug menu's self-TF function treating you as though you're a slime even if you weren't one.</ul>"
@@ -374,7 +429,7 @@ public class Main extends Application {
 		+"</list>"
 
 		+ "<br/>"
-		
+
 		+ "<list>"
 			+ "<h6>v0.3.6.4</h6>"
 			+"<li>Engine/Code:</li>"
@@ -385,7 +440,7 @@ public class Main extends Application {
 
 			+"<li>Gameplay:</li>"
 			+"<ul>Added content for the 'Complain' action in Slaver Alley's public stocks tile, which includes a new unique Enforcer NPC. (There are some additional dialogue variations for if Brax is in your party.)</ul>"
-			
+
 			+"<li>Other:</li>"
 			+"<ul>The 'Tail swipe' combat move is now available to anyone who has a prehensile tail which has a girth of at least 'thick'.</ul>"
 			+"<ul>Alligator-morph tails are now considered to be suitable for penetrative actions.</ul>"
@@ -430,7 +485,7 @@ public class Main extends Application {
 		+"</list>"
 	;
 
-	public static String disclaimer = "<h6 style='text-align: center; color:"+Colour.GENERIC_ARCANE.toWebHexString()+";'>You must read and agree to the following in order to play this game!</h6>"
+	public static String disclaimer = "<h6 style='text-align: center; color:"+PresetColour.GENERIC_ARCANE.toWebHexString()+";'>You must read and agree to the following in order to play this game!</h6>"
 
 			+ "<p>This game is a <b>fictional</b> text-based erotic RPG. All content contained within this game forms part of a fictional universe that is not related to real-life places, people or events.<br/><br/>"
 
@@ -1030,7 +1085,7 @@ public class Main extends Application {
 	public static String getQuickSaveUnavailabilityDescription() {
 		if (!Main.game.isInNewWorld()) {
 			return "You cannot save the game during the character creation process or prologue!";
-			
+
 		} else if (Main.game.isInCombat()) {
 			return "You cannot save the game while while in combat!";
 
@@ -1056,16 +1111,16 @@ public class Main extends Application {
 
 	public static void quickSaveGame() {
 		if (Main.game.isInCombat()) {
-			Main.game.flashMessage(Colour.GENERIC_BAD, "Cannot quicksave while in combat!");
+			Main.game.flashMessage(PresetColour.GENERIC_BAD, "Cannot quicksave while in combat!");
 
 		} else if (Main.game.isInSex()) {
-			Main.game.flashMessage(Colour.GENERIC_BAD, "Cannot quicksave while in sex!");
+			Main.game.flashMessage(PresetColour.GENERIC_BAD, "Cannot quicksave while in sex!");
 
 		} else if (Main.game.getCurrentDialogueNode().getDialogueNodeType()!=DialogueNodeType.NORMAL) {
-			Main.game.flashMessage(Colour.GENERIC_BAD, "Can only quicksave in a normal scene!");
+			Main.game.flashMessage(PresetColour.GENERIC_BAD, "Can only quicksave in a normal scene!");
 
 		} else if (!Main.game.isStarted() || !Main.game.getCurrentDialogueNode().equals(Main.game.getDefaultDialogue(false))) {
-			Main.game.flashMessage(Colour.GENERIC_BAD, "Cannot save in this scene!");
+			Main.game.flashMessage(PresetColour.GENERIC_BAD, "Cannot save in this scene!");
 
 		} else {
 			Main.getProperties().lastQuickSaveName = getQuickSaveName();
@@ -1083,15 +1138,15 @@ public class Main extends Application {
 
 	public static void saveGame(String name, boolean allowOverwrite) {
 		if (name.length()==0) {
-			Main.game.flashMessage(Colour.GENERIC_BAD, "Name too short!");
+			Main.game.flashMessage(PresetColour.GENERIC_BAD, "Name too short!");
 			return;
 		}
 		if (name.length() > 32) {
-			Main.game.flashMessage(Colour.GENERIC_BAD, "Name too long!");
+			Main.game.flashMessage(PresetColour.GENERIC_BAD, "Name too long!");
 			return;
 		}
 		if (name.contains("\"")) {//!name.matches("[a-zA-Z0-9]+[a-zA-Z0-9' _]*")) {
-			Main.game.flashMessage(Colour.GENERIC_BAD, "Incompatible characters!");
+			Main.game.flashMessage(PresetColour.GENERIC_BAD, "Incompatible characters!");
 			return;
 		}
 
@@ -1148,7 +1203,7 @@ public class Main extends Application {
 			}
 
 		} else {
-			Main.game.flashMessage(Colour.GENERIC_BAD, "File not found...");
+			Main.game.flashMessage(PresetColour.GENERIC_BAD, "File not found...");
 		}
 	}
 
@@ -1164,7 +1219,7 @@ public class Main extends Application {
 			}
 
 		} else {
-			Main.game.flashMessage(Colour.GENERIC_BAD, "File not found...");
+			Main.game.flashMessage(PresetColour.GENERIC_BAD, "File not found...");
 		}
 	}
 
@@ -1180,7 +1235,7 @@ public class Main extends Application {
 			}
 
 		} else {
-			Main.game.flashMessage(Colour.GENERIC_BAD, "File not found...");
+			Main.game.flashMessage(PresetColour.GENERIC_BAD, "File not found...");
 		}
 	}
 
