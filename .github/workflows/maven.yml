@@ -17,10 +17,12 @@ jobs:
         java-version: 11
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - name: Zip
+      run: zip -r release-win.zip target/res/ target/Lilith*
     - uses: actions/upload-artifact@v1
       with:
-        name: liliths throne exe
-        path: target/LilithsThrone*
+        name: release-win.zip
+        path: release-win.zip
   build-linux:
 
     runs-on: [ ubuntu-latest]
@@ -33,10 +35,12 @@ jobs:
         java-version: 11
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - name: Zip
+      run: zip -r release-linux.zip target/res/ target/Lilith*
     - uses: actions/upload-artifact@v1
       with:
-        name: liliths throne exe
-        path: target/LilithsThrone*
+        name: release-linux.zip
+        path: release-linux.zip
   build-mac:
 
     runs-on: [ macos-latest]
@@ -49,7 +53,9 @@ jobs:
         java-version: 11
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - name: Zip
+      run: zip -r release-mac.zip target/res/ target/Lilith*
     - uses: actions/upload-artifact@v1
       with:
-        name: liliths throne exe
-        path: target/LilithsThrone*
+        name: release-mac.zip
+        path: release-mac.zip
