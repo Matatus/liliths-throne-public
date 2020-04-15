@@ -17,6 +17,10 @@ jobs:
         java-version: 11
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - uses: actions/upload-artifact@v1
+      with:
+        name: liliths throne exe
+        path: target/LilithsThrone*
   build-linux:
 
     runs-on: [ ubuntu-latest]
@@ -29,6 +33,10 @@ jobs:
         java-version: 11
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - uses: actions/upload-artifact@v1
+      with:
+        name: liliths throne exe
+        path: target/LilithsThrone*
   build-mac:
 
     runs-on: [ macos-latest]
@@ -41,3 +49,7 @@ jobs:
         java-version: 11
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - uses: actions/upload-artifact@v1
+      with:
+        name: liliths throne exe
+        path: target/LilithsThrone*
