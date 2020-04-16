@@ -17,8 +17,10 @@ jobs:
         java-version: 11
     - name: Build with Maven
       run: mvn -B package --file pom.xml
-    - name: Zip
-      run: zip -r release-win.zip target/res/ target/Lilith*
+    - name: Zip 'res' directory
+      run: powershell Compress-Archive -Path .\target\res -DestinationPath release-win.zip
+    - name: Zip 'LilithsThrone.exe'
+      run: powershell Compress-Archive -Path .\target\LilithsThrone.exe -Update -DestinationPath release-win.zip
     - uses: actions/upload-artifact@v1
       with:
         name: release-win.zip
