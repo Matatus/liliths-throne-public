@@ -772,7 +772,7 @@ public class TailType {
 			BodyCoveringType.RABBIT_FUR,
 			Race.RABBIT_MORPH,
 			PenetrationGirth.FOUR_FAT,
-			0.1f,
+			0.075f,
 			"rabbit",
 			"",
 			"",
@@ -810,7 +810,7 @@ public class TailType {
 			BodyCoveringType.REINDEER_FUR,
 			Race.REINDEER_MORPH,
 			PenetrationGirth.THREE_THICK,
-			0.15f,
+			0.05f,
 			"reindeer",
 			"",
 			"",
@@ -983,6 +983,9 @@ public class TailType {
 			if(type.getRace()==r && type!=TailType.FOX_MORPH_MAGIC) {
 				types.add(type);
 			}
+		}
+		if(types.isEmpty()) {
+			types.add(TailType.NONE);
 		}
 		typesMap.put(r, types);
 		return types;
