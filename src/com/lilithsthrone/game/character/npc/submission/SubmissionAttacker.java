@@ -18,6 +18,7 @@ import com.lilithsthrone.game.character.gender.Gender;
 import com.lilithsthrone.game.character.npc.NPC;
 import com.lilithsthrone.game.character.persona.Name;
 import com.lilithsthrone.game.character.persona.Occupation;
+import com.lilithsthrone.game.character.persona.PersonalityTrait;
 import com.lilithsthrone.game.character.persona.SexualOrientation;
 import com.lilithsthrone.game.character.quests.Quest;
 import com.lilithsthrone.game.character.quests.QuestLine;
@@ -100,8 +101,10 @@ public class SubmissionAttacker extends NPC {
 			if(Math.random()<Main.getProperties().halfDemonSpawnRate/100f && !this.getRace().equals(Race.DEMON) && this.getSubspecies()!=Subspecies.SLIME) { // Half-demon spawn rate
 				this.setBody(CharacterUtils.generateHalfDemonBody(this, gender, Subspecies.getFleshSubspecies(this), true), true);
 			}
-			
-			if(Math.random()<Main.getProperties().halfDemonSpawnRate/100f && this.isLegConfigurationAvailable(LegConfiguration.TAUR)) { // Taur spawn rate
+
+			if(Math.random()<Main.getProperties().taurSpawnRate/100f
+					&& this.getLegConfiguration()!=LegConfiguration.TAUR // Do not reset this charatcer's taur body if they spawned as a taur (as otherwise subspecies-specific settings get overridden by global taur settings)
+					&& this.isLegConfigurationAvailable(LegConfiguration.TAUR)) { // Taur spawn rate
 				CharacterUtils.applyTaurConversion(this);
 			}
 			
@@ -115,6 +118,11 @@ public class SubmissionAttacker extends NPC {
 			// PERSONALITY & BACKGROUND:
 			
 			CharacterUtils.setHistoryAndPersonality(this, true);
+			if((this.getSubspecies()==Subspecies.IMP || this.getSubspecies()==Subspecies.IMP_ALPHA)
+					&& !this.hasPersonalityTrait(PersonalityTrait.MUTE)
+					&& Math.random()<0.9f) {
+				this.addPersonalityTrait(PersonalityTrait.SLOVENLY);
+			}
 			
 			// ADDING FETISHES:
 			

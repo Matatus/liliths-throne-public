@@ -115,26 +115,6 @@ public class RoomPlayer {
 		}
 	}
 	
-	public static String applyWash(GameCharacter character, boolean washAllOrifices, boolean cleanAllClothing, AbstractStatusEffect effect, int additionalMinutes) {
-		StringBuilder sb = new StringBuilder();
-		
-		character.setHealth(character.getAttributeValue(Attribute.HEALTH_MAXIMUM));
-		character.setMana(character.getAttributeValue(Attribute.MANA_MAXIMUM));
-		
-		sb.append(character.washAllOrifices(washAllOrifices));
-		character.calculateStatusEffects(0);
-		character.cleanAllDirtySlots(true);
-		sb.append(character.cleanAllClothing(cleanAllClothing, true));
-
-		character.removeStatusEffect(StatusEffect.BATH);
-		character.removeStatusEffect(StatusEffect.BATH_BOOSTED);
-		if(effect!=null) {
-			character.addStatusEffect(effect, (240+additionalMinutes)*60);
-		}
-		
-		return sb.toString();
-	}
-	
 	private static Response getResponseRoom(int responseTab, int index) {
 		if(responseTab==1) {
 			return LilayaHomeGeneric.getLilayasHouseFastTravelResponses(index);
@@ -266,11 +246,11 @@ public class RoomPlayer {
 						List<NPC> charactersPresent = LilayaHomeGeneric.getSlavesAndOccupantsPresent();
 						slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
 						for(GameCharacter npc : slavesWashing) {
-							applyWash(npc, true, true, null, 30);
+							npc.applyWash(true, true, null, 240+30);
 						}
 
 						Main.game.getTextEndStringBuilder().append("<p style='text-align:center'><i>You leave your clothes outside of your bathroom so that they can be cleaned while you wash yourself...</i></p>");
-						Main.game.getTextEndStringBuilder().append(applyWash(Main.game.getPlayer(), false, false, null, 30));
+						Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().applyWash(false, false, null, 240+30));
 					}
 					@Override
 					public int getSecondsPassed() {
@@ -290,11 +270,11 @@ public class RoomPlayer {
 						List<NPC> charactersPresent = LilayaHomeGeneric.getSlavesAndOccupantsPresent();
 						slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
 						for(GameCharacter npc : slavesWashing) {
-							applyWash(npc, true, true, null, 30);
+							npc.applyWash(true, true, null, 240+30);
 						}
 						
 						Main.game.getTextEndStringBuilder().append("<p style='text-align:center'><i>You leave your clothes outside of your bathroom so that they can be cleaned while you wash yourself...</i></p>");
-						Main.game.getTextEndStringBuilder().append(applyWash(Main.game.getPlayer(), true, false, null, 30));
+						Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().applyWash(true, false, null, 240+30));
 					}
 					@Override
 					public int getSecondsPassed() {
@@ -314,11 +294,11 @@ public class RoomPlayer {
 						List<GameCharacter> charactersPresent = new ArrayList<>(LilayaHomeGeneric.getSlavesAndOccupantsPresent());
 						slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
 						for(GameCharacter npc : slavesWashing) {
-							applyWash(npc, true, true, StatusEffect.BATH, 30);
+							npc.applyWash(true, true, StatusEffect.getStatusEffectFromId("innoxia_cleaned_bath"), 240+30);
 						}
 						
 						Main.game.getTextEndStringBuilder().append("<p style='text-align:center'><i>You leave your clothes outside of your bathroom so that they can be cleaned while you wash yourself...</i></p>");
-						Main.game.getTextEndStringBuilder().append(applyWash(Main.game.getPlayer(), true, true, StatusEffect.BATH, 30));
+						Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().applyWash(true, true, StatusEffect.getStatusEffectFromId("innoxia_cleaned_bath"), 240+30));
 					}
 					@Override
 					public int getSecondsPassed() {
@@ -1002,7 +982,7 @@ public class RoomPlayer {
 						+ "Like everything else that normally would have run on electricity in your world, the lighting, radiators, and plumbing all appear to be powered by the arcane."
 					+ "</p>");
 			
-			sb.append(LilayaHomeGeneric.getRoomModificationsDescription());
+			sb.append(LilayaHomeGeneric.getRoomModificationsDescription(false));
 
 			List<NPC> charactersPresent = LilayaHomeGeneric.getSlavesAndOccupantsPresent();
 			if(!charactersPresent.isEmpty()) {
@@ -1254,9 +1234,9 @@ public class RoomPlayer {
 		return charactersPresent;
 	}
 	
-	private static int getHourPlusSleep() {
-		return (Main.game.getHourOfDay() + (sleepTimeInMinutes/60))%24;
-	}
+//	private static int getHourPlusSleep() {
+//		return (Main.game.getHourOfDay() + (sleepTimeInMinutes/60))%24;
+//	}
 	
 	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_SLEEP = new DialogueNode("Your Room", "", false) {
 
@@ -1265,16 +1245,11 @@ public class RoomPlayer {
 			return !slavesWantingToSexPlayer(Main.game.getHourOfDay()).isEmpty();
 		}
 		
-//		@Override
-//		public int getSecondsPassed() {
-//			return sleepTimeInMinutes*60;
-//		}
-
 		@Override
 		public String getContent() {
 			StringBuilder sb = new StringBuilder();
 			
-			List<GameCharacter> charactersPresent = slavesInRoom(getHourPlusSleep());
+			List<GameCharacter> charactersPresent = slavesInRoom(Main.game.getHourOfDay());
 			
 			if(!charactersPresent.isEmpty()) {
 				boolean soloSlave = charactersPresent.size()==1;
@@ -1468,7 +1443,7 @@ public class RoomPlayer {
 					}
 				}
 				
-				int hour = (Main.game.getHourOfDay()+(sleepTimeInMinutes/60))%24;
+				int hour = Main.game.getHourOfDay();
 				String morningString = "evening";
 				if(hour<4) {
 					morningString = "evening";
@@ -1478,7 +1453,7 @@ public class RoomPlayer {
 					morningString = "afternoon";
 				}
 
-				List<GameCharacter> hornySlaves = slavesWantingToSexPlayer(getHourPlusSleep());
+				List<GameCharacter> hornySlaves = slavesWantingToSexPlayer(Main.game.getHourOfDay());
 				
 				if(!slavesToWakePlayer.isEmpty()) {
 					GameCharacter slaveWaking = Util.randomItemFrom(slavesToWakePlayer);
@@ -1609,7 +1584,7 @@ public class RoomPlayer {
 					+ "</p>");
 			}
 			
-			if(!slavesWantingToSexPlayer(getHourPlusSleep()).isEmpty()) {
+			if(!slavesWantingToSexPlayer(Main.game.getHourOfDay()).isEmpty()) {
 				sb.append("<p style='text-align:center;'>"
 							+ "[style.italicsGood(You feel completely refreshed!)]"
 						+ "</p>");
@@ -1810,7 +1785,7 @@ public class RoomPlayer {
 				}
 				
 				Map<GameCharacter, SexSlot> slaveSlots = new HashMap<>();
-				for(int i=0 ; i<slavesWashing.size(); i++) {
+				for(int i=0 ; i<slavesWashing.size() && i<4; i++) {
 					slaveSlots.put(slavesWashing.get(i), showerSlots[i]);
 				}
 				UtilText.addSpecialParsingString(String.valueOf(slavesWashing.size()), true);
@@ -1937,9 +1912,9 @@ public class RoomPlayer {
 		@Override
 		public void applyPreParsingEffects() {
 			for(GameCharacter npc : slavesWashing) {
-				applyWash(npc, true, true, StatusEffect.BATH, 30);
+				npc.applyWash(true, true, StatusEffect.getStatusEffectFromId("innoxia_cleaned_bath"), 240+30);
 			}
-			applyWash(Main.game.getPlayer(), true, true, StatusEffect.BATH, 30);
+			Main.game.getPlayer().applyWash(true, true, StatusEffect.getStatusEffectFromId("innoxia_cleaned_bath"), 240+30);
 		}
 		@Override
 		public String getDescription() {
@@ -2028,7 +2003,7 @@ public class RoomPlayer {
 				}
 				
 				Map<GameCharacter, SexSlot> slaveSlots = new HashMap<>();
-				for(int i=0 ; i<slavesWashing.size(); i++) {
+				for(int i=0 ; i<slavesWashing.size() && i<4; i++) {
 					slaveSlots.put(slavesWashing.get(i), i==0?SexSlotLyingDown.LYING_DOWN:bathSlots[i]);
 				}
 				UtilText.addSpecialParsingString(String.valueOf(slavesWashing.size()), true);
@@ -2084,9 +2059,9 @@ public class RoomPlayer {
 		@Override
 		public void applyPreParsingEffects() {
 			for(GameCharacter npc : slavesWashing) {
-				applyWash(npc, true, true, StatusEffect.BATH, 30);
+				npc.applyWash(true, true, StatusEffect.getStatusEffectFromId("innoxia_cleaned_bath"), 240+30);
 			}
-			applyWash(Main.game.getPlayer(), true, true, StatusEffect.BATH, 30);
+			Main.game.getPlayer().applyWash(true, true, StatusEffect.getStatusEffectFromId("innoxia_cleaned_bath"), 240+30);
 		}
 		@Override
 		public String getDescription() {

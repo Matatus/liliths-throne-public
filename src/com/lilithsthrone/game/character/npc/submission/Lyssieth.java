@@ -29,8 +29,8 @@ import com.lilithsthrone.game.character.body.types.HairType;
 import com.lilithsthrone.game.character.body.types.HornType;
 import com.lilithsthrone.game.character.body.types.LegType;
 import com.lilithsthrone.game.character.body.types.PenisType;
-import com.lilithsthrone.game.character.body.types.TorsoType;
 import com.lilithsthrone.game.character.body.types.TailType;
+import com.lilithsthrone.game.character.body.types.TorsoType;
 import com.lilithsthrone.game.character.body.types.VaginaType;
 import com.lilithsthrone.game.character.body.types.WingType;
 import com.lilithsthrone.game.character.body.valueEnums.AreolaeSize;
@@ -80,7 +80,6 @@ import com.lilithsthrone.game.dialogue.DialogueNode;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.CharacterInventory;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
-import com.lilithsthrone.game.inventory.clothing.AbstractClothingType;
 import com.lilithsthrone.game.inventory.clothing.ClothingType;
 import com.lilithsthrone.game.sex.OrgasmCumTarget;
 import com.lilithsthrone.game.sex.SexAreaOrifice;
@@ -140,18 +139,6 @@ public class Lyssieth extends NPC {
 		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.0.5")) {
 			this.setStartingBody(true);
 			this.equipClothing(EquipClothingSetting.getAllClothingSettings());
-		}
-		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.2.1")) {
-			this.setPiercedEar(true);
-			AbstractClothing earrings = null;
-			for(Entry<AbstractClothing, Integer> c : this.getAllClothingInInventory().entrySet()) {
-				if(c.getKey().getClothingType().equals(ClothingType.getClothingTypeFromId("innoxia_piercing_ear_ring"))) {
-					earrings = c.getKey();
-				}
-			}
-			if(earrings!=null) {
-				this.equipClothingFromInventory(earrings, true, this, this);
-			}
 		}
 		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.3.6")) {
 			this.setLevel(1000);
@@ -218,6 +205,17 @@ public class Lyssieth extends NPC {
 		}
 		
 		this.setBody(Gender.F_V_B_FEMALE, Subspecies.HUMAN, RaceStage.GREATER, false);
+		
+		this.setPiercedEar(true);
+		AbstractClothing earrings = null;
+		for(Entry<AbstractClothing, Integer> c : this.getAllClothingInInventory().entrySet()) {
+			if(c.getKey().getClothingType().equals(ClothingType.getClothingTypeFromId("innoxia_piercing_ear_ring"))) {
+				earrings = c.getKey();
+			}
+		}
+		if(earrings!=null) {
+			this.equipClothingFromInventory(earrings, true, this, this);
+		}
 		
 		// Body:
 		this.setSubspeciesOverride(Subspecies.ELDER_LILIN);
@@ -309,15 +307,15 @@ public class Lyssieth extends NPC {
 	public void equipClothing(List<EquipClothingSetting> settings) {
 		this.resetInventory(true);
 		
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_eye_half_rim_glasses", PresetColour.CLOTHING_BROWN_VERY_DARK, PresetColour.CLOTHING_BRASS, PresetColour.CLOTHING_GREY, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.WRIST_WOMENS_WATCH, PresetColour.CLOTHING_BLACK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_torso_plunge_blouse", PresetColour.CLOTHING_WHITE, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_leg_asymmetrical_skirt", PresetColour.CLOTHING_BLACK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_foot_strappy_sandals", PresetColour.CLOTHING_BLACK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_groin_lacy_thong", PresetColour.CLOTHING_RED_DARK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_eye_half_rim_glasses", PresetColour.CLOTHING_BROWN_VERY_DARK, PresetColour.CLOTHING_BRASS, PresetColour.CLOTHING_GREY, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.WRIST_WOMENS_WATCH, PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_torso_plunge_blouse", PresetColour.CLOTHING_WHITE, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_leg_asymmetrical_skirt", PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_foot_strappy_sandals", PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_groin_lacy_thong", PresetColour.CLOTHING_RED_DARK, false), true, this);
 		
 		this.setPiercedEar(true);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_piercing_ear_ring", PresetColour.CLOTHING_SILVER, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_piercing_ear_ring", PresetColour.CLOTHING_SILVER, false), true, this);
 	}
 
 	@Override

@@ -51,7 +51,6 @@ import com.lilithsthrone.game.inventory.enchanting.TFModifier;
 import com.lilithsthrone.game.inventory.enchanting.TFPotency;
 import com.lilithsthrone.game.inventory.item.AbstractItem;
 import com.lilithsthrone.game.inventory.item.AbstractItemType;
-import com.lilithsthrone.game.inventory.item.ItemType;
 import com.lilithsthrone.game.inventory.item.TransformativePotion;
 import com.lilithsthrone.game.inventory.outfit.OutfitType;
 import com.lilithsthrone.game.settings.ForcedTFTendency;
@@ -318,7 +317,7 @@ public class ImpAttacker extends NPC {
 				TransformativePotion effects = TunnelImpsDialogue.getImpLeader().generateTransformativePotion(Main.game.getPlayer());
 				if(effects!=null) {
 					AbstractItem potion = EnchantingUtils.craftItem(
-						AbstractItemType.generateItem(effects.getItemType()),
+						Main.game.getItemGen().generateItem(effects.getItemType()),
 						effects.getEffects().stream().map(x -> x.getEffect()).collect(Collectors.toList()));
 					potion.setName("Imp's Elixir");
 					TunnelImpsDialogue.getImpGroup().get(1).addItem(potion, false);
@@ -327,7 +326,7 @@ public class ImpAttacker extends NPC {
 					TransformativePotion effects2 = TunnelImpsDialogue.getImpLeader().generateTransformativePotion(Main.game.getPlayer().getMainCompanion());
 					if(effects2!=null) {
 						AbstractItem potion2 = EnchantingUtils.craftItem(
-							AbstractItemType.generateItem(effects2.getItemType()),
+							Main.game.getItemGen().generateItem(effects2.getItemType()),
 							effects2.getEffects().stream().map(x -> x.getEffect()).collect(Collectors.toList()));
 						potion2.setName("Imp's Elixir");
 						TunnelImpsDialogue.getImpGroup().get(1).addItem(potion2, false);
@@ -346,55 +345,7 @@ public class ImpAttacker extends NPC {
 	
 	@Override
 	public TransformativePotion generateTransformativePotion(GameCharacter target) {
-		AbstractItemType itemType = ItemType.RACE_INGREDIENT_HUMAN;
-		switch(target.getRace()) {
-			case ALLIGATOR_MORPH:
-				itemType = ItemType.RACE_INGREDIENT_ALLIGATOR_MORPH;
-				break;
-			case BAT_MORPH:
-				itemType = ItemType.RACE_INGREDIENT_BAT_MORPH;
-				break;
-			case CAT_MORPH:
-				itemType = ItemType.RACE_INGREDIENT_CAT_MORPH;
-				break;
-			case COW_MORPH:
-				itemType = ItemType.RACE_INGREDIENT_COW_MORPH;
-				break;
-			case DOG_MORPH:
-				itemType = ItemType.RACE_INGREDIENT_DOG_MORPH;
-				break;
-			case FOX_MORPH:
-				itemType = ItemType.RACE_INGREDIENT_FOX_MORPH;
-				break;
-			case HARPY:
-				itemType = ItemType.RACE_INGREDIENT_HARPY;
-				break;
-			case HORSE_MORPH:
-				itemType = ItemType.RACE_INGREDIENT_HORSE_MORPH;
-				break;
-			case RABBIT_MORPH:
-				itemType = ItemType.RACE_INGREDIENT_RABBIT_MORPH;
-				break;
-			case RAT_MORPH:
-				itemType = ItemType.RACE_INGREDIENT_RAT_MORPH;
-				break;
-			case REINDEER_MORPH:
-				itemType = ItemType.RACE_INGREDIENT_REINDEER_MORPH;
-				break;
-			case SQUIRREL_MORPH:
-				itemType = ItemType.RACE_INGREDIENT_SQUIRREL_MORPH;
-				break;
-			case WOLF_MORPH:
-				itemType = ItemType.RACE_INGREDIENT_WOLF_MORPH;
-				break;
-			case ANGEL:
-			case DEMON:
-			case HUMAN:
-			case NONE:
-			case SLIME:
-			case ELEMENTAL:
-				break;
-		}
+		AbstractItemType itemType = target.getRace().getConsumableTransformativeItem();
 		
 		List<PossibleItemEffect> effects = new ArrayList<>();
 //		int numberOfTransformations = (2+Util.random.nextInt(4)) * (target.hasFetish(Fetish.FETISH_TRANSFORMATION_RECEIVING)?2:1);

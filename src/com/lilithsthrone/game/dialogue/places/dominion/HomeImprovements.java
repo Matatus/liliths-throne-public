@@ -19,12 +19,10 @@ import com.lilithsthrone.game.character.quests.QuestLine;
 import com.lilithsthrone.game.character.race.Race;
 import com.lilithsthrone.game.dialogue.DialogueNode;
 import com.lilithsthrone.game.dialogue.responses.Response;
-import com.lilithsthrone.game.dialogue.responses.ResponseEffectsOnly;
 import com.lilithsthrone.game.dialogue.responses.ResponseSex;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.InventorySlot;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
-import com.lilithsthrone.game.inventory.item.AbstractItemType;
 import com.lilithsthrone.game.inventory.item.ItemType;
 import com.lilithsthrone.game.sex.managers.dominion.gloryHole.SMGloryHole;
 import com.lilithsthrone.game.sex.positions.SexPositionUnique;
@@ -161,10 +159,10 @@ public class HomeImprovements {
 		public Response getResponse(int responseTab, int index) {
 			if(index==1) {
 				if(Main.game.isExtendedWorkTime()) {
-					return new ResponseEffectsOnly("Enter", "Enter the warehouse signposted as being open to members of the public.") {
+					return new Response("Enter", "Enter the warehouse signposted as being open to members of the public.", PlaceType.HOME_IMPROVEMENTS_ENTRANCE.getDialogue(false)) {
 						@Override
 						public void effects() {
-							Main.mainController.moveGameWorld(WorldType.HOME_IMPROVEMENTS, PlaceType.HOME_IMPROVEMENTS_ENTRANCE, true);
+							Main.game.getPlayer().setLocation(WorldType.HOME_IMPROVEMENTS, PlaceType.HOME_IMPROVEMENTS_ENTRANCE, false);
 						}
 					};
 				} else {
@@ -187,10 +185,10 @@ public class HomeImprovements {
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if(index==1) {
-				return new ResponseEffectsOnly("Exit", "Exit the warehouse and head back out into Dominion."){
+				return new Response("Exit", "Exit the warehouse and head back out into Dominion.", PlaceType.DOMINION_HOME_IMPROVEMENT.getDialogue(false)){
 					@Override
 					public void effects() {
-						Main.mainController.moveGameWorld(WorldType.DOMINION, PlaceType.DOMINION_HOME_IMPROVEMENT, true);
+						Main.game.getPlayer().setLocation(WorldType.DOMINION, PlaceType.DOMINION_HOME_IMPROVEMENT, false);
 					}
 				};
 			}
@@ -266,7 +264,7 @@ public class HomeImprovements {
 							Main.game.getPlayer().setLocation(WorldType.HOME_IMPROVEMENTS, PlaceType.HOME_IMPROVEMENTS_ENTRANCE);
 							UtilText.addSpecialParsingString(Util.intToString(ItemType.PAINT_CAN_PREMIUM.getValue(null)), true);
 							Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().incrementMoney(-ItemType.PAINT_CAN_PREMIUM.getValue(null)));
-							Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().addItem(AbstractItemType.generateItem(ItemType.PAINT_CAN_PREMIUM), false, true));
+							Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().addItem(Main.game.getItemGen().generateItem(ItemType.PAINT_CAN_PREMIUM), false, true));
 							((Helena)Main.game.getNpc(Helena.class)).sellOffRemainingSlaves();
 						}
 					};
@@ -317,7 +315,7 @@ public class HomeImprovements {
 							Main.game.getPlayer().setLocation(WorldType.HOME_IMPROVEMENTS, PlaceType.HOME_IMPROVEMENTS_ENTRANCE);
 							UtilText.addSpecialParsingString(Util.intToString(ItemType.PAINT_CAN.getValue(null)), true);
 							Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().incrementMoney(-ItemType.PAINT_CAN.getValue(null)));
-							Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().addItem(AbstractItemType.generateItem(ItemType.PAINT_CAN), false, true));
+							Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().addItem(Main.game.getItemGen().generateItem(ItemType.PAINT_CAN), false, true));
 							((Helena)Main.game.getNpc(Helena.class)).sellOffRemainingSlaves();
 						}
 					};

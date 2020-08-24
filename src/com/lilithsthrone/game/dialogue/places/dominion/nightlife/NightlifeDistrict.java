@@ -96,8 +96,8 @@ public class NightlifeDistrict {
 		
 		clubbers.removeIf((npc) -> !(npc instanceof DominionClubNPC)
 				|| (submissiveClubbers
-					?npc.hasPersonalityTrait(PersonalityTrait.CONFIDENT)
-					:!npc.hasPersonalityTrait(PersonalityTrait.CONFIDENT)));
+						?npc.hasPersonalityTrait(PersonalityTrait.CONFIDENT)
+						:!npc.hasPersonalityTrait(PersonalityTrait.CONFIDENT)));
 		
 		return clubbers;
 	}
@@ -208,7 +208,7 @@ public class NightlifeDistrict {
 	}
 	
 	private static int getKalahariBreakTimeLeft() {
-		return Math.max(0, (int) (35 - (Main.game.getMinutesPassed() - Main.game.getDialogueFlags().kalahariBreakStartTime)));
+		return Math.max(0, (int) (35 - (Main.game.getMinutesPassed() - Main.game.getDialogueFlags().getSavedLong(Kalahari.KALAHARI_BREAK_TIMER_ID))));
 	}
 
 	private static boolean isPartnerLeaving() {
@@ -1055,8 +1055,18 @@ public class NightlifeDistrict {
 			int count = 1;
 			for(GameCharacter character : getSavedClubbers(true)) {
 				if(count==index) {
+					if(!character.isAttractedTo(Main.game.getPlayer())) {
+						return new Response(character.getName(true),
+								UtilText.parse(character, "[npc.Name] is [style.colourBad(no longer attracted to you)], and so would be unwilling to spend time with you in the club.<br/>([npc.She] is [npc.a_fullRace(true)].)"),
+								null);
+					}
+					if(Main.game.getMinutesPassed()-((NPC)character).getLastTimeEncountered()<12*60) {
+						return new Response(character.getName(true),
+								UtilText.parse(character, "You have already met [npc.name] in the club tonight, and as such, [style.colourBad(you will not be able to encounter [npc.herHim] again until tomorrow)]."),
+								null);
+					}
 					return new Response(character.getName(true),
-							UtilText.parse(character, "Look for [npc.name] in amongst the crowds of revellers. ([npc.She] is [npc.a_fullRace(true)].)"),
+							UtilText.parse(character, "Look for [npc.name] in amongst the crowds of revellers.<br/>([npc.She] is [npc.a_fullRace(true)].)"),
 							WATERING_HOLE_FIND_CONTACT) {
 						@Override
 						public void effects() {
@@ -1257,6 +1267,11 @@ public class NightlifeDistrict {
 					};
 
 				} else if(index==4) {
+					if(!getPartner().isAttractedTo(Main.game.getPlayer())) {
+						return new Response("Sex (dom)",
+								UtilText.parse(getClubbersPresent(), "[npc.Name] is [style.colourBad(not attracted to you)], and so is unwilling to have sex with you..."),
+								null);
+					}
 					if(likesSex(getPartner())) {
 						SexManagerDefault sm = new SMSitting(
 								Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), SexSlotSitting.SITTING)),
@@ -1286,7 +1301,6 @@ public class NightlifeDistrict {
 								}
 							};
 						}
-						
 						return new ResponseSex("Sex (dom)",
 								UtilText.parse(getClubbersPresent(), "You can't resist [npc.name] any longer! Make a move to start having dominant sex with [npc.herHim]."),
 								true, true,
@@ -1313,6 +1327,11 @@ public class NightlifeDistrict {
 					}
 					
 				} else if(index==5) {
+					if(!getPartner().isAttractedTo(Main.game.getPlayer())) {
+						return new Response("Sex (sub)",
+								UtilText.parse(getClubbersPresent(), "[npc.Name] is [style.colourBad(not attracted to you)], and so is unwilling to have sex with you..."),
+								null);
+					}
 					if(likesSex(getPartner())) {
 						SexManagerDefault sm = new SMSitting(
 								Util.newHashMapOfValues(new Value<>(getPartner(), SexSlotSitting.SITTING)),
@@ -1534,8 +1553,11 @@ public class NightlifeDistrict {
 		}
 	};
 	
-	public static final DialogueNode WATERING_HOLE_SEATING_AFTER_SEX = new DialogueNode("The Watering Hole", "", true) {
-		
+	public static final DialogueNode WATERING_HOLE_SEATING_AFTER_SEX = new DialogueNode("Finished", "", true) {
+		@Override
+		public String getDescription() {
+			return UtilText.parse(getClubbersPresent(), "[npc.Name] has had enough for now...");
+		}
 		@Override
 		public String getContent() {
 			if(Main.sex.getNumberOfOrgasms(getPartner())>=getPartner().getOrgasmsBeforeSatisfied()) {
@@ -1970,7 +1992,7 @@ public class NightlifeDistrict {
 					if(hasPartner()) {
 						return new Response("Break", UtilText.parse(getClubbersPresent(), "You can't ask Kalahari to spend her break with you while [npc.name] is with you!"), null);
 						
-					} else if(Main.game.getMinutesPassed() - Main.game.getDialogueFlags().kalahariBreakStartTime < 60 * 12) {
+					} else if(Main.game.getMinutesPassed() - Main.game.getDialogueFlags().getSavedLong(Kalahari.KALAHARI_BREAK_TIMER_ID) < 60 * 12) {
 							return new Response("Break", "Kalahari has already used up her break tonight!", null);
 							
 					} else if(!likesKiss(Main.game.getNpc(Kalahari.class))) {
@@ -1984,7 +2006,7 @@ public class NightlifeDistrict {
 									Main.game.getNpc(Kalahari.class).setLocation(WorldType.NIGHTLIFE_CLUB, PlaceType.WATERING_HOLE_VIP_AREA);
 									Main.game.getPlayer().setLocation(WorldType.NIGHTLIFE_CLUB, PlaceType.WATERING_HOLE_VIP_AREA);
 									Main.game.getDialogueFlags().setFlag(DialogueFlagValue.krugerIntroduced, true);
-									Main.game.getDialogueFlags().kalahariBreakStartTime = Main.game.getMinutesPassed();
+									Main.game.getDialogueFlags().setSavedLong(Kalahari.KALAHARI_BREAK_TIMER_ID, Main.game.getMinutesPassed());
 									Main.game.getNpc(Kruger.class).setAffection(Main.game.getPlayer(), AffectionLevel.POSITIVE_ONE_FRIENDLY.getMedianValue()-7);
 								}
 							};
@@ -1995,7 +2017,7 @@ public class NightlifeDistrict {
 								public void effects() {
 									Main.game.getNpc(Kalahari.class).setLocation(WorldType.NIGHTLIFE_CLUB, PlaceType.WATERING_HOLE_VIP_AREA);
 									Main.game.getPlayer().setLocation(WorldType.NIGHTLIFE_CLUB, PlaceType.WATERING_HOLE_VIP_AREA);
-									Main.game.getDialogueFlags().kalahariBreakStartTime = Main.game.getMinutesPassed();
+									Main.game.getDialogueFlags().setSavedLong(Kalahari.KALAHARI_BREAK_TIMER_ID, Main.game.getMinutesPassed());
 								}
 							};
 						}
@@ -3042,7 +3064,7 @@ public class NightlifeDistrict {
 					return new Response("Sex (sub)", "Kruger doesn't seem to be interested in having sex with you at the moment.", null);
 					
 				} else {
-					return new ResponseSex("Sex (sub)", "Slide into Kruger's lap and start having submissive sex with [npc.herHim].",
+					return new ResponseSex("Sex (sub)", "Slide into Kruger's lap and start having submissive sex with him.",
 							true, true,
 							new SMKrugerChair(
 									Util.newHashMapOfValues(new Value<>(Main.game.getNpc(Kruger.class), SexSlotSitting.SITTING)),
@@ -3132,15 +3154,11 @@ public class NightlifeDistrict {
 		}
 	};
 	
-	public static final DialogueNode WATERING_HOLE_VIP_KRUGER_AFTER_SEX = new DialogueNode("The Watering Hole",
-			"Kruger is finished with you, and, being exhausted from the sex, you readily allow him to push you off of him.",
-			false) {
-		
+	public static final DialogueNode WATERING_HOLE_VIP_KRUGER_AFTER_SEX = new DialogueNode("Finished", "Kruger is finished with you, and, being exhausted from the sex, you readily allow him to push you off of him.", false) {
 		@Override
 		public String getContent() {
 			return UtilText.parseFromXMLFile("places/dominion/nightlife/theWateringHole", "WATERING_HOLE_VIP_KRUGER_AFTER_SEX");
 		}
-
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			return WATERING_HOLE_VIP.getResponse(responseTab, index);
@@ -3402,6 +3420,11 @@ public class NightlifeDistrict {
 					return new Response("Toilet", "Use the toilet.", WATERING_HOLE_TOILETS_USE);
 					
 				} else if(index==2) {
+					if(!getPartner().isAttractedTo(Main.game.getPlayer())) {
+						return new Response("Stall sex",
+								UtilText.parse(getClubbersPresent(), "[npc.Name] is [style.colourBad(not attracted to you)], and so is unwilling to have sex with you..."),
+								null);
+					}
 					if(likesSex(getPartner())) {
 						return new ResponseSex("Stall sex", UtilText.parse(getClubbersPresent(), "Try and get [npc.name] to have sex in one of the toilet's stalls."),
 								true, true,
@@ -3699,19 +3722,19 @@ public class NightlifeDistrict {
 		
 		double rnd = Math.random();
 		if(rnd<0.1f && !gloryholeNpcNameDescriptor.equals("wasted")) {
-			npc.useItem(AbstractItemType.generateItem(ItemType.STR_INGREDIENT_BLACK_RATS_RUM), npc, false);
-			npc.useItem(AbstractItemType.generateItem(ItemType.STR_INGREDIENT_BLACK_RATS_RUM), npc, false);
+			npc.useItem(Main.game.getItemGen().generateItem(ItemType.STR_INGREDIENT_BLACK_RATS_RUM), npc, false);
+			npc.useItem(Main.game.getItemGen().generateItem(ItemType.STR_INGREDIENT_BLACK_RATS_RUM), npc, false);
 			gloryholeNpcNameDescriptor ="wasted";
 			npc.setGenericName("wasted "+genericName);
 			
 		} else if(Math.random()<0.3f && !gloryholeNpcNameDescriptor.equals("drunk")) {
-			npc.useItem(AbstractItemType.generateItem(ItemType.STR_INGREDIENT_WOLF_WHISKEY), npc, false);
-			npc.useItem(AbstractItemType.generateItem(ItemType.STR_INGREDIENT_EQUINE_CIDER), npc, false);
+			npc.useItem(Main.game.getItemGen().generateItem(ItemType.STR_INGREDIENT_WOLF_WHISKEY), npc, false);
+			npc.useItem(Main.game.getItemGen().generateItem(ItemType.STR_INGREDIENT_EQUINE_CIDER), npc, false);
 			gloryholeNpcNameDescriptor ="drunk";
 			npc.setGenericName("drunk "+genericName);
 			
 		} else if(Math.random()<0.4f && !gloryholeNpcNameDescriptor.equals("tipsy")) {
-			npc.useItem(AbstractItemType.generateItem(ItemType.STR_INGREDIENT_EQUINE_CIDER), npc, false);
+			npc.useItem(Main.game.getItemGen().generateItem(ItemType.STR_INGREDIENT_EQUINE_CIDER), npc, false);
 			gloryholeNpcNameDescriptor ="tipsy";
 			npc.setGenericName("tipsy "+genericName);
 			
@@ -3765,17 +3788,17 @@ public class NightlifeDistrict {
 		List<String> descriptors;
 		double rnd = Math.random();
 		if(rnd<0.1f) {
-			npc.useItem(AbstractItemType.generateItem(ItemType.STR_INGREDIENT_BLACK_RATS_RUM), npc, false);
-			npc.useItem(AbstractItemType.generateItem(ItemType.STR_INGREDIENT_BLACK_RATS_RUM), npc, false);
+			npc.useItem(Main.game.getItemGen().generateItem(ItemType.STR_INGREDIENT_BLACK_RATS_RUM), npc, false);
+			npc.useItem(Main.game.getItemGen().generateItem(ItemType.STR_INGREDIENT_BLACK_RATS_RUM), npc, false);
 			descriptors = Util.newArrayListOfValues("wasted", "intoxicated");
 			
 		} else if(Math.random()<0.3f) {
-			npc.useItem(AbstractItemType.generateItem(ItemType.STR_INGREDIENT_WOLF_WHISKEY), npc, false);
-			npc.useItem(AbstractItemType.generateItem(ItemType.STR_INGREDIENT_EQUINE_CIDER), npc, false);
+			npc.useItem(Main.game.getItemGen().generateItem(ItemType.STR_INGREDIENT_WOLF_WHISKEY), npc, false);
+			npc.useItem(Main.game.getItemGen().generateItem(ItemType.STR_INGREDIENT_EQUINE_CIDER), npc, false);
 			descriptors = Util.newArrayListOfValues("drunk");
 			
 		} else if(Math.random()<0.4f) {
-			npc.useItem(AbstractItemType.generateItem(ItemType.STR_INGREDIENT_EQUINE_CIDER), npc, false);
+			npc.useItem(Main.game.getItemGen().generateItem(ItemType.STR_INGREDIENT_EQUINE_CIDER), npc, false);
 			descriptors = Util.newArrayListOfValues("tipsy");
 			
 		} else {
@@ -3824,8 +3847,11 @@ public class NightlifeDistrict {
 		}
 	}
 	
-	public static final DialogueNode WATERING_HOLE_TOILETS_AFTER_SEX = new DialogueNode("Toilets", "", true) {
-		
+	public static final DialogueNode WATERING_HOLE_TOILETS_AFTER_SEX = new DialogueNode("Finished", "", true) {
+		@Override
+		public String getDescription() {
+			return UtilText.parse(getClubbersPresent(), "[npc.Name] has had enough for now...");
+		}
 		@Override
 		public String getContent() {
 			if(Main.sex.getNumberOfOrgasms(getPartner())>=getPartner().getOrgasmsBeforeSatisfied()) {
@@ -4014,8 +4040,18 @@ public class NightlifeDistrict {
 			int count = 1;
 			for(GameCharacter character : getSavedClubbers(false)) {
 				if(count==index) {
+					if(!character.isAttractedTo(Main.game.getPlayer())) {
+						return new Response(character.getName(true),
+								UtilText.parse(character, "[npc.Name] is [style.colourBad(no longer attracted to you)], and so would be unwilling to spend time with you in the club.<br/>([npc.She] is [npc.a_fullRace(true)].)"),
+								null);
+					}
+					if(Main.game.getMinutesPassed()-((NPC)character).getLastTimeEncountered()<12*60) {
+						return new Response(character.getName(true),
+								UtilText.parse(character, "You have already met [npc.name] in the club tonight, and as such, [style.colourBad(you will not be able to encounter [npc.herHim] again until tomorrow)]."),
+								null);
+					}
 					return new Response(character.getName(true),
-							UtilText.parse(character, "Look for [npc.name] in amongst the crowds of revellers. ([npc.She] is [npc.a_fullRace(true)].)"),
+							UtilText.parse(character, "Look for [npc.name] in amongst the crowds of revellers.<br/>([npc.She] is [npc.a_fullRace(true)].)"),
 							WATERING_HOLE_FIND_CONTACT_DOM) {
 						@Override
 						public void effects() {
@@ -5107,17 +5143,14 @@ public class NightlifeDistrict {
 	};
 	
 	public static final DialogueNode WATERING_HOLE_DOM_PARTNER_TAKEN_HOME_AFTER_SEX = new DialogueNode("", "", true) {
-		
 		@Override
 		public int getSecondsPassed() {
 			return 15*60;
 		}
-
 		@Override
 		public String getLabel() {
 			return UtilText.parse(NightlifeDistrict.getClubbersPresent(), "[npc.NamePos] Apartment");
 		}
-		
 		@Override
 		public String getContent() {
 			if(Main.sex.getNumberOfOrgasms(NightlifeDistrict.getPartner())>=NightlifeDistrict.getPartner().getOrgasmsBeforeSatisfied()) {
@@ -5126,7 +5159,6 @@ public class NightlifeDistrict {
 				return UtilText.parseFromXMLFile("places/dominion/nightlife/theWateringHole", "WATERING_HOLE_DOM_PARTNER_TAKEN_HOME_AFTER_SEX_NO_ORGASM", NightlifeDistrict.getClubbersPresent());
 			}
 		}
-
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if(index==1) {
@@ -5172,18 +5204,11 @@ public class NightlifeDistrict {
 
 
 	
-	public static final DialogueNode WATERING_HOLE_DOM_PARTNER_TOILETS_AFTER_SEX = new DialogueNode("Toilets", "", true) {
-		
-		@Override
-		public String getLabel() {
-			return Main.game.getPlayer().getLocationPlace().getName();
-		}
-
+	public static final DialogueNode WATERING_HOLE_DOM_PARTNER_TOILETS_AFTER_SEX = new DialogueNode("Finished", "", true) {
 		@Override
 		public String getDescription() {
-			return UtilText.parse(getPartner(), "You and [npc.name] stop having sex with one another...");
+			return UtilText.parse(getClubbersPresent(), "[npc.Name] has had enough for now...");
 		}
-		
 		@Override
 		public String getContent() {
 			if(Main.sex.getNumberOfOrgasms(NightlifeDistrict.getPartner())>=NightlifeDistrict.getPartner().getOrgasmsBeforeSatisfied()) {

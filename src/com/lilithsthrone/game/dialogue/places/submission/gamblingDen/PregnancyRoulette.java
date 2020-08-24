@@ -29,7 +29,6 @@ import com.lilithsthrone.game.dialogue.responses.ResponseSex;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.InventorySlot;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
-import com.lilithsthrone.game.inventory.item.AbstractItemType;
 import com.lilithsthrone.game.inventory.item.ItemType;
 import com.lilithsthrone.game.sex.InitialSexActionInformation;
 import com.lilithsthrone.game.sex.SexAreaOrifice;
@@ -94,7 +93,7 @@ public class PregnancyRoulette {
 		mother.deleteAllEquippedClothing(true);
 		mother.setSexualOrientation(SexualOrientation.AMBIPHILIC);
 		mother.setPlayerKnowsName(true);
-		mother.useItem(AbstractItemType.generateItem(ItemType.VIXENS_VIRILITY), mother, false);
+		mother.useItem(Main.game.getItemGen().generateItem("innoxia_pills_fertility"), mother, false);
 		try {
 			Main.game.addNPC(mother, false);
 		} catch (Exception e) {
@@ -470,7 +469,7 @@ public class PregnancyRoulette {
 				return new Response("Wait", "Wait for Epona to lead the breeders into the room.", PREGNANCY_ROULETTE_MOTHER_SELECTION) {
 					@Override
 					public void effects() {
-						Main.game.getNpc(Epona.class).useItem(AbstractItemType.generateItem(ItemType.VIXENS_VIRILITY), Main.game.getPlayer(), false);
+						Main.game.getNpc(Epona.class).useItem(Main.game.getItemGen().generateItem("innoxia_pills_fertility"), Main.game.getPlayer(), false);
 					}
 				};
 				
@@ -595,18 +594,19 @@ public class PregnancyRoulette {
 	};
 	
 	public static final DialogueNode AFTER_ROULETTE_SEX = new DialogueNode("", "", true) {
-		
 		@Override
 		public String getLabel() {
 			return breeders.get(breederIndex-1).getName(true)+" is done";
 		}
-		
+		@Override
+		public String getDescription() {
+			return UtilText.parse(breeders.get(breederIndex-1), "Now that [npc.name] has had [npc.her] turn and given you a creampie, [npc.she] has to [npc.step] back...");
+		}
 		@Override
 		public String getContent() {
 			NPC breeder = breeders.get(breederIndex-1);
 			return UtilText.parseFromXMLFile("places/submission/gamblingDen/pregnancyRoulette", "AFTER_ROULETTE_SEX", Util.newArrayListOfValues(breeder));
 		}
-
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if(breederIndex<breeders.size()) {
@@ -675,7 +675,7 @@ public class PregnancyRoulette {
 					return new Response("Finished", "All six of the breeders have deposited their cum in your [pc.pussy+].", PREGNANCY_ROULETTE_MOTHER_FINISHED) {
 						@Override
 						public void effects() {
-							Main.game.getTextEndStringBuilder().append(Main.game.getNpc(Epona.class).useItem(AbstractItemType.generateItem(ItemType.PREGNANCY_TEST), Main.game.getPlayer(), false));
+							Main.game.getTextEndStringBuilder().append(Main.game.getNpc(Epona.class).useItem(Main.game.getItemGen().generateItem(ItemType.PREGNANCY_TEST), Main.game.getPlayer(), false));
 						}
 					};
 				} else {
@@ -853,12 +853,14 @@ public class PregnancyRoulette {
 	};
 	
 	public static final DialogueNode PREGNANCY_ROULETTE_BREEDER_POST_SEX = new DialogueNode("Finished", "", true) {
-		
+		@Override
+		public String getDescription() {
+			return UtilText.parse(mother, "Now that you've had your turn and orgasmed, you have to step away from [npc.name]...");
+		}
 		@Override
 		public String getContent() {
 			return UtilText.parseFromXMLFile("places/submission/gamblingDen/pregnancyRoulette", "PREGNANCY_ROULETTE_BREEDER_POST_SEX");
 		}
-
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if(index==1) {
@@ -887,7 +889,7 @@ public class PregnancyRoulette {
 		@Override
 		public String getContent() {
 			return UtilText.parseFromXMLFile("places/submission/gamblingDen/pregnancyRoulette", "PREGNANCY_ROULETTE_BREEDER_FINISHED")
-					+mother.useItem(AbstractItemType.generateItem(ItemType.PREGNANCY_TEST), mother, false);
+					+mother.useItem(Main.game.getItemGen().generateItem(ItemType.PREGNANCY_TEST), mother, false);
 		}
 
 		@Override
@@ -1111,7 +1113,7 @@ public class PregnancyRoulette {
 									null) {
 							},
 							AFTER_MURK_SEX,
-							UtilText.parseFromXMLFile("places/submission/ratWarrens/core", "MURK_SEX_DOM"));
+							UtilText.parseFromXMLFile("places/submission/gamblingDen/pregnancyRoulette", "MURK_SEX_DOM"));
 					
 				} else if(index==4 && !Main.game.getNpc(Murk.class).isFeminine()) {
 					if((!Main.game.getPlayer().hasVagina() || Main.game.getPlayer().isAbleToAccessCoverableArea(CoverableArea.VAGINA, true))
@@ -1184,10 +1186,10 @@ public class PregnancyRoulette {
 							null,
 							AFTER_MURK_SEX,
 							(Main.game.getPlayer().hasVagina() && Main.game.getPlayer().isAbleToAccessCoverableArea(CoverableArea.VAGINA, true))
-								?UtilText.parseFromXMLFile("places/submission/ratWarrens/core", "MURK_SEX_SUB_VAGINA")
+								?UtilText.parseFromXMLFile("places/submission/gamblingDen/pregnancyRoulette", "MURK_SEX_SUB_VAGINA")
 								:((Main.game.isAnalContentEnabled() && Main.game.getPlayer().isAbleToAccessCoverableArea(CoverableArea.ANUS, true))
-									?UtilText.parseFromXMLFile("places/submission/ratWarrens/core", "MURK_SEX_SUB_ANUS")
-									:UtilText.parseFromXMLFile("places/submission/ratWarrens/core", "MURK_SEX_SUB"))) {
+									?UtilText.parseFromXMLFile("places/submission/gamblingDen/pregnancyRoulette", "MURK_SEX_SUB_ANUS")
+									:UtilText.parseFromXMLFile("places/submission/gamblingDen/pregnancyRoulette", "MURK_SEX_SUB"))) {
 						@Override
 						public void effects() {
 							Main.game.getDialogueFlags().setFlag(DialogueFlagValue.eponaMurkSubmitted, true);
@@ -1425,10 +1427,10 @@ public class PregnancyRoulette {
 							null,
 							AFTER_MURK_SEX,
 							(Main.game.getPlayer().hasVagina() && Main.game.getPlayer().isAbleToAccessCoverableArea(CoverableArea.VAGINA, true))
-								?UtilText.parseFromXMLFile("places/submission/ratWarrens/core", "MURK_SUBMIT_SEX_SUB_VAGINA")
+								?UtilText.parseFromXMLFile("places/submission/gamblingDen/pregnancyRoulette", "MURK_SUBMIT_SEX_SUB_VAGINA")
 								:((Main.game.isAnalContentEnabled() && Main.game.getPlayer().isAbleToAccessCoverableArea(CoverableArea.ANUS, true))
-									?UtilText.parseFromXMLFile("places/submission/ratWarrens/core", "MURK_SUBMIT_SEX_SUB_ANUS")
-									:UtilText.parseFromXMLFile("places/submission/ratWarrens/core", "MURK_SUBMIT_SEX_SUB"))) {
+									?UtilText.parseFromXMLFile("places/submission/gamblingDen/pregnancyRoulette", "MURK_SUBMIT_SEX_SUB_ANUS")
+									:UtilText.parseFromXMLFile("places/submission/gamblingDen/pregnancyRoulette", "MURK_SUBMIT_SEX_SUB"))) {
 						@Override
 						public void effects() {
 							Main.game.getDialogueFlags().setFlag(DialogueFlagValue.eponaMurkSubmitted, true);

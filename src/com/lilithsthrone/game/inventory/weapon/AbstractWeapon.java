@@ -26,13 +26,12 @@ import com.lilithsthrone.game.inventory.Rarity;
 import com.lilithsthrone.game.inventory.enchanting.AbstractItemEffectType;
 import com.lilithsthrone.game.inventory.enchanting.ItemEffect;
 import com.lilithsthrone.game.inventory.enchanting.ItemEffectType;
-import com.lilithsthrone.game.inventory.enchanting.TFEssence;
 import com.lilithsthrone.game.inventory.enchanting.TFModifier;
 import com.lilithsthrone.game.inventory.enchanting.TFPotency;
 import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.Util;
-import com.lilithsthrone.utils.XMLSaving;
 import com.lilithsthrone.utils.Util.Value;
+import com.lilithsthrone.utils.XMLSaving;
 import com.lilithsthrone.utils.colours.Colour;
 import com.lilithsthrone.utils.colours.PresetColour;
 
@@ -270,7 +269,7 @@ public abstract class AbstractWeapon extends AbstractCoreItem implements XMLSavi
 		
 		try {
 			String id = parentElement.getAttribute("id");
-			weapon = AbstractWeaponType.generateWeapon(WeaponType.getWeaponTypeFromId(id), DamageType.valueOf(parentElement.getAttribute("damageType")));
+			weapon = Main.game.getItemGen().generateWeapon(WeaponType.getWeaponTypeFromId(id), DamageType.valueOf(parentElement.getAttribute("damageType")));
 		} catch(Exception ex) {
 			ex.printStackTrace();
 			System.err.println("Warning: An instance of AbstractWeapon was unable to be imported. ("+parentElement.getAttribute("id")+")");
@@ -413,6 +412,7 @@ public abstract class AbstractWeapon extends AbstractCoreItem implements XMLSavi
 		descriptionSB.append("</b></p>");
 		descriptionSB.append("<p>");
 			descriptionSB.append(weaponType.getDescription());
+			descriptionSB.append("<br/>"+(getWeaponType().isPlural()?"They have":"It has")+" a value of: "+UtilText.formatAsMoney(getValue()));
 		descriptionSB.append("</p>");
 		
 
@@ -426,25 +426,24 @@ public abstract class AbstractWeapon extends AbstractCoreItem implements XMLSavi
 							+ "</p>");
 		}
 
-		if (!attributeModifiers.isEmpty()) {
-			descriptionSB.append("<p>It provides ");
-			int i = 0;
-			for (Entry<Attribute, Integer> e : attributeModifiers.entrySet()) {
-				if (i != 0) {
-					if (i + 1 == attributeModifiers.size())
-						descriptionSB.append(" and ");
-					else
-						descriptionSB.append(", ");
+		if(!this.getEffects().isEmpty()) {
+			descriptionSB.append("<p>Effects:");
+			for (ItemEffect e : this.getEffects()) {
+				if(e.getPrimaryModifier()!=TFModifier.CLOTHING_ATTRIBUTE
+						&& e.getPrimaryModifier()!=TFModifier.CLOTHING_MAJOR_ATTRIBUTE) {
+					for(String s : e.getEffectsDescription(Main.game.getPlayer(), Main.game.getPlayer())) {
+						descriptionSB.append("<br/>"+ s);
+					}
 				}
-
-				descriptionSB.append(" <b>" + e.getValue() + "</b> <b style='color: " + e.getKey().getColour().toWebHexString() + ";'> " + e.getKey().getName() + "</b>");
-				i++;
 			}
-			descriptionSB.append(".</p>");
+			for(Entry<Attribute, Integer> entry : this.getAttributeModifiers().entrySet()) {
+				descriptionSB.append("<br/><b>"+entry.getKey().getFormattedValue(entry.getValue())+"</b>");
+			}
+			descriptionSB.append("</p>");
 		}
 
 		if (!spells.isEmpty()) {
-			descriptionSB.append("<p>Its arcane power grants you the ability to cast ");
+			descriptionSB.append("<p>"+(getWeaponType().isPlural()?"Their":"Its")+" arcane power grants you the ability to cast ");
 			int i = 0;
 			for (Spell s : spells) {
 				if (i != 0) {
@@ -462,7 +461,7 @@ public abstract class AbstractWeapon extends AbstractCoreItem implements XMLSavi
 
 
 		if(!combatMoves.isEmpty()) {
-			descriptionSB.append("<p>When equipped, it unlocks the move"+(combatMoves.size()==1?"":"s")+": ");
+			descriptionSB.append("<p>When equipped, "+(getWeaponType().isPlural()?"they unlock":"it unlocks")+" the move"+(combatMoves.size()==1?"":"s")+": ");
 			List<String> combatMoveNames = new ArrayList<>();
 			descriptionSB.append("[style.italicsCombat(");
 			for(CombatMove cm : combatMoves) {
@@ -471,8 +470,6 @@ public abstract class AbstractWeapon extends AbstractCoreItem implements XMLSavi
 			descriptionSB.append(Util.stringsToStringList(combatMoveNames, true));
 			descriptionSB.append(")]</p>");
 		}
-		
-		descriptionSB.append("<p>It has a value of " + UtilText.formatAsMoney(getValue()) + ".</p>");
 
 		if (getWeaponType().getClothingSet() != null) {
 			descriptionSB.append("<p>" + (getWeaponType().isPlural() ? "They are" : "It is") + " part of the <b style='color:" + PresetColour.RARITY_EPIC.toWebHexString() + ";'>"
@@ -601,8 +598,8 @@ public abstract class AbstractWeapon extends AbstractCoreItem implements XMLSavi
 		return this.getWeaponType().getUnableToBeUsedDescription();
 	}
 	
-	public String applyExtraEffects(GameCharacter user, GameCharacter target, boolean isHit) {
-		return this.getWeaponType().applyExtraEffects(user, target, isHit);
+	public String applyExtraEffects(GameCharacter user, GameCharacter target, boolean isHit, boolean isCritical) {
+		return this.getWeaponType().applyExtraEffects(user, target, isHit, isCritical);
 	}
 	
 
@@ -658,11 +655,6 @@ public abstract class AbstractWeapon extends AbstractCoreItem implements XMLSavi
 	@Override
 	public AbstractCoreType getEnchantmentItemType(List<ItemEffect> effects) {
 		return weaponType.getEnchantmentItemType(effects);
-	}
-	
-	@Override
-	public TFEssence getRelatedEssence() {
-		return weaponType.getRelatedEssence();
 	}
 
 }

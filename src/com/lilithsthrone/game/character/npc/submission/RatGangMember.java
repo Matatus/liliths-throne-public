@@ -128,6 +128,7 @@ public class RatGangMember extends NPC {
 			this.addPersonalityTrait(PersonalityTrait.SLOVENLY);
 			this.removePersonalityTrait(PersonalityTrait.LISP);
 			this.removePersonalityTrait(PersonalityTrait.STUTTER);
+			this.removePersonalityTrait(PersonalityTrait.MUTE);
 		}
 		
 		this.setEnslavementDialogue(SlaveDialogue.DEFAULT_ENSLAVEMENT_DIALOGUE, true);
@@ -250,6 +251,12 @@ public class RatGangMember extends NPC {
 							Main.game.getDialogueFlags().setFlag(DialogueFlagValue.ratWarrensClearedCentre, true);
 						}
 					}
+					if(Main.game.getPlayerCell().getPlace().getPlaceType()==PlaceType.RAT_WARRENS_CHECKPOINT_LEFT
+							|| Main.game.getPlayerCell().getPlace().getPlaceType()==PlaceType.RAT_WARRENS_DORMITORY_LEFT
+							|| Main.game.getPlayerCell().getPlace().getPlaceType()==PlaceType.RAT_WARRENS_CORRIDOR_LEFT) {
+						Main.game.getNpc(Murk.class).setLocation(WorldType.RAT_WARRENS, PlaceType.RAT_WARRENS_VENGARS_HALL);
+					}
+					RatWarrensDialogue.banishTwoGuards();
 				}
 			};
 			

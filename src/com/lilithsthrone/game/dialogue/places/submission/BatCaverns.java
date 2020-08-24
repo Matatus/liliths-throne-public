@@ -32,10 +32,10 @@ public class BatCaverns {
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if (index == 1) {
-				return new ResponseEffectsOnly("Submission", "Head back up to Submission."){
+				return new Response("Submission", "Head back up to Submission.", PlaceType.SUBMISSION_BAT_CAVERNS.getDialogue(false)){
 					@Override
 					public void effects() {
-						Main.mainController.moveGameWorld(WorldType.SUBMISSION, PlaceType.SUBMISSION_BAT_CAVERNS, true);
+						Main.game.getPlayer().setLocation(WorldType.SUBMISSION, PlaceType.SUBMISSION_BAT_CAVERNS, false);
 					}
 				};
 
@@ -70,7 +70,7 @@ public class BatCaverns {
 						"Explore the cavern's dark depths. Although you don't think you're any more or less likely to find anything by doing this, at least you won't have to keep travelling back and forth..."){
 							@Override
 							public void effects() {
-								DialogueNode dn = Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getPlace().getDialogue(true, true);
+								DialogueNode dn = Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getDialogue(true, true);
 								Main.game.setContent(new Response("", "", dn));
 							}
 						};
@@ -106,7 +106,7 @@ public class BatCaverns {
 						"Explore the bioluminescent forest. Although you don't think you're any more or less likely to find anything by doing this, at least you won't have to keep travelling back and forth..."){
 							@Override
 							public void effects() {
-								DialogueNode dn = Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getPlace().getDialogue(true, true);
+								DialogueNode dn = Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getDialogue(true, true);
 								Main.game.setContent(new Response("", "", dn));
 							}
 						};
@@ -137,7 +137,7 @@ public class BatCaverns {
 						"Explore the sides of the river. Although you don't think you're any more or less likely to find anything by doing this, at least you won't have to keep travelling back and forth..."){
 							@Override
 							public void effects() {
-								DialogueNode dn = Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getPlace().getDialogue(true, true);
+								DialogueNode dn = Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getDialogue(true, true);
 								Main.game.setContent(new Response("", "", dn));
 							}
 						};
@@ -168,7 +168,7 @@ public class BatCaverns {
 						"Explore the bridge's surroundings. Although you don't think you're any more or less likely to find anything by doing this, at least you won't have to keep travelling back and forth..."){
 							@Override
 							public void effects() {
-								DialogueNode dn = Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getPlace().getDialogue(true, true);
+								DialogueNode dn = Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getDialogue(true, true);
 								Main.game.setContent(new Response("", "", dn));
 							}
 						};
@@ -199,7 +199,7 @@ public class BatCaverns {
 						"Explore the sides of the river. Although you don't think you're any more or less likely to find anything by doing this, at least you won't have to keep travelling back and forth..."){
 							@Override
 							public void effects() {
-								DialogueNode dn = Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getPlace().getDialogue(true, true);
+								DialogueNode dn = Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getDialogue(true, true);
 								Main.game.setContent(new Response("", "", dn));
 							}
 						};
@@ -245,7 +245,7 @@ public class BatCaverns {
 						"Explore the sides of the lake. Although you don't think you're any more or less likely to find anything by doing this, at least you won't have to keep travelling back and forth..."){
 							@Override
 							public void effects() {
-								DialogueNode dn = Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getPlace().getDialogue(true, true);
+								DialogueNode dn = Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getDialogue(true, true);
 								Main.game.setContent(new Response("", "", dn));
 							}
 						};

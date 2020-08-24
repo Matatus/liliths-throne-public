@@ -29,7 +29,6 @@ import com.lilithsthrone.game.combat.DamageType;
 import com.lilithsthrone.game.combat.DamageVariance;
 import com.lilithsthrone.game.combat.moves.CombatMove;
 import com.lilithsthrone.game.combat.spells.Spell;
-import com.lilithsthrone.game.dialogue.eventLog.EventLogEntryEncyclopediaUnlock;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.AbstractCoreType;
 import com.lilithsthrone.game.inventory.AbstractSetBonus;
@@ -40,8 +39,6 @@ import com.lilithsthrone.game.inventory.SetBonus;
 import com.lilithsthrone.game.inventory.enchanting.AbstractItemEffectType;
 import com.lilithsthrone.game.inventory.enchanting.ItemEffect;
 import com.lilithsthrone.game.inventory.enchanting.ItemEffectType;
-import com.lilithsthrone.game.inventory.enchanting.TFEssence;
-import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.SvgUtil;
 import com.lilithsthrone.utils.Util;
 import com.lilithsthrone.utils.Util.Value;
@@ -80,6 +77,8 @@ public abstract class AbstractWeaponType extends AbstractCoreType {
 	private List<String> hitDescriptions;
 	private List<String> hitCriticalDescriptions;
 	private List<String> missDescriptions;
+	protected String hitEffect;
+	protected String criticalHitEffect;
 	
 	private String pathName;
 	private String pathNameEquipped;
@@ -99,17 +98,17 @@ public abstract class AbstractWeaponType extends AbstractCoreType {
 	private boolean combatMovesRegenOnDamageTypeChange;
 	private Map<DamageType, List<CombatMove>> combatMoves;
 
-	// Enchantments:
 	@SuppressWarnings("unused")
 	private int enchantmentLimit; // Removed as part of 0.3.3.7's update to add enchantment capacity mechanics.
 	protected List<ItemEffect> effects;
+	protected List<String> extraEffects;
 
 	private Map<String, String> SVGStringMap;
 	private Map<String, String> SVGStringEquippedMap;
 
 	private List<ColourReplacement> colourReplacements;
 	/** Key is the colour index which should copy another colour upon weapon generation. Value is the colour index which should be copied. */
-	private Map<Integer, Integer> copyGenerationColours;
+	public Map<Integer, Integer> copyGenerationColours;
 
 	private List<ItemTag> itemTags;
 
@@ -250,8 +249,24 @@ public abstract class AbstractWeaponType extends AbstractCoreType {
 					.map( e -> ItemEffect.loadFromXML(e.getInnerElement(), e.getDocument())) // Take every element and do something with them, return a Stream of results after this action. Here we load item effects and get Stream<ItemEffect>
 					.filter(Objects::nonNull) // Ensure that we only add non-null effects
 					.collect(Collectors.toList()); // Collect stream back into a list, but this time we get List<ItemEffect> we need! 
-				
 
+				this.extraEffects = new ArrayList<>();
+				if(coreAttributes.getOptionalFirstOf("extraEffects").isPresent()) {
+					for(Element e : coreAttributes.getMandatoryFirstOf("extraEffects").getAllOf("effect")) {
+						extraEffects.add(e.getTextContent());
+					}
+				}
+				
+				this.hitEffect = "";
+				if(coreAttributes.getOptionalFirstOf("onHitEffect").isPresent()) {
+					hitEffect = coreAttributes.getMandatoryFirstOf("onHitEffect").getTextContent();
+				}
+
+				this.criticalHitEffect = "";
+				if(coreAttributes.getOptionalFirstOf("onCriticalHitEffect").isPresent()) {
+					criticalHitEffect = coreAttributes.getMandatoryFirstOf("onCriticalHitEffect").getTextContent();
+				}
+				
 				this.rarity = Rarity.valueOf(coreAttributes.getMandatoryFirstOf("rarity").getTextContent());
 				
 				if(coreAttributes.getOptionalFirstOf("physicalResistance").isPresent()) {
@@ -451,87 +466,6 @@ public abstract class AbstractWeaponType extends AbstractCoreType {
 		return result;
 	}
 
-	public static AbstractWeapon generateWeapon(String id) {
-		return generateWeapon(WeaponType.getWeaponTypeFromId(id));
-	}
-
-	public static AbstractWeapon generateWeapon(AbstractWeaponType wt) {
-		return AbstractWeaponType.generateWeapon(wt, wt.getAvailableDamageTypes().get(Util.random.nextInt(wt.getAvailableDamageTypes().size())));
-	}
-	
-	public static AbstractWeapon generateWeapon(AbstractWeaponType wt, DamageType dt) {
-		return generateWeapon(wt, dt, null);
-	}
-	
-	public static AbstractWeapon generateWeapon(String id, DamageType dt) {
-		return generateWeapon(WeaponType.getWeaponTypeFromId(id), dt, null);
-	}
-	
-	public static AbstractWeapon generateWeapon(String id, DamageType dt, List<Colour> colours) {
-		return generateWeapon(WeaponType.getWeaponTypeFromId(id), dt, colours);
-	}
-	
-	public static AbstractWeapon generateWeapon(AbstractWeaponType wt, DamageType dt, List<Colour> colours) {
-		if(colours==null) {
-			colours = new ArrayList<>();
-			
-		} else {
-			colours = new ArrayList<>(colours);
-		}
-		
-		int index = 0;
-		ColourReplacement cr = wt.getColourReplacement(false, index);
-		while(cr!=null) {
-			if(colours.size()<=index || !cr.getAllColours().contains(colours.get(0))) {
-				colours.add(cr.getRandomOfDefaultColours());
-			}
-			index++;
-			cr = wt.getColourReplacement(false, index);
-		}
-		
-		for(Entry<Integer, Integer> entry : wt.copyGenerationColours.entrySet()) {
-			Colour replacement = colours.get(entry.getValue());
-			colours.remove((int)entry.getKey());
-			colours.add(entry.getKey(), replacement);
-		}
-		
-		return new AbstractWeapon(wt, dt, colours) {
-			@Override
-			public String onEquip(GameCharacter character) {
-				if (character.isPlayer()) {
-					if (Main.getProperties().addWeaponDiscovered(wt)) {
-						Main.game.addEvent(new EventLogEntryEncyclopediaUnlock(wt.getName(), wt.getRarity().getColour()), true);
-					}
-				}
-				return wt.equipText(character);
-			}
-
-			@Override
-			public String onUnequip(GameCharacter character) {
-				return wt.unequipText(character);
-			}
-		};
-	}
-	
-	public static AbstractWeapon generateWeapon(AbstractWeapon weapon) {
-		return new AbstractWeapon(weapon) {
-			@Override
-			public String onEquip(GameCharacter character) {
-				if (character.isPlayer()) {
-					if (Main.getProperties().addWeaponDiscovered(weapon.getWeaponType())) {
-						Main.game.addEvent(new EventLogEntryEncyclopediaUnlock(weapon.getWeaponType().getName(), weapon.getWeaponType().getRarity().getColour()), true);
-					}
-				}
-				return weapon.getWeaponType().equipText(character);
-			}
-
-			@Override
-			public String onUnequip(GameCharacter character) {
-				return weapon.getWeaponType().unequipText(character);
-			}
-		};
-	}
-	
 	private void setUpColours(
 			boolean primaryRecolouringAllowed,
 			List<Colour> availablePrimaryColours,
@@ -660,7 +594,7 @@ public abstract class AbstractWeaponType extends AbstractCoreType {
 
 	public boolean isAbleToBeUsed(GameCharacter user, GameCharacter target) {
 		if(this.getArcaneCost()>0) {
-			return user.getEssenceCount(TFEssence.ARCANE) > 0;
+			return user.getEssenceCount() > 0;
 		} else {
 			return true;
 		}
@@ -674,17 +608,24 @@ public abstract class AbstractWeaponType extends AbstractCoreType {
 		}
 	}
 	
-	public String applyExtraEffects(GameCharacter user, GameCharacter target, boolean isHit) {
+	public String applyExtraEffects(GameCharacter user, GameCharacter target, boolean isHit, boolean isCritical) {
+		StringBuilder sb = new StringBuilder();
+		
 		if(this.getArcaneCost()>0) {
-			user.incrementEssenceCount(TFEssence.ARCANE, -this.getArcaneCost(), false);
-			if(user.isPlayer()) {
-				return (this.isMelee()?"Using":"Firing")+" the "+this.getName()+" drains [style.boldBad("+Util.intToString(this.getArcaneCost())+")] [style.boldArcane(arcane essence)] from your aura!";
-			} else {
-				return UtilText.parse(user, (this.isMelee()?"Using":"Firing")+" the "+this.getName()+" drains [style.boldBad("+Util.intToString(this.getArcaneCost())+")] [style.boldArcane(arcane essence)] from [npc.namePos] aura!");
-			}
-		} else {
-			return "";
+			user.incrementEssenceCount(-this.getArcaneCost(), false);
+			sb.append(UtilText.parse(user, (this.isMelee()?"Using":"Firing")+" the "+this.getName()+" drains [style.boldBad("+Util.intToString(this.getArcaneCost())+")] [style.boldArcane(arcane essence)] from [npc.namePos] aura!"));
 		}
+		if(isHit) {
+			String hitText = isCritical?this.criticalHitEffect:this.hitEffect;
+			if(!hitText.isEmpty()) {
+				if(sb.length()>0) {
+					sb.append("<br/>");
+				}
+				sb.append(UtilText.parse(user, target, hitText));
+			}
+		}
+		
+		return sb.toString();
 	}
 	
 	public int getBaseValue() {
@@ -736,6 +677,10 @@ public abstract class AbstractWeaponType extends AbstractCoreType {
 
 	public String getDescription() {
 		return description;
+	}
+
+	public List<String> getExtraEffects() {
+		return extraEffects;
 	}
 
 	public String getAuthorDescription() {
@@ -1002,19 +947,10 @@ public abstract class AbstractWeaponType extends AbstractCoreType {
 	
 	public int getEnchantmentLimit() {
 		return 100;
-//		if(enchantmentLimit==-1) {
-//			return (getClothingSet()==null?5:10);
-//		} else {
-//			return enchantmentLimit;
-//		}
 	}
 	
 	public AbstractItemEffectType getEnchantmentEffect() {
 		return ItemEffectType.WEAPON;
-	}
-	
-	public TFEssence getRelatedEssence() {
-		return TFEssence.ARCANE;
 	}
 	
 	public AbstractWeaponType getEnchantmentItemType(List<ItemEffect> effects) {

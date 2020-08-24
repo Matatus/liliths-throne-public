@@ -30,6 +30,7 @@ import com.lilithsthrone.controller.xmlParsing.Element;
 import com.lilithsthrone.game.character.GameCharacter;
 import com.lilithsthrone.game.character.body.CoverableArea;
 import com.lilithsthrone.game.character.race.Subspecies;
+import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.InventorySlot;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
 import com.lilithsthrone.game.inventory.clothing.DisplacementType;
@@ -43,8 +44,8 @@ import javafx.scene.paint.Color;
  * This is just a big mess of utility classes that I wanted to throw somewhere.
  * 
  * @since 0.1.0
- * @version 0.3.1
- * @author Innoxia
+ * @version 0.3.9.2
+ * @author Innoxia, CognitiveMist
  */
 public class Util {
 	
@@ -752,7 +753,6 @@ public class Util {
 	 *            modified sentence
 	 */
 	private static String insertIntoSentences(String sentence, int frequency, String[] inserts, boolean middle) {
-
 		StringBuilder modifiedSentence = new StringBuilder();
 		int openingCurly = 0;
 		int closingCurly = 0;
@@ -839,7 +839,7 @@ public class Util {
 		return utilitiesStringBuilder.toString();
 	}
 	
-	private static String[] broWords = new String[] { ", like,", ", like, dude,", ", like,", ", um,", ", uh,", ", ah," };
+	private static String[] broWords = new String[] { ", like,", ", like, dude,", ", like, bro,", ", like,", ", um,", ", uh,", ", ah," };
 	public static String addBro(String sentence, int frequency) {
 		sentence = insertIntoSentences(sentence, frequency, broWords);
 		utilitiesStringBuilder.setLength(0);
@@ -856,13 +856,15 @@ public class Util {
 					break;
 				case 1:
 					utilitiesStringBuilder.deleteCharAt(utilitiesStringBuilder.length() - 1);
-					utilitiesStringBuilder.append(", y'know, dude?");
+					utilitiesStringBuilder.append(UtilText.returnStringAtRandom(", y'know, bro?", ", y'know, dude?"));
 					break;
 				default:
 					break;
 			}
 		}
-
+		
+		
+		
 		return utilitiesStringBuilder.toString();
 	}
 
@@ -984,8 +986,8 @@ public class Util {
 		slovenlySpeechReplacementMap.put("Are", "Is");
 		slovenlySpeechReplacementMap.put("are", "is");
 
-		slovenlySpeechReplacementMap.put("You're", "Yer");
-		slovenlySpeechReplacementMap.put("you're", "yer");
+		slovenlySpeechReplacementMap.put("You're", "You's");
+		slovenlySpeechReplacementMap.put("you're", "you's");
 		
 		slovenlySpeechReplacementMap.put("Your", "Yer");
 		slovenlySpeechReplacementMap.put("your", "yer");
@@ -1004,6 +1006,8 @@ public class Util {
 		
 		slovenlySpeechReplacementMap.put("To", "Ta");
 		slovenlySpeechReplacementMap.put("to", "ta");
+		slovenlySpeechReplacementMap.put("Into", "Inta");
+		slovenlySpeechReplacementMap.put("into", "inta");
 
 		slovenlySpeechReplacementMap.put("The", "Da");
 		slovenlySpeechReplacementMap.put("the", "da");
@@ -1037,6 +1041,8 @@ public class Util {
 		
 		slovenlySpeechReplacementMap.put("This one", "This 'un");
 		slovenlySpeechReplacementMap.put("this one", "this 'un");
+		slovenlySpeechReplacementMap.put("That one", "That 'un");
+		slovenlySpeechReplacementMap.put("that one", "that 'un");
 		
 		slovenlySpeechReplacementMap.put("Before", "'Afore");
 		slovenlySpeechReplacementMap.put("before", "'afore");
@@ -1084,12 +1090,13 @@ public class Util {
 	/**
 	 * Replaces words in the sentence to give the impression that the speaker is talking in a slovenly manner. The replacements are:
 			<br/>Are -> Is
-			<br/>You're -> Yer
+			<br/>You're -> You's
 			<br/>Your -> Yer
 			<br/>You -> Ya
 			<br/>Yourself - Yerself
 			<br/>You'd -> You's
 			<br/>To -> Ta
+			<br/>Into -> inta
 			<br/>The -> Da
 			<br/>Them -> Dem
 			<br/>And -> An'
@@ -1100,6 +1107,7 @@ public class Util {
 			<br/>Isn't -> ain't
 			<br/>Aren't -> ain't
 			<br/>This one -> This 'un
+			<br/>That one -> That 'un
 			<br/>Before -> 'afore
 			<br/>Give me -> Gimme
 			<br/>Going to -> gonna
@@ -1289,9 +1297,20 @@ public class Util {
 	public static int randomItemFrom(int[] array) {
 		return array[Util.random.nextInt(array.length)];
 	}
-	
+
+	/**
+	 * This method will determine the closest string in {@code choices} to the given {@code input}.
+	 * The Levenshtein edit distance metric is used for this calculation.
+	 *
+	 * @param input String for which to find the closest match.
+	 * @param choices Collection of valid Strings, among which the closest match to {@code input}
+	 *                   will be found.
+	 * @return The closest match.
+	 */
 	public static String getClosestStringMatch(String input, Collection<String> choices) {
-		if (choices.contains(input)) {
+		// If input is empty, just return the empty string. It would make no sense to guess, so hopefully
+		// the caller will handle the case correctly.
+		if (input.isEmpty() || choices.contains(input)) {
 			return input;
 		}
 		int distance = Integer.MAX_VALUE;
@@ -1303,7 +1322,103 @@ public class Util {
 				distance = newDistance;
 			}
 		}
-		System.err.println("Warning: getClosestStringMatch() did not find an exact match for '"+input+"'; returning '"+closestString+"' instead.");
+		System.err.println("Warning: getClosestStringMatch() did not find an exact match for '"+input+"'; returning '"+closestString+"' instead. (Distance: "+distance+")");
+//		throw new IllegalArgumentException();
+		return closestString;
+	}
+
+	private static String unordered(String input, int prefix) {
+		// TODO This could be improved if, by some method, the non-prefix words were left as an
+		//      unordered set, rather than rejoining them in alphabetical order, since typos can
+		//      occur in the first letter, too. However, this would require
+		//      com.lilithsthrone.utils.Util.getLevenshteinDistance to handle java.util.Set<E>.
+		//      A harder problem is how to handle the omission or addition of an underscore, for
+		//      which two words should match with one, or vice-versa.
+		String p = "";
+		String r = input;
+		int prefixLen = 0;
+		for (int i = 0; i < prefix; i++) {
+			int idx = input.indexOf('_', prefixLen);
+			if (idx < 0) {
+				// we've ran out of words, the whole thing is prefix
+				p = input;
+				r = "";
+				break;
+			}
+			prefixLen = idx+1;
+			p = input.substring(0, prefixLen);
+			r = input.substring(prefixLen);
+			//System.out.println("len: "+prefixLen+", "+p+"|"+r);
+		}
+		return p + Arrays.stream(r.split("_")).sorted().collect(Collectors.joining("_"));
+	}
+
+	/**
+	 * This method will determine the closest string in {@code choices} to the given {@code input}.
+	 * All strings will be treated as underscore-delimited words that have no order.
+	 * The Levenshtein edit distance metric is used for this calculation.
+	 *
+	 * @param input String for which to find the closest match.
+	 * @param choices Collection of valid Strings, among which the closest match to {@code input}
+	 *                   will be found.
+	 * @return The closest match.
+	 */
+	public static String getClosestStringMatchUnordered(String input, Collection<String> choices) {
+		return getClosestStringMatchUnordered(input, 0, choices);
+	}
+
+	/**
+	 * This method will determine the closest string in {@code choices} to the given {@code input}.
+	 * The first {@code prefix} underscore-delimited words of each string will be preserved, but
+	 * all words after that will be treated as having no order.
+	 * The Levenshtein edit distance metric is used for this calculation.
+	 *
+	 * @param input String for which to find the closest match.
+	 * @param prefix Number of underscore-delimited words for which the ordering should be
+	 *               preserved. If zero or less, the whole string is considered unordered. If it
+	 *               is the number of words or more, the whole string is considered ordered.
+	 * @param choices Collection of valid Strings, among which the closest match to {@code input}
+	 *                will be found.
+	 * @return The closest match.
+	 */
+	public static String getClosestStringMatchUnordered(String inputRaw, int prefix, Collection<String> choices) {
+		// If inputRaw is empty, just return the empty string. It would make no sense to guess, so hopefully
+		// the caller will handle the case correctly.
+		if (inputRaw.isEmpty() || choices.contains(inputRaw)) {
+			return inputRaw;
+		}
+
+		// Util.unordered expects words to be underscore-delimited. However, some misbehaving
+		// mods uses spaces or hyphens instead. We'll fix that for them here, to try to get more
+		// accurate matches. We assume all values in choices are well-behaved.
+		String input = inputRaw.replaceAll("[ -]", "_");
+
+		if (choices.contains(input)) {
+			System.err.println("Warning: getClosestStringMatchUnordered() did not find an exact match for '"+inputRaw+"'; returning '"+input+"' instead. (Invalid word delimiter)");
+			return input;
+		}
+
+		Map<String,String> unorderedChoices = choices.stream().collect(Collectors
+				.toMap(s -> Util.unordered(s, prefix), Function.identity(), (a,b) -> {
+					System.err.println("Warning: keeping " + a + " and discarding " + b + "!");
+					return a;
+				}));
+		String unorderedInput = unordered(input, prefix);
+		if (unorderedChoices.containsKey(unorderedInput)) {
+			String unorderedMatch = unorderedChoices.get(unorderedInput);
+			System.err.println("Warning: getClosestStringMatchUnordered() did not find an exact match for '"+inputRaw+"'; returning '"+unorderedMatch+"' instead. (Reordered words)");
+			return unorderedMatch;
+		}
+		int distance = Integer.MAX_VALUE;
+		String closestString = input;
+		for(String unorderedChoice : unorderedChoices.keySet()) {
+			int newDistance = getLevenshteinDistance(unorderedInput, unorderedChoice);
+			if(newDistance < distance) {
+				closestString = unorderedChoices.get(unorderedChoice);
+				distance = newDistance;
+			}
+		}
+		System.err.println("Warning: getClosestStringMatchUnordered() did not find an exact match for '"+inputRaw+"'; returning '"+closestString+"' instead. (Distance: "+distance+")");
 //		throw new IllegalArgumentException();
 		return closestString;
 	}

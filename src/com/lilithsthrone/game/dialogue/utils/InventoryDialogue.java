@@ -13,7 +13,6 @@ import com.lilithsthrone.game.character.body.types.LegType;
 import com.lilithsthrone.game.character.fetishes.Fetish;
 import com.lilithsthrone.game.character.npc.NPC;
 import com.lilithsthrone.game.character.quests.QuestLine;
-import com.lilithsthrone.game.combat.Combat;
 import com.lilithsthrone.game.combat.DamageType;
 import com.lilithsthrone.game.combat.moves.CombatMove;
 import com.lilithsthrone.game.combat.spells.SpellSchool;
@@ -35,14 +34,11 @@ import com.lilithsthrone.game.inventory.clothing.BlockedParts;
 import com.lilithsthrone.game.inventory.clothing.DisplacementType;
 import com.lilithsthrone.game.inventory.enchanting.ItemEffect;
 import com.lilithsthrone.game.inventory.enchanting.ItemEffectType;
-import com.lilithsthrone.game.inventory.enchanting.TFEssence;
 import com.lilithsthrone.game.inventory.enchanting.TFModifier;
 import com.lilithsthrone.game.inventory.enchanting.TFPotency;
 import com.lilithsthrone.game.inventory.item.AbstractItem;
-import com.lilithsthrone.game.inventory.item.AbstractItemType;
 import com.lilithsthrone.game.inventory.item.ItemType;
 import com.lilithsthrone.game.inventory.weapon.AbstractWeapon;
-import com.lilithsthrone.game.inventory.weapon.AbstractWeaponType;
 import com.lilithsthrone.game.sex.sexActions.SexActionUtility;
 import com.lilithsthrone.main.Main;
 import com.lilithsthrone.rendering.Pattern;
@@ -1179,13 +1175,13 @@ public class InventoryDialogue {
 								if(Main.game.getPlayer().isStunned()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (Self)", "You cannot use any items while you're stunned!", null);
 									
-								} else if(Combat.isCombatantDefeated(Main.game.getPlayer())) {
+								} else if(Main.combat.isCombatantDefeated(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (Self)", "You cannot use any items while you're defeated!", null);
 									
 								} else if(Main.game.getPlayer().getRemainingAP()<CombatMove.ITEM_USAGE.getAPcost(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (Self)", "You need at least "+CombatMove.ITEM_USAGE.getAPcost(Main.game.getPlayer())+" AP to use this actions!", null);
 									
-								} else if (!item.isAbleToBeUsedInCombat()) {
+								} else if (!item.isAbleToBeUsedInCombatAllies()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (Self)", "You cannot use this during combat!", null);
 									
 								} else if (!item.isAbleToBeUsedFromInventory()) {
@@ -1198,10 +1194,10 @@ public class InventoryDialogue {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (Self)",
 											item.getItemType().getUseTooltipDescription(owner, owner),
-											Combat.ENEMY_ATTACK){
+											Main.combat.ENEMY_ATTACK){
 										@Override
 										public void effects(){
-											Combat.addItemToBeUsed(owner, owner, item);
+											Main.combat.addItemToBeUsed(owner, owner, item);
 											resetPostAction();
 											Main.mainController.openInventory();
 										}
@@ -1214,29 +1210,29 @@ public class InventoryDialogue {
 							} else if (index == 10) {
 								return getQuickTradeResponse();
 								
-							} else if(index == 11) {
+							} else if(index == 11) {//TODO on ally though???
 								if(Main.game.getPlayer().isStunned()) {
-									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (Self)", "You cannot use any items while you're stunned!", null);
+									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (Opponent)", "You cannot use any items while you're stunned!", null);
 									
-								} else if(Combat.isCombatantDefeated(Main.game.getPlayer())) {
-									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (Self)", "You cannot use any items while you're defeated!", null);
+								} else if(Main.combat.isCombatantDefeated(Main.game.getPlayer())) {
+									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (Opponent)", "You cannot use any items while you're defeated!", null);
 									
 								} else if(Main.game.getPlayer().getRemainingAP()<CombatMove.ITEM_USAGE.getAPcost(Main.game.getPlayer())) {
-									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (Self)", "You need at least "+CombatMove.ITEM_USAGE.getAPcost(Main.game.getPlayer())+" AP to use this actions!", null);
+									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (Opponent)", "You need at least "+CombatMove.ITEM_USAGE.getAPcost(Main.game.getPlayer())+" AP to use this actions!", null);
 									
-								} else if (!item.isAbleToBeUsedInCombat()) {
-									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (opponent)", "You cannot use this during combat!", null);
+								} else if (!item.isAbleToBeUsedInCombatEnemies()) {
+									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (Opponent)", "You cannot use this during combat!", null);
 									
 								} else if (!item.isAbleToBeUsedFromInventory()) {
-									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (opponent)", item.getUnableToBeUsedFromInventoryDescription(), null);
+									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (Opponent)", item.getUnableToBeUsedFromInventoryDescription(), null);
 									
 								} else if (!item.isAbleToBeUsed(inventoryNPC)) {
-									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (opponent)", item.getUnableToBeUsedDescription(inventoryNPC), null);
+									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (Opponent)", item.getUnableToBeUsedDescription(inventoryNPC), null);
 
 								} else if(item.getItemType().isFetishGiving()) {
-									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (opponent)",
+									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (Opponent)",
 											item.getItemType().getUseTooltipDescription(owner, inventoryNPC),
-											Combat.ENEMY_ATTACK,
+											Main.combat.ENEMY_ATTACK,
 											Util.newArrayListOfValues(Fetish.FETISH_KINK_GIVING),
 											Fetish.FETISH_KINK_GIVING.getAssociatedCorruptionLevel(),
 											null,
@@ -1244,16 +1240,16 @@ public class InventoryDialogue {
 											null){
 										@Override
 										public void effects(){
-											Combat.addItemToBeUsed(owner, inventoryNPC, item);
+											Main.combat.addItemToBeUsed(owner, inventoryNPC, item);
 											resetPostAction();
 											Main.mainController.openInventory();
 										}
 									};
 								} else if(item.getItemType().isTransformative()) {
 									return new Response(
-											Util.capitaliseSentence(item.getItemType().getUseName()) +" (opponent)",
+											Util.capitaliseSentence(item.getItemType().getUseName()) +" (Opponent)",
 											item.getItemType().getUseTooltipDescription(owner, inventoryNPC),
-											Combat.ENEMY_ATTACK,
+											Main.combat.ENEMY_ATTACK,
 											Util.newArrayListOfValues(Fetish.FETISH_TRANSFORMATION_GIVING),
 											Fetish.FETISH_TRANSFORMATION_GIVING.getAssociatedCorruptionLevel(),
 											null,
@@ -1261,7 +1257,7 @@ public class InventoryDialogue {
 											null){
 										@Override
 										public void effects(){
-											Combat.addItemToBeUsed(owner, inventoryNPC, item);
+											Main.combat.addItemToBeUsed(owner, inventoryNPC, item);
 											resetPostAction();
 											Main.mainController.openInventory();
 										}
@@ -1269,12 +1265,12 @@ public class InventoryDialogue {
 									
 								} else {
 									return new Response(
-											Util.capitaliseSentence(item.getItemType().getUseName()) +" (opponent)",
+											Util.capitaliseSentence(item.getItemType().getUseName()) +" (Opponent)",
 											item.getItemType().getUseTooltipDescription(owner, inventoryNPC),
-											Combat.ENEMY_ATTACK){
+											Main.combat.ENEMY_ATTACK){
 										@Override
 										public void effects(){
-											Combat.addItemToBeUsed(owner, inventoryNPC, item);
+											Main.combat.addItemToBeUsed(owner, inventoryNPC, item);
 											resetPostAction();
 											Main.mainController.openInventory();
 										}
@@ -1282,7 +1278,7 @@ public class InventoryDialogue {
 								}
 								
 							} else if(index == 12) {
-								return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (opponent)", "You can only use one item at a time during combat!", null);
+								return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (Opponent)", "You can only use one item at a time during combat!", null);
 								
 							} else {
 								return null;
@@ -2006,10 +2002,10 @@ public class InventoryDialogue {
 								return getQuickTradeResponse();
 								
 							} else if(index == 11) {
-								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (opponent)", "You can't use make someone use an item while fighting them!", null);
+								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (Opponent)", "You can't use make someone use an item while fighting them!", null);
 								
 							} else if(index == 12) {
-								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" all (opponent)", "You can't use make someone use an item while fighting them!", null);
+								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" all (Opponent)", "You can't use make someone use an item while fighting them!", null);
 								
 							} else {
 								return null;
@@ -2757,7 +2753,7 @@ public class InventoryDialogue {
 								return getQuickTradeResponse();
 								
 							} else if(index == 11) {
-								return new Response("Equip (opponent)", "You can't make your opponent equip a weapon!", null);
+								return new Response("Equip (Opponent)", "You can't make your opponent equip a weapon!", null);
 								
 							} else {
 								return null;
@@ -3274,10 +3270,10 @@ public class InventoryDialogue {
 								return getQuickTradeResponse();
 								
 							} else if(index == 11) {
-								return new Response("Equip Main (opponent)", "You can't use make someone use a weapon while fighting them!", null);
+								return new Response("Equip Main (Opponent)", "You can't use make someone use a weapon while fighting them!", null);
 								
 							} else if(index == 12) {
-								return new Response("Equip Offhand (opponent)", "You can't use make someone use a weapon while fighting them!", null);
+								return new Response("Equip Offhand (Opponent)", "You can't use make someone use a weapon while fighting them!", null);
 								
 							} else {
 								return null;
@@ -3442,10 +3438,10 @@ public class InventoryDialogue {
 								return getQuickTradeResponse();
 								
 							} else if(index == 11) {
-								return new Response("Equip Main (opponent)", "You can't use make someone use a weapon while having sex with them!", null);
+								return new Response("Equip Main (Opponent)", "You can't use make someone use a weapon while having sex with them!", null);
 								
 							} else if(index == 12) {
-								return new Response("Equip Offhand (opponent)", "You can't use make someone use a weapon while having sex with them!", null);
+								return new Response("Equip Offhand (Opponent)", "You can't use make someone use a weapon while having sex with them!", null);
 								
 							} else {
 								return null;
@@ -3820,14 +3816,14 @@ public class InventoryDialogue {
 										return new Response("Enchant", "This clothing cannot be enchanted!", null);
 										
 									} else if(!clothing.isEnchantmentKnown()) {
-										if(Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE) >= IDENTIFICATION_ESSENCE_PRICE) {
+										if(Main.game.getPlayer().getEssenceCount() >= IDENTIFICATION_ESSENCE_PRICE) {
 											return new Response("Identify ([style.italicsArcane("+IDENTIFICATION_ESSENCE_PRICE+" Essences)])",
 													"To identify the "+clothing.getName()+", you can either spend "+IDENTIFICATION_ESSENCE_PRICE+" arcane essences to do it yourself,"
 															+ " or go to a vendor and pay "+IDENTIFICATION_PRICE+" flames to have them do it for you.",
 													CLOTHING_INVENTORY) {
 												@Override
 												public void effects() {
-													Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, -IDENTIFICATION_ESSENCE_PRICE, false);
+													Main.game.getPlayer().incrementEssenceCount(-IDENTIFICATION_ESSENCE_PRICE, false);
 													
 													String enchantmentRemovedString = clothing.setEnchantmentKnown(owner, true);
 													
@@ -3917,7 +3913,7 @@ public class InventoryDialogue {
 
 							} else if(index >= 11 && index <= 14 && index-11<clothing.getClothingType().getEquipSlots().size()) {
 								InventorySlot slot = clothing.getClothingType().getEquipSlots().get(index-11);
-								return new Response("Equip: "+Util.capitaliseSentence(slot.getName())+" (opponent)", "You can't make your opponent equip clothing while fighting them!", null);
+								return new Response("Equip: "+Util.capitaliseSentence(slot.getName())+" (Opponent)", "You can't make your opponent equip clothing while fighting them!", null);
 								
 							} else {
 								return null;
@@ -4005,14 +4001,14 @@ public class InventoryDialogue {
 										return new Response("Enchant", "This clothing cannot be enchanted!", null);
 										
 									} else if(!clothing.isEnchantmentKnown()) {
-										if(Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE) >= IDENTIFICATION_ESSENCE_PRICE) {
+										if(Main.game.getPlayer().getEssenceCount() >= IDENTIFICATION_ESSENCE_PRICE) {
 											return new Response("Identify ([style.italicsArcane("+IDENTIFICATION_ESSENCE_PRICE+" Essences)])",
 													"To identify the "+clothing.getName()+", you can either spend "+IDENTIFICATION_ESSENCE_PRICE+" arcane essences to do it yourself,"
 															+ " or go to a vendor and pay "+IDENTIFICATION_PRICE+" flames to have them do it for you.",
 													CLOTHING_INVENTORY) {
 												@Override
 												public void effects() {
-													Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, -IDENTIFICATION_ESSENCE_PRICE, false);
+													Main.game.getPlayer().incrementEssenceCount(-IDENTIFICATION_ESSENCE_PRICE, false);
 
 													String enchantmentRemovedString = clothing.setEnchantmentKnown(owner, true);
 													
@@ -4113,8 +4109,8 @@ public class InventoryDialogue {
 											public void effects() {
 												List<NPC> enslavementTargets = new ArrayList<>(Main.game.getNonCompanionCharactersPresent());
 //												enslavementTargets.removeIf((npc) -> Main.game.getPlayer().getFriendlyOccupants().contains(npc.getId()));
-												enslavementTargets.removeIf((npc) -> !Combat.getEnemies(Main.game.getPlayer()).contains(npc));
-												if(enslavementTargets.size()==1) {
+												enslavementTargets.removeIf((npc) -> !Main.combat.getEnemies(Main.game.getPlayer()).contains(npc));
+												if(enslavementTargets.size()<=1) {
 													SlaveDialogue.setFollowupEnslavementDialogue(Main.game.getDefaultDialogue(false));
 												} else {
 													SlaveDialogue.setFollowupEnslavementDialogue(Main.game.getSavedDialogueNode());
@@ -4359,14 +4355,14 @@ public class InventoryDialogue {
 										return new Response("Enchant", "This clothing cannot be enchanted!", null);
 										
 									} else if(!clothing.isEnchantmentKnown()) {
-										if(Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE) >= IDENTIFICATION_ESSENCE_PRICE) {
+										if(Main.game.getPlayer().getEssenceCount() >= IDENTIFICATION_ESSENCE_PRICE) {
 											return new Response("Identify ([style.italicsArcane("+IDENTIFICATION_ESSENCE_PRICE+" Essences)])",
 													"To identify the "+clothing.getName()+", you can either spend "+IDENTIFICATION_ESSENCE_PRICE+" arcane essences to do it yourself,"
 															+ " or go to a vendor and pay "+IDENTIFICATION_PRICE+" flames to have them do it for you.",
 													CLOTHING_INVENTORY) {
 												@Override
 												public void effects() {
-													Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, -IDENTIFICATION_ESSENCE_PRICE, false);
+													Main.game.getPlayer().incrementEssenceCount(-IDENTIFICATION_ESSENCE_PRICE, false);
 
 													String enchantmentRemovedString = clothing.setEnchantmentKnown(owner, true);
 													
@@ -4850,8 +4846,8 @@ public class InventoryDialogue {
 											public void effects() {
 												List<NPC> enslavementTargets = new ArrayList<>(Main.game.getNonCompanionCharactersPresent());
 //												enslavementTargets.removeIf((npc) -> Main.game.getPlayer().getFriendlyOccupants().contains(npc.getId()));
-												enslavementTargets.removeIf((npc) -> !Combat.getEnemies(Main.game.getPlayer()).contains(npc));
-												if(enslavementTargets.size()==1) {
+												enslavementTargets.removeIf((npc) -> !Main.combat.getEnemies(Main.game.getPlayer()).contains(npc));
+												if(enslavementTargets.size()<=1) {
 													SlaveDialogue.setFollowupEnslavementDialogue(Main.game.getDefaultDialogue(false));
 												} else {
 													SlaveDialogue.setFollowupEnslavementDialogue(Main.game.getSavedDialogueNode());
@@ -5789,6 +5785,9 @@ public class InventoryDialogue {
 						
 					case SEX:
 						if (index == 1) {
+							if(clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo) && !Main.sex.getSexManager().isAbleToRemoveSelfClothing(Main.game.getPlayer())) {
+								return new Response("Discard", "You can't unequip the " + clothing.getName() + " in this sex scene!", null);
+							}
 							boolean areaFull = Main.game.isPlayerTileFull() && !Main.game.getPlayerCell().getInventory().hasClothing(clothing);
 							if(Main.game.getPlayer().getLocationPlace().isItemsDisappear()) {
 								if(!clothing.getClothingType().isAbleToBeDropped()) {
@@ -5796,6 +5795,7 @@ public class InventoryDialogue {
 									
 								} else if(areaFull && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 									return new Response("Drop", "This area is full, so you can't drop "+(owner.isPlayer()?"your":owner.getName("")+"'s")+" " + clothing.getName() + " here!", null);
+									
 								} else {
 									if (owner.isAbleToUnequip(clothing, false, Main.game.getPlayer())) {
 										return new Response((clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)?"Discard":"Drop"),
@@ -5825,6 +5825,7 @@ public class InventoryDialogue {
 									
 								} else if(areaFull && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 									return new Response("Store", "This area is full, so you can't store "+(owner.isPlayer()?"your":owner.getName("")+"'s")+" " + clothing.getName() + " here!", null);
+									
 								} else {
 									if (owner.isAbleToUnequip(clothing, false, Main.game.getPlayer())) {
 										return new Response((clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)?"Discard":"Store"),
@@ -6135,6 +6136,9 @@ public class InventoryDialogue {
 						
 					case SEX:
 						if (index == 1) {
+							if(clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo) && !Main.sex.getSexManager().isAbleToRemoveOthersClothing(Main.game.getPlayer(), clothing)) {
+								return new Response("Discard", "You can't unequip the " + clothing.getName() + " in this sex scene!", null);
+							}
 							boolean areaFull = Main.game.isPlayerTileFull() && !Main.game.getPlayerCell().getInventory().hasClothing(clothing);
 							if(Main.game.getPlayer().getLocationPlace().isItemsDisappear()) {
 								if(!clothing.getClothingType().isAbleToBeDropped()) {
@@ -6563,18 +6567,18 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().useItem(AbstractItemType.generateItem(ItemType.DYE_BRUSH), owner, false);
+							Main.game.getPlayer().useItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), owner, false);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.DYE_BRUSH.getDyeBrushEffects(clothing, dyePreviews.get(0))
+										+ getDyeBrushEffects(clothing, dyePreviews.get(0))
 									+ "</p>"
 									+ "<p>"
 										+ "<b>The " + clothing.getName() + " " + (clothing.getClothingType().isPlural() ? "have been" : "has been") + " dyed</b>!"
 									+ "</p>"
 									+ "<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
-														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH))
+														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
 							
@@ -6632,7 +6636,7 @@ public class InventoryDialogue {
 				}
 				
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-					int dyeBrushCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.DYE_BRUSH));
+					int dyeBrushCount = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH));
 					
 					if(dyeBrushCount<stackCount) {
 						return new Response("Dye all (stack)",
@@ -6650,10 +6654,10 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().removeItem(AbstractItemType.generateItem(ItemType.DYE_BRUSH), finalCount);
+							Main.game.getPlayer().removeItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), finalCount);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.DYE_BRUSH.getDyeBrushEffects(clothing, dyePreviews.get(0))
+										+ getDyeBrushEffects(clothing, dyePreviews.get(0))
 									+ "</p>"
 									+ "<p>"
 										+ "<b>The "+clothing.getName()+(clothing.getClothingType().isPlural()?"have":"has")+" been dyed</b>!"
@@ -6663,8 +6667,8 @@ public class InventoryDialogue {
 							
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
-														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH))
+														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
 							
@@ -6736,7 +6740,7 @@ public class InventoryDialogue {
 				}
 				
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-					int dyeBrushCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.DYE_BRUSH));
+					int dyeBrushCount = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH));
 					
 					if(dyeBrushCount<stackCount) {
 						return new Response("Dye all",
@@ -6754,10 +6758,10 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().removeItem(AbstractItemType.generateItem(ItemType.DYE_BRUSH), finalCount);
+							Main.game.getPlayer().removeItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), finalCount);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.DYE_BRUSH.getDyeBrushEffects(clothing, dyePreviews.get(0))
+										+ getDyeBrushEffects(clothing, dyePreviews.get(0))
 									+ "</p>"
 									+ "<p>"
 									+ "<b>The "+clothing.getName()+(clothing.getClothingType().isPlural()?"have":"has")+" been dyed</b>!"
@@ -6767,8 +6771,8 @@ public class InventoryDialogue {
 							
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
-														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH))
+														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
 							
@@ -6851,18 +6855,18 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().useItem(AbstractItemType.generateItem(ItemType.DYE_BRUSH), owner, false);
+							Main.game.getPlayer().useItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), owner, false);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.DYE_BRUSH.getDyeBrushEffects(clothing, dyePreviews.get(0))
+										+ getDyeBrushEffects(clothing, dyePreviews.get(0))
 									+ "</p>"
 									+ "<p>"
 										+ "<b>The " + clothing.getName() + " " + (clothing.getClothingType().isPlural() ? "have been" : "has been") + " dyed</b>!"
 									+ "</p>"
 									+ "<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
-														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH))
+														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
 							
@@ -7015,18 +7019,18 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().useItem(AbstractItemType.generateItem(ItemType.DYE_BRUSH), owner, false);
+							Main.game.getPlayer().useItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), owner, false);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.DYE_BRUSH.getDyeBrushEffects(weapon, dyePreviews.get(0))
+										+ getDyeBrushEffects(weapon, dyePreviews.get(0))
 									+ "</p>"
 									+ "<p>"
 										+ "<b>The " + weapon.getName() + " " + (weapon.getWeaponType().isPlural() ? "have been" : "has been") + " dyed</b>!"
 									+ "</p>"
 									+ "<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
-														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH))
+														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
 							
@@ -7039,14 +7043,14 @@ public class InventoryDialogue {
 						 
 						if(owner!=null) {
 							owner.removeWeapon(weapon);
-							AbstractWeapon dyedWeapon = AbstractWeaponType.generateWeapon(weapon);
+							AbstractWeapon dyedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 							dyedWeapon.setColours(dyePreviews);
 							owner.addWeapon(dyedWeapon, false);
 							Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed", dyedWeapon.getDisplayName(true)), false);
 
 						} else {
 							Main.game.getPlayerCell().getInventory().removeWeapon(weapon);
-							AbstractWeapon dyedWeapon = AbstractWeaponType.generateWeapon(weapon);
+							AbstractWeapon dyedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 							dyedWeapon.setColours(dyePreviews);
 							Main.game.getPlayerCell().getInventory().addWeapon(dyedWeapon);
 							Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed", dyedWeapon.getDisplayName(true)), false);
@@ -7077,19 +7081,19 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().useItem(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER), owner, false);
+							Main.game.getPlayer().useItem(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER), owner, false);
 							
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.REFORGE_HAMMER.getReforgeHammerEffects(weapon, damageTypePreview)
+										+ getReforgeHammerEffects(weapon, damageTypePreview)
 									+ "</p>"
 									+ "<p>"
 										+ "<b>The " + weapon.getName() + " " + (weapon.getWeaponType().isPlural() ? "have been" : "has been") + " reforged</b>!"
 									+ "</p>"
 									+ "<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER))
-														+ "</b> reforging " + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "hammer" : "hammers") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER))
+														+ "</b> reforging " + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "hammer" : "hammers") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
 							
@@ -7102,18 +7106,18 @@ public class InventoryDialogue {
 						 
 						if(owner!=null) {
 							owner.removeWeapon(weapon);
-							AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
+							AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 							modifiedWeapon.setDamageType(damageTypePreview);
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							owner.addWeapon(AbstractWeaponType.generateWeapon(modifiedWeapon), false);
+							owner.addWeapon(Main.game.getItemGen().generateWeapon(modifiedWeapon), false);
 							Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Reforged", modifiedWeapon.getDisplayName(true)), false);
 
 						} else {
 							Main.game.getPlayerCell().getInventory().removeWeapon(weapon);
-							AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
+							AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 							modifiedWeapon.setDamageType(damageTypePreview);
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							Main.game.getPlayerCell().getInventory().addWeapon(AbstractWeaponType.generateWeapon(modifiedWeapon));
+							Main.game.getPlayerCell().getInventory().addWeapon(Main.game.getItemGen().generateWeapon(modifiedWeapon));
 							Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Reforged", modifiedWeapon.getDisplayName(true)), false);
 						}
 					}
@@ -7148,27 +7152,27 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().useItem(AbstractItemType.generateItem(ItemType.DYE_BRUSH), owner, false);
-							Main.game.getPlayer().useItem(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER), owner, false);
+							Main.game.getPlayer().useItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), owner, false);
+							Main.game.getPlayer().useItem(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER), owner, false);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.DYE_BRUSH.getDyeBrushEffects(weapon, dyePreviews.get(0))
+										+ getDyeBrushEffects(weapon, dyePreviews.get(0))
 									+ "</p>"
 									+ "<p style='text-align:center;'>"
-										+ ItemType.REFORGE_HAMMER.getReforgeHammerEffects(weapon, damageTypePreview)
+										+ getReforgeHammerEffects(weapon, damageTypePreview)
 									+ "</p>"
 									+ "<p>"
 										+ "<b>The " + weapon.getName() + " " + (weapon.getWeaponType().isPlural() ? "have been" : "has been") + " dyed and reforged</b>!"
 									+ "</p>"
 									+ "<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
-														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH))
+														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 										+"<br/>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER))
-														+ "</b> reforging " + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "hammer" : "hammers") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER))
+														+ "</b> reforging " + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "hammer" : "hammers") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
 							
@@ -7181,20 +7185,20 @@ public class InventoryDialogue {
 						
 						if(owner!=null) {
 							owner.removeWeapon(weapon);
-							AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
+							AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 							modifiedWeapon.setDamageType(damageTypePreview);
 							modifiedWeapon.setColours(dyePreviews);
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							owner.addWeapon(AbstractWeaponType.generateWeapon(modifiedWeapon), false);
+							owner.addWeapon(Main.game.getItemGen().generateWeapon(modifiedWeapon), false);
 							Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed & Reforged", modifiedWeapon.getDisplayName(true)), false);
 
 						} else {
 							Main.game.getPlayerCell().getInventory().removeWeapon(weapon);
-							AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
+							AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 							modifiedWeapon.setDamageType(damageTypePreview);
 							modifiedWeapon.setColours(dyePreviews);
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							Main.game.getPlayerCell().getInventory().addWeapon(AbstractWeaponType.generateWeapon(modifiedWeapon));
+							Main.game.getPlayerCell().getInventory().addWeapon(Main.game.getItemGen().generateWeapon(modifiedWeapon));
 							Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed & Reforged", modifiedWeapon.getDisplayName(true)), false);
 						}
 					}
@@ -7223,7 +7227,7 @@ public class InventoryDialogue {
 				}
 				
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-					int dyeBrushCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.DYE_BRUSH));
+					int dyeBrushCount = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH));
 					
 					if(dyeBrushCount<stackCount) {
 						return new Response("Dye all (stack)",
@@ -7241,10 +7245,10 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().removeItem(AbstractItemType.generateItem(ItemType.DYE_BRUSH), finalCount);
+							Main.game.getPlayer().removeItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), finalCount);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.DYE_BRUSH.getDyeBrushEffects(weapon, dyePreviews.get(0))
+										+ getDyeBrushEffects(weapon, dyePreviews.get(0))
 									+ "</p>"
 									+ "<p>"
 									+ "<b>The "+weapon.getName()+(weapon.getWeaponType().isPlural()?"have":"has")+" been dyed</b>!"
@@ -7254,8 +7258,8 @@ public class InventoryDialogue {
 							
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
-														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH))
+														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
 							
@@ -7272,14 +7276,14 @@ public class InventoryDialogue {
 						
 						if(owner!=null) {
 							owner.removeWeapon(weapon, finalCount);
-							AbstractWeapon dyedWeapon = AbstractWeaponType.generateWeapon(weapon);
+							AbstractWeapon dyedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 							dyedWeapon.setColours(dyePreviews);
 							owner.addWeapon(dyedWeapon, finalCount, false, false);
 							Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed", dyedWeapon.getDisplayName(true)), false);
 
 						} else {
 							Main.game.getPlayerCell().getInventory().removeWeapon(weapon, finalCount);
-							AbstractWeapon dyedWeapon = AbstractWeaponType.generateWeapon(weapon);
+							AbstractWeapon dyedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 							dyedWeapon.setColours(dyePreviews);
 							Main.game.getPlayerCell().getInventory().addWeapon(dyedWeapon, finalCount);
 							Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed", dyedWeapon.getDisplayName(true)), false);
@@ -7310,7 +7314,7 @@ public class InventoryDialogue {
 				}
 				
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-					int reforgeHammerCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER));
+					int reforgeHammerCount = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER));
 					
 					if(reforgeHammerCount<stackCount) {
 						return new Response("Reforge all (stack)",
@@ -7328,10 +7332,10 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().removeItem(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER), finalCount);
+							Main.game.getPlayer().removeItem(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER), finalCount);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.REFORGE_HAMMER.getReforgeHammerEffects(weapon, damageTypePreview)
+										+ getReforgeHammerEffects(weapon, damageTypePreview)
 									+ "</p>"
 									+ "<p>"
 									+ "<b>The "+weapon.getName()+(weapon.getWeaponType().isPlural()?"have":"has")+" been reforged</b>!"
@@ -7341,8 +7345,8 @@ public class InventoryDialogue {
 							
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER))
-														+ "</b> reforging hammer" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "" : "s") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER))
+														+ "</b> reforging hammer" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "" : "s") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
 							
@@ -7359,18 +7363,18 @@ public class InventoryDialogue {
 						
 						if(owner!=null) {
 							owner.removeWeapon(weapon, finalCount);
-							AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
+							AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 							modifiedWeapon.setDamageType(damageTypePreview);
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							owner.addWeapon(AbstractWeaponType.generateWeapon(modifiedWeapon), finalCount, false, false);
+							owner.addWeapon(Main.game.getItemGen().generateWeapon(modifiedWeapon), finalCount, false, false);
 							Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Reforged", modifiedWeapon.getDisplayName(true)), false);
 
 						} else {
 							Main.game.getPlayerCell().getInventory().removeWeapon(weapon, finalCount);
-							AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
+							AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 							modifiedWeapon.setDamageType(damageTypePreview);
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							Main.game.getPlayerCell().getInventory().addWeapon(AbstractWeaponType.generateWeapon(modifiedWeapon), finalCount);
+							Main.game.getPlayerCell().getInventory().addWeapon(Main.game.getItemGen().generateWeapon(modifiedWeapon), finalCount);
 							Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Reforged", modifiedWeapon.getDisplayName(true)), false);
 						}
 					}
@@ -7406,8 +7410,8 @@ public class InventoryDialogue {
 				}
 				
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-					int dyeBrushCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.DYE_BRUSH));
-					int reforgeHammerCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER));
+					int dyeBrushCount = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH));
+					int reforgeHammerCount = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER));
 					
 					if(dyeBrushCount<stackCount || reforgeHammerCount<stackCount) {
 						return new Response("Dye & reforge all (stack)",
@@ -7425,13 +7429,13 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().removeItem(AbstractItemType.generateItem(ItemType.DYE_BRUSH), finalCount);
+							Main.game.getPlayer().removeItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), finalCount);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.DYE_BRUSH.getDyeBrushEffects(weapon, dyePreviews.get(0))
+										+ getDyeBrushEffects(weapon, dyePreviews.get(0))
 									+ "</p>"
 									+ "<p style='text-align:center;'>"
-										+ ItemType.REFORGE_HAMMER.getReforgeHammerEffects(weapon, damageTypePreview)
+										+ getReforgeHammerEffects(weapon, damageTypePreview)
 									+ "</p>"
 									+ "<p>"
 									+ "<b>The "+weapon.getName()+(weapon.getWeaponType().isPlural()?"have":"has")+" been dyed and reforged</b>!"
@@ -7441,15 +7445,15 @@ public class InventoryDialogue {
 							
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
-														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH))
+														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
 
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER))
-														+ "</b> reforging hammer" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "" : "s") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER))
+														+ "</b> reforging hammer" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "" : "s") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
 							
@@ -7466,20 +7470,20 @@ public class InventoryDialogue {
 						
 						if(owner!=null) {
 							owner.removeWeapon(weapon, finalCount);
-							AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
+							AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 							modifiedWeapon.setDamageType(damageTypePreview);
 							modifiedWeapon.setColours(dyePreviews);
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							owner.addWeapon(AbstractWeaponType.generateWeapon(modifiedWeapon), finalCount, false, false);
+							owner.addWeapon(Main.game.getItemGen().generateWeapon(modifiedWeapon), finalCount, false, false);
 							Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed & Reforged", modifiedWeapon.getDisplayName(true)), false);
 
 						} else {
 							Main.game.getPlayerCell().getInventory().removeWeapon(weapon, finalCount);
-							AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
+							AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 							modifiedWeapon.setDamageType(damageTypePreview);
 							modifiedWeapon.setColours(dyePreviews);
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							Main.game.getPlayerCell().getInventory().addWeapon(AbstractWeaponType.generateWeapon(modifiedWeapon), finalCount);
+							Main.game.getPlayerCell().getInventory().addWeapon(Main.game.getItemGen().generateWeapon(modifiedWeapon), finalCount);
 							Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed & Reforged", modifiedWeapon.getDisplayName(true)), false);
 						}
 					}
@@ -7519,7 +7523,7 @@ public class InventoryDialogue {
 				}
 				
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-					int dyeBrushCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.DYE_BRUSH));
+					int dyeBrushCount = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH));
 					
 					if(dyeBrushCount<stackCount) {
 						return new Response("Dye all",
@@ -7537,10 +7541,10 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().removeItem(AbstractItemType.generateItem(ItemType.DYE_BRUSH), finalCount);
+							Main.game.getPlayer().removeItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), finalCount);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.DYE_BRUSH.getDyeBrushEffects(weapon, dyePreviews.get(0))
+										+ getDyeBrushEffects(weapon, dyePreviews.get(0))
 									+ "</p>"
 									+ "<p>"
 									+ "<b>The "+weapon.getName()+(weapon.getWeaponType().isPlural()?"have":"has")+" been dyed</b>!"
@@ -7550,8 +7554,8 @@ public class InventoryDialogue {
 							
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
-														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH))
+														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
 							
@@ -7571,7 +7575,7 @@ public class InventoryDialogue {
 							for(AbstractWeapon w : weaponMatches) {
 								int weaponCount = owner.getAllWeaponsInInventory().get(w);
 								owner.removeWeapon(w, weaponCount);
-								AbstractWeapon dyedWeapon = AbstractWeaponType.generateWeapon(w);
+								AbstractWeapon dyedWeapon = Main.game.getItemGen().generateWeapon(w);
 								dyedWeapon.setColours(dyePreviews);
 								owner.addWeapon(dyedWeapon, weaponCount, false, false);
 								Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed", dyedWeapon.getDisplayName(true)), false);
@@ -7581,7 +7585,7 @@ public class InventoryDialogue {
 							for(AbstractWeapon w : weaponMatches) {
 								int weaponCount = Main.game.getPlayerCell().getInventory().getAllWeaponsInInventory().get(w);
 								Main.game.getPlayerCell().getInventory().removeWeapon(w, weaponCount);
-								AbstractWeapon dyedWeapon = AbstractWeaponType.generateWeapon(w);
+								AbstractWeapon dyedWeapon = Main.game.getItemGen().generateWeapon(w);
 								dyedWeapon.setColours(dyePreviews);
 								Main.game.getPlayerCell().getInventory().addWeapon(dyedWeapon, weaponCount);
 								Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed", dyedWeapon.getDisplayName(true)), false);
@@ -7624,7 +7628,7 @@ public class InventoryDialogue {
 				}
 				
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-					int reforgeHammerCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER));
+					int reforgeHammerCount = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER));
 					
 					if(reforgeHammerCount<stackCount) {
 						return new Response("Reforge all",
@@ -7642,10 +7646,10 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().removeItem(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER), finalCount);
+							Main.game.getPlayer().removeItem(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER), finalCount);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.REFORGE_HAMMER.getReforgeHammerEffects(weapon, damageTypePreview)
+										+ getReforgeHammerEffects(weapon, damageTypePreview)
 									+ "</p>"
 									+ "<p>"
 									+ "<b>The "+weapon.getName()+(weapon.getWeaponType().isPlural()?"have":"has")+" been reforged</b>!"
@@ -7655,8 +7659,8 @@ public class InventoryDialogue {
 							
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER))
-														+ "</b> reforging hammer" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "" : "s") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER))
+														+ "</b> reforging hammer" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "" : "s") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
 							
@@ -7675,10 +7679,10 @@ public class InventoryDialogue {
 							for(AbstractWeapon w : weaponMatches) {
 								int weaponCount = owner.getAllWeaponsInInventory().get(w);
 								owner.removeWeapon(w, weaponCount);
-								AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(w);
+								AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(w);
 								modifiedWeapon.setDamageType(damageTypePreview);
 								// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-								owner.addWeapon(AbstractWeaponType.generateWeapon(modifiedWeapon), weaponCount, false, false);
+								owner.addWeapon(Main.game.getItemGen().generateWeapon(modifiedWeapon), weaponCount, false, false);
 								Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Reforged", modifiedWeapon.getDisplayName(true)), false);
 							}
 
@@ -7686,10 +7690,10 @@ public class InventoryDialogue {
 							for(AbstractWeapon w : weaponMatches) {
 								int weaponCount = Main.game.getPlayerCell().getInventory().getAllWeaponsInInventory().get(w);
 								Main.game.getPlayerCell().getInventory().removeWeapon(w, weaponCount);
-								AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(w);
+								AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(w);
 								modifiedWeapon.setDamageType(damageTypePreview);
 								// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-								Main.game.getPlayerCell().getInventory().addWeapon(AbstractWeaponType.generateWeapon(modifiedWeapon), weaponCount);
+								Main.game.getPlayerCell().getInventory().addWeapon(Main.game.getItemGen().generateWeapon(modifiedWeapon), weaponCount);
 								Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Reforged", modifiedWeapon.getDisplayName(true)), false);
 							}
 						}
@@ -7736,8 +7740,8 @@ public class InventoryDialogue {
 				}
 				
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-					int dyeBrushCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.DYE_BRUSH));
-					int reforgeHammerCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER));
+					int dyeBrushCount = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH));
+					int reforgeHammerCount = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER));
 					
 					if(dyeBrushCount<stackCount || reforgeHammerCount<stackCount) {
 						return new Response("Dye & reforge all",
@@ -7755,13 +7759,13 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().removeItem(AbstractItemType.generateItem(ItemType.DYE_BRUSH), finalCount);
+							Main.game.getPlayer().removeItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), finalCount);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.DYE_BRUSH.getDyeBrushEffects(weapon, dyePreviews.get(0))
+										+ getDyeBrushEffects(weapon, dyePreviews.get(0))
 									+ "</p>"
 									+ "<p style='text-align:center;'>"
-										+ ItemType.REFORGE_HAMMER.getReforgeHammerEffects(weapon, damageTypePreview)
+										+ getReforgeHammerEffects(weapon, damageTypePreview)
 									+ "</p>"
 									+ "<p>"
 									+ "<b>The "+weapon.getName()+(weapon.getWeaponType().isPlural()?"have":"has")+" been dyed and reforged</b>!"
@@ -7771,15 +7775,15 @@ public class InventoryDialogue {
 							
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
-														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH))
+														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
 
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER))
-														+ "</b> reforging hammer" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "" : "s") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER))
+														+ "</b> reforging hammer" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "" : "s") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
 							
@@ -7798,11 +7802,11 @@ public class InventoryDialogue {
 							for(AbstractWeapon w : weaponMatches) {
 								int weaponCount = owner.getAllWeaponsInInventory().get(w);
 								owner.removeWeapon(w, weaponCount);
-								AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(w);
+								AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(w);
 								modifiedWeapon.setDamageType(damageTypePreview);
 								modifiedWeapon.setColours(dyePreviews);
 								// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-								owner.addWeapon(AbstractWeaponType.generateWeapon(modifiedWeapon), weaponCount, false, false);
+								owner.addWeapon(Main.game.getItemGen().generateWeapon(modifiedWeapon), weaponCount, false, false);
 								Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed & Reforged", modifiedWeapon.getDisplayName(true)), false);
 							}
 							
@@ -7810,11 +7814,11 @@ public class InventoryDialogue {
 							for(AbstractWeapon w : weaponMatches) {
 								int weaponCount = Main.game.getPlayerCell().getInventory().getAllWeaponsInInventory().get(w);
 								Main.game.getPlayerCell().getInventory().removeWeapon(w, weaponCount);
-								AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(w);
+								AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(w);
 								modifiedWeapon.setDamageType(damageTypePreview);
 								modifiedWeapon.setColours(dyePreviews);
 								// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-								Main.game.getPlayerCell().getInventory().addWeapon(AbstractWeaponType.generateWeapon(modifiedWeapon), weaponCount);
+								Main.game.getPlayerCell().getInventory().addWeapon(Main.game.getItemGen().generateWeapon(modifiedWeapon), weaponCount);
 								Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed & Reforged", modifiedWeapon.getDisplayName(true)), false);
 							}
 						}
@@ -7867,18 +7871,18 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().useItem(AbstractItemType.generateItem(ItemType.DYE_BRUSH), owner, false);
+							Main.game.getPlayer().useItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), owner, false);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.DYE_BRUSH.getDyeBrushEffects(weapon, dyePreviews.get(0))
+										+ getDyeBrushEffects(weapon, dyePreviews.get(0))
 									+ "</p>"
 									+ "<p>"
 										+ "<b>The " + weapon.getName() + " " + (weapon.getWeaponType().isPlural() ? "have been" : "has been") + " dyed</b>!"
 									+ "</p>"
 									+ "<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
-														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH))
+														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
 							
@@ -7892,18 +7896,18 @@ public class InventoryDialogue {
 						
 
 						owner.unequipWeaponIntoVoid(weaponSlot, weapon, true);
-						AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
+						AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 						modifiedWeapon.setColours(dyePreviews);
 						
 						if(weaponSlot==InventorySlot.WEAPON_MAIN_1
 								|| weaponSlot==InventorySlot.WEAPON_MAIN_2
 								|| weaponSlot==InventorySlot.WEAPON_MAIN_3) {
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							owner.equipMainWeaponFromNowhere(AbstractWeaponType.generateWeapon(modifiedWeapon));
+							owner.equipMainWeaponFromNowhere(Main.game.getItemGen().generateWeapon(modifiedWeapon));
 							
 						} else {
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							owner.equipOffhandWeaponFromNowhere(AbstractWeaponType.generateWeapon(modifiedWeapon));
+							owner.equipOffhandWeaponFromNowhere(Main.game.getItemGen().generateWeapon(modifiedWeapon));
 						}
 
 //						weapon.setPrimaryColour(dyePreviewPrimary);
@@ -7935,18 +7939,18 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().useItem(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER), owner, false);
+							Main.game.getPlayer().useItem(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER), owner, false);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.REFORGE_HAMMER.getReforgeHammerEffects(weapon, damageTypePreview)
+										+ getReforgeHammerEffects(weapon, damageTypePreview)
 									+ "</p>"
 									+ "<p>"
 										+ "<b>The " + weapon.getName() + " " + (weapon.getWeaponType().isPlural() ? "have been" : "has been") + " reforged</b>!"
 									+ "</p>"
 									+ "<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER))
-														+ "</b> reforging " + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "hammer" : "hammers") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER))
+														+ "</b> reforging " + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "hammer" : "hammers") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
 							
@@ -7958,18 +7962,18 @@ public class InventoryDialogue {
 						}
 
 						owner.unequipWeaponIntoVoid(weaponSlot, weapon, true);
-						AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
+						AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 						modifiedWeapon.setDamageType(damageTypePreview);
 						
 						if(weaponSlot==InventorySlot.WEAPON_MAIN_1
 								|| weaponSlot==InventorySlot.WEAPON_MAIN_2
 								|| weaponSlot==InventorySlot.WEAPON_MAIN_3) {
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							owner.equipMainWeaponFromNowhere(AbstractWeaponType.generateWeapon(modifiedWeapon));
+							owner.equipMainWeaponFromNowhere(Main.game.getItemGen().generateWeapon(modifiedWeapon));
 							
 						} else {
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							owner.equipOffhandWeaponFromNowhere(AbstractWeaponType.generateWeapon(modifiedWeapon));
+							owner.equipOffhandWeaponFromNowhere(Main.game.getItemGen().generateWeapon(modifiedWeapon));
 						}
 						
 						Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Reforged", weapon.getDisplayName(true)), false);
@@ -8005,27 +8009,27 @@ public class InventoryDialogue {
 					@Override
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-							Main.game.getPlayer().useItem(AbstractItemType.generateItem(ItemType.DYE_BRUSH), owner, false);
-							Main.game.getPlayer().useItem(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER), owner, false);
+							Main.game.getPlayer().useItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), owner, false);
+							Main.game.getPlayer().useItem(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER), owner, false);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
-										+ ItemType.DYE_BRUSH.getDyeBrushEffects(weapon, dyePreviews.get(0))
+										+ getDyeBrushEffects(weapon, dyePreviews.get(0))
 									+ "</p>"
 									+ "<p style='text-align:center;'>"
-										+ ItemType.REFORGE_HAMMER.getReforgeHammerEffects(weapon, damageTypePreview)
+										+ getReforgeHammerEffects(weapon, damageTypePreview)
 									+ "</p>"
 									+ "<p>"
 										+ "<b>The " + weapon.getName() + " " + (weapon.getWeaponType().isPlural() ? "have been" : "has been") + " reforged</b>!"
 									+ "</p>"
 									+ "<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
-														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH))
+														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 										+"<br/>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
-												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER))
-														+ "</b> reforging " + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "hammer" : "hammers") + " left!"
+												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER))
+														+ "</b> reforging " + (Main.game.getPlayer().getAllItemsInInventory().get(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "hammer" : "hammers") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
 							
@@ -8037,7 +8041,7 @@ public class InventoryDialogue {
 						}
 
 						owner.unequipWeaponIntoVoid(weaponSlot, weapon, true);
-						AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
+						AbstractWeapon modifiedWeapon = Main.game.getItemGen().generateWeapon(weapon);
 						modifiedWeapon.setColours(dyePreviews);
 						modifiedWeapon.setDamageType(damageTypePreview);
 						
@@ -8045,11 +8049,11 @@ public class InventoryDialogue {
 								|| weaponSlot==InventorySlot.WEAPON_MAIN_2
 								|| weaponSlot==InventorySlot.WEAPON_MAIN_3) {
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							owner.equipMainWeaponFromNowhere(AbstractWeaponType.generateWeapon(modifiedWeapon));
+							owner.equipMainWeaponFromNowhere(Main.game.getItemGen().generateWeapon(modifiedWeapon));
 							
 						} else {
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
-							owner.equipOffhandWeaponFromNowhere(AbstractWeaponType.generateWeapon(modifiedWeapon));
+							owner.equipOffhandWeaponFromNowhere(Main.game.getItemGen().generateWeapon(modifiedWeapon));
 						}
 						
 //						weapon.setDamageType(damageTypePreview);
@@ -8073,6 +8077,33 @@ public class InventoryDialogue {
 	
 	
 	// Utility methods:
+	
+	private static String getDyeBrushEffects(AbstractClothing clothing, Colour colour) {
+		return "<p>"
+					+ "As you take hold of the Dye-brush, you see the purple glow around the tip growing in strength."
+					+ " The closer you move it to your " + clothing.getName() + ", the brighter the glow becomes, until suddenly, images of different colours start flashing through your mind."
+					+ " As you touch the bristles to the " + clothing.getName() + "'s surface, the Dye-brush instantly evaporates!"
+					+ " You see that the arcane enchantment has dyed the " + clothing.getName() + " " + colour.getName() + "."
+				+ "</p>";
+	}
+	
+	private static String getDyeBrushEffects(AbstractWeapon weapon, Colour colour) {
+		return "<p>"
+					+ "As you take hold of the Dye-brush, you see the purple glow around the tip growing in strength."
+					+ " The closer you move it to your " + weapon.getName() + ", the brighter the glow becomes, until suddenly, images of different colours start flashing through your mind."
+					+ " As you touch the bristles to the " + weapon.getName() + "'s surface, the Dye-brush instantly evaporates!"
+					+ " You see that the arcane enchantment has dyed the " + weapon.getName() + " " + colour.getName() + "."
+				+ "</p>";
+	}
+	
+	private static String getReforgeHammerEffects(AbstractWeapon weapon, DamageType damageType) {
+		return "<p>"
+					+ "As you take hold of the reforging hammer, you see the metal head start to emit a deep purple glow."
+					+ " The closer you move it to your " + weapon.getName() + ", the brighter this glow becomes, until suddenly, images of different damage types start flashing through your mind."
+					+ " As you touch the metal head  to the " + weapon.getName() + ", the reforge hammer instantly evaporates!"
+					+ " You see that the arcane enchantment has reforged the " + weapon.getName() + " so that it now deals " + damageType.getName() + " damage."
+				+ "</p>";
+	}
 	
 	private static String getItemDisplayPanel(String SVGString, String title, String description) {
 		return "<div class='inventoryImage'>"
@@ -8208,7 +8239,7 @@ public class InventoryDialogue {
 			}
 		}
 		
-		if(ownsKey || Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE)>=removalCost) {
+		if(ownsKey || Main.game.getPlayer().getEssenceCount()>=removalCost) {
 			return new Response("Unseal "+(ownsKey?"([style.italicsGood(Use key)])":"([style.italicsArcane("+removalCost+" Essences)])"),
 						ownsKey
 							?"As you own the key which unlocks this piece of clothing, you can remove it without having to spend any arcane essences!"
@@ -8226,7 +8257,7 @@ public class InventoryDialogue {
 							+ "</p>";
 						
 					} else {
-						Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, -removalCost, false);
+						Main.game.getPlayer().incrementEssenceCount(-removalCost, false);
 						s = UtilText.parse(owner,
 								"<p>"
 									+ "You channel the power of your arcane essences into [npc.namePos] "+clothing.getName()+", and with a bright purple flash, you manage to remove the seal!"
@@ -8356,7 +8387,7 @@ public class InventoryDialogue {
 			to.incrementMoney(-itemPrice*count);
 			
 			if(buyback && to.isPlayer()) {
-				Main.game.getPlayer().addWeapon(AbstractWeaponType.generateWeapon(weapon), count, false, true);
+				Main.game.getPlayer().addWeapon(Main.game.getItemGen().generateWeapon(weapon), count, false, true);
 				Main.game.getPlayer().getBuybackStack().get(buyBackIndex).incrementCount(-count);
 				if(Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getCount()<=0) {	
 					Main.game.getPlayer().getBuybackStack().remove(buyBackIndex);
@@ -8366,7 +8397,7 @@ public class InventoryDialogue {
 				if(from.isPlayer()) {
 					Main.game.getPlayer().getBuybackStack().push(new ShopTransaction(weapon, itemPrice, count));
 				} else {
-					to.addWeapon(AbstractWeaponType.generateWeapon(weapon), count, false, true);
+					to.addWeapon(Main.game.getItemGen().generateWeapon(weapon), count, false, true);
 				}
 				from.removeWeapon(weapon, count);
 			}
@@ -8522,12 +8553,12 @@ public class InventoryDialogue {
 	
 	private static Response getCondomSabotageResponse(AbstractClothing clothing) {
 		if(clothing.getCondomEffect().getPotency().isNegative()) {
-			if(Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE) >= 1) {
+			if(Main.game.getPlayer().getEssenceCount() >= 1) {
 				return new Response("Repair ([style.italicsArcane(1 Essence)])",
 						"Spend 1 arcane essence to repair the condom.", CLOTHING_INVENTORY) {
 					@Override
 					public void effects() {
-						Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, -1, false);
+						Main.game.getPlayer().incrementEssenceCount(-1, false);
 						Main.game.getTextEndStringBuilder().append(
 								"<p>"
 									+ "You channel the power of an arcane essence into the condom, and, after emitting a faint purple glow, it is repaired!"
@@ -8578,7 +8609,7 @@ public class InventoryDialogue {
 		resetItems();
 	}
 	
-	private static void resetItems() {
+	public static void resetItems() {
 		item = null;
 		clothing = null;
 		weapon = null;

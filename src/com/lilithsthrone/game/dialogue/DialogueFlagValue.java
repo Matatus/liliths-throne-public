@@ -1,9 +1,5 @@
 package com.lilithsthrone.game.dialogue;
 
-import java.util.List;
-
-import com.lilithsthrone.utils.Util;
-
 /**
  * @since 0.1.89
  * @version 0.3.8.9
@@ -80,10 +76,12 @@ public enum DialogueFlagValue {
 	
 	// Shopping arcade:
 	ralphAskedAboutHundredKisses,
+	ralphDailyBred(true),
 	
 	nyanTalkedTo(true),
 	nyanComplimented(true),
 	nyanFlirtedWith(true),
+	nyanHeadPatted(true),
 	nyanKissed(true),
 	nyanMakeOut(true),
 	nyanSex(true),
@@ -110,6 +108,7 @@ public enum DialogueFlagValue {
 	essenceExtractionKnown,
 	roseToldOnYou,
 	lilayaReactedToPlayerAsDemon,
+	lilayaHug(true),
 	
 	readBook1,
 	readBook2,
@@ -330,7 +329,6 @@ public enum DialogueFlagValue {
 	vengarThreatened,
 	vengarPersuaded,
 	vengarSeduced,
-	ratWarrensRaid,
 	ratWarrensUsedResonanceStone,
 
 	vengarCaptiveRoomCleaned(true),
@@ -339,7 +337,8 @@ public enum DialogueFlagValue {
 	vengarCaptiveSilenceSatisfied(true),
 	vengarCaptiveCompanionGivenBirth(true),
 	vengarCaptiveGangBanged(true),
-	
+
+	ratWarrensCaptiveInitialNightDescription,
 	ratWarrensCaptiveAttemptingEscape,
 	ratWarrensCaptiveEscaped,
 //	ratWarrensCaptiveTransformationsStarted,
@@ -348,15 +347,12 @@ public enum DialogueFlagValue {
 	ratWarrensCaptiveFuta,
 	ratWarrensCaptiveMasculine,
 	ratWarrensCaptiveSissy,
-	
+
+	murkCaptiveBlowjob,
 	murkMaster,
-	murkSir,
-	murkDaddy,
 	
-	ratWarrensCaptiveFuckedByMurk,
-	ratWarrensCaptiveCompanionFuckedByMurk,
-	
-	ratWarrensCaptiveCalledOut, // Reset to false when sleep
+	ratWarrensCaptiveCalledOut,
+	ratWarrensCaptiveWashed,
 	
 	ratWarrensCaptiveCompanionGivenBirth(true),
 	ratWarrensCaptiveOwnerSex(true),
@@ -376,58 +372,6 @@ public enum DialogueFlagValue {
 
 	public boolean isDailyReset() {
 		return dailyReset;
-	}
-	
-	public static List<DialogueFlagValue> getRatWarrensFlags() {
-		return Util.newArrayListOfValues(
-				ratWarrensEntry,
-				ratWarrensEntryWhore,
-				ratWarrensHostile,
-				ratWarrensEntranceGuardsFight,
-				ratWarrensSeenMilkers,
-				ratWarrensMilkersBackground,
-				ratWarrensSilenceIntroduced,
-				
-				ratWarrensClearedLeft,
-				ratWarrensClearedCentre,
-				ratWarrensClearedRight,
-				
-				ratWarrensLootedDiceDen,
-				
-				vengarThreatened,
-				vengarPersuaded,
-				vengarSeduced,
-				ratWarrensRaid,
-				ratWarrensUsedResonanceStone,
-
-				vengarCaptiveRoomCleaned,
-				vengarCaptiveVengarSatisfied,
-				vengarCaptiveShadowSatisfied,
-				vengarCaptiveSilenceSatisfied,
-				vengarCaptiveCompanionGivenBirth,
-				vengarCaptiveGangBanged,
-				
-				ratWarrensCaptiveAttemptingEscape,
-				ratWarrensCaptiveEscaped,
-				
-				ratWarrensCaptiveFeminine,
-				ratWarrensCaptiveFuta,
-				ratWarrensCaptiveMasculine,
-				ratWarrensCaptiveSissy,
-				
-				murkMaster,
-				murkSir,
-				murkDaddy,
-				
-				ratWarrensCaptiveFuckedByMurk,
-				ratWarrensCaptiveCompanionFuckedByMurk,
-				
-				ratWarrensCaptiveCalledOut,
-				
-				ratWarrensCaptiveCompanionGivenBirth,
-				ratWarrensCaptiveOwnerSex,
-				ratWarrensCaptiveOwnerCompanionSex,
-				ratWarrensCaptiveDailyTransformed);
 	}
 	
 }

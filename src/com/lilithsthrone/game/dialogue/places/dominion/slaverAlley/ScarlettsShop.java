@@ -40,6 +40,7 @@ import com.lilithsthrone.game.character.npc.misc.GenericSexualPartner;
 import com.lilithsthrone.game.character.persona.SexualOrientation;
 import com.lilithsthrone.game.character.quests.Quest;
 import com.lilithsthrone.game.character.quests.QuestLine;
+import com.lilithsthrone.game.character.race.AbstractRace;
 import com.lilithsthrone.game.character.race.Race;
 import com.lilithsthrone.game.character.race.Subspecies;
 import com.lilithsthrone.game.combat.spells.SpellSchool;
@@ -56,11 +57,8 @@ import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.CharacterInventory;
 import com.lilithsthrone.game.inventory.InventorySlot;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
-import com.lilithsthrone.game.inventory.clothing.AbstractClothingType;
 import com.lilithsthrone.game.inventory.clothing.ClothingType;
-import com.lilithsthrone.game.inventory.enchanting.TFEssence;
 import com.lilithsthrone.game.inventory.item.AbstractItem;
-import com.lilithsthrone.game.inventory.item.AbstractItemType;
 import com.lilithsthrone.game.inventory.item.ItemType;
 import com.lilithsthrone.game.inventory.weapon.AbstractWeapon;
 import com.lilithsthrone.game.sex.InitialSexActionInformation;
@@ -106,7 +104,7 @@ import com.lilithsthrone.world.places.PlaceType;
 
 /**
  * @since 0.1.83
- * @version 0.3.7.1
+ * @version 0.3.9.1
  * @author Innoxia
  */
 public class ScarlettsShop {
@@ -119,7 +117,7 @@ public class ScarlettsShop {
 			NPC npc = new GenericSexualPartner(Gender.M_P_MALE, WorldType.EMPTY, Main.game.getWorlds().get(WorldType.EMPTY).getCell(PlaceType.GENERIC_HOLDING_CELL).getLocation(), false, (s)->s!=Subspecies.CENTAUR);
 			
 			npc.unequipAllClothing(npc, true, true);
-			npc.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.getClothingTypeFromId("innoxia_bdsm_metal_collar"), PresetColour.CLOTHING_GOLD, false), true, npc);
+			npc.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.getClothingTypeFromId("innoxia_bdsm_metal_collar"), PresetColour.CLOTHING_GOLD, false), true, npc);
 			
 			npc.setMuscle(Muscle.FOUR_RIPPED.getMedianValue());
 			npc.setBodySize(BodySize.FOUR_HUGE.getMedianValue());
@@ -336,7 +334,7 @@ public class ScarlettsShop {
 		}
 		
 		int value = 25_000;
-		for(Entry<Race, Integer> entry : getSlaveForCustomisation().getBody().getRaceWeightMap().entrySet()) { // Add value for non-human parts:
+		for(Entry<AbstractRace, Integer> entry : getSlaveForCustomisation().getBody().getRaceWeightMap().entrySet()) { // Add value for non-human parts:
 			if(entry.getKey()!=Race.HUMAN) {
 				value += Math.min(5_000, 1_000*entry.getValue());
 			}
@@ -574,10 +572,10 @@ public class ScarlettsShop {
 							Main.game.getNpc(Helena.class).addSlave(Main.game.getNpc(Scarlett.class));
 							Main.game.getNpc(Scarlett.class).setObedience(ObedienceLevel.POSITIVE_TWO_OBEDIENT.getMedianValue());
 							Main.game.getNpc(Scarlett.class).resetInventory(true);
-							AbstractClothing collar = AbstractClothingType.generateClothing("innoxia_bdsm_metal_collar", PresetColour.CLOTHING_BLACK_STEEL, false);
+							AbstractClothing collar = Main.game.getItemGen().generateClothing("innoxia_bdsm_metal_collar", PresetColour.CLOTHING_BLACK_STEEL, false);
 							collar.setSealed(true);
 							Main.game.getNpc(Scarlett.class).equipClothingFromNowhere(collar, true, Main.game.getNpc(Helena.class));
-							Main.game.getNpc(Scarlett.class).equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.BDSM_BALLGAG, PresetColour.CLOTHING_PINK, false), true, Main.game.getNpc(Helena.class));
+							Main.game.getNpc(Scarlett.class).equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.BDSM_BALLGAG, PresetColour.CLOTHING_PINK, false), true, Main.game.getNpc(Helena.class));
 						}
 					};
 					
@@ -1592,7 +1590,7 @@ public class ScarlettsShop {
 			}
 			Main.game.getNpc(Natalya.class).returnToHome();
 			Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().setQuestProgress(QuestLine.ROMANCE_HELENA, Quest.ROMANCE_HELENA_3_C_EXTERIOR_DECORATOR));
-			Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().addItem(AbstractItemType.generateItem(ItemType.NATALYA_BUSINESS_CARD), false));
+			Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().addItem(Main.game.getItemGen().generateItem(ItemType.NATALYA_BUSINESS_CARD), false));
 		}
 		@Override
 		public int getSecondsPassed() {
@@ -1946,9 +1944,9 @@ public class ScarlettsShop {
 									Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().setQuestProgress(QuestLine.ROMANCE_HELENA, Quest.ROMANCE_HELENA_5_SCARLETT_TRAINER));
 									
 									Main.game.addSavedInventory(Main.game.getNpc(Scarlett.class));
-									int essences = Main.game.getNpc(Scarlett.class).getEssenceCount(TFEssence.ARCANE);
+									int essences = Main.game.getNpc(Scarlett.class).getEssenceCount();
 									Main.game.getNpc(Scarlett.class).setInventory(new CharacterInventory(0));
-									Main.game.getNpc(Scarlett.class).setEssenceCount(TFEssence.ARCANE, essences);
+									Main.game.getNpc(Scarlett.class).setEssenceCount(essences);
 								}
 							};
 							
@@ -1983,9 +1981,9 @@ public class ScarlettsShop {
 									Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().setQuestProgress(QuestLine.ROMANCE_HELENA, Quest.ROMANCE_HELENA_5_SCARLETT_TRAINER));
 									
 									Main.game.addSavedInventory(Main.game.getNpc(Scarlett.class));
-									int essences = Main.game.getNpc(Scarlett.class).getEssenceCount(TFEssence.ARCANE);
+									int essences = Main.game.getNpc(Scarlett.class).getEssenceCount();
 									Main.game.getNpc(Scarlett.class).setInventory(new CharacterInventory(0));
-									Main.game.getNpc(Scarlett.class).setEssenceCount(TFEssence.ARCANE, essences);
+									Main.game.getNpc(Scarlett.class).setEssenceCount(essences);
 								}
 							};
 							
@@ -2218,7 +2216,7 @@ public class ScarlettsShop {
 	public static final DialogueNode ROMANCE_ADVERTISING_POSTERS_END = new DialogueNode("", "", true, true) {
 		@Override
 		public void applyPreParsingEffects() {
-			Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().addItem(AbstractItemType.generateItem(ItemType.ROLLED_UP_POSTERS), false));
+			Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().addItem(Main.game.getItemGen().generateItem(ItemType.ROLLED_UP_POSTERS), false));
 			Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().setQuestProgress(QuestLine.ROMANCE_HELENA, Quest.ROMANCE_HELENA_6_ADVERTISING));
 			Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().incrementMoney(100));
 		}
@@ -5027,7 +5025,7 @@ public class ScarlettsShop {
 					};
 					
 				} else if(index==3) {
-					if(Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE)<10) {
+					if(Main.game.getPlayer().getEssenceCount()<10) {
 						return new Response("Boost (10 essences)", "You need at least ten arcane essences to boost the effects of the transformation potion!", null);
 					}
 					return new Response("Boost ([style.colourArcane(10 essences)])",
@@ -5054,7 +5052,7 @@ public class ScarlettsShop {
 
 							Main.game.getTextStartStringBuilder().append(UtilText.parseFromXMLFile("places/dominion/slaverAlley/helenasBoutique", "HELENAS_SHOP_SCARLETT_CAFE_EATING_TRANSFORMED_CORE"));
 							
-							Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, -10, false));
+							Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().incrementEssenceCount(-10, false));
 							Main.game.getDialogueFlags().setFlag(DialogueFlagValue.helenaShopScarlettExtraTransformationDiscussed, true);
 							Main.game.getDialogueFlags().setFlag(DialogueFlagValue.helenaShopScarlettExtraTransformationApplied, true);
 						}

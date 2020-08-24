@@ -37,9 +37,9 @@ import com.lilithsthrone.game.character.body.types.HairType;
 import com.lilithsthrone.game.character.body.types.HornType;
 import com.lilithsthrone.game.character.body.types.LegType;
 import com.lilithsthrone.game.character.body.types.PenisType;
-import com.lilithsthrone.game.character.body.types.TorsoType;
 import com.lilithsthrone.game.character.body.types.TailType;
 import com.lilithsthrone.game.character.body.types.TentacleType;
+import com.lilithsthrone.game.character.body.types.TorsoType;
 import com.lilithsthrone.game.character.body.types.VaginaType;
 import com.lilithsthrone.game.character.body.types.WingType;
 import com.lilithsthrone.game.character.body.valueEnums.AreolaeShape;
@@ -78,6 +78,7 @@ import com.lilithsthrone.game.character.effects.Perk;
 import com.lilithsthrone.game.character.effects.StatusEffect;
 import com.lilithsthrone.game.character.fetishes.Fetish;
 import com.lilithsthrone.game.character.gender.Gender;
+import com.lilithsthrone.game.character.race.AbstractRace;
 import com.lilithsthrone.game.character.race.Race;
 import com.lilithsthrone.game.character.race.RaceStage;
 import com.lilithsthrone.game.character.race.RacialBody;
@@ -127,7 +128,7 @@ public class Body implements XMLSaving {
 	
 	private GenitalArrangement genitalArrangement;
 
-	private Map<Race, Integer> raceWeightMap = new ConcurrentHashMap<>();
+	private Map<AbstractRace, Integer> raceWeightMap = new ConcurrentHashMap<>();
 	private Subspecies subspecies;
 	private RaceStage raceStage;
 	private boolean piercedStomach = false;
@@ -323,6 +324,7 @@ public class Body implements XMLSaving {
 	
 	public void addDiscoveredBodyCoveringsFromMaterial(BodyMaterial bodyMaterial) {
 		if(bodyMaterial==BodyMaterial.SLIME) {
+			coveringsDiscovered.add(BodyCoveringType.SLIME);
 			coveringsDiscovered.add(BodyCoveringType.SLIME_EYE);
 			coveringsDiscovered.add(BodyCoveringType.SLIME_HAIR);
 			coveringsDiscovered.add(BodyCoveringType.SLIME_PUPILS);
@@ -347,48 +349,8 @@ public class Body implements XMLSaving {
 		}
 	}
 	
-	public static BodyCoveringType getBodyHairCoveringType(Race race) {
-		switch(race) {
-			case NONE:
-				break;
-			case ANGEL:
-				return BodyCoveringType.BODY_HAIR_ANGEL;
-			case CAT_MORPH:
-				return BodyCoveringType.BODY_HAIR_FELINE_FUR;
-			case COW_MORPH:
-				return BodyCoveringType.BODY_HAIR_BOVINE_FUR;
-			case DEMON:
-				return BodyCoveringType.BODY_HAIR_DEMON;
-			case DOG_MORPH:
-				return BodyCoveringType.BODY_HAIR_CANINE_FUR;
-			case ALLIGATOR_MORPH:
-				return BodyCoveringType.BODY_HAIR_SCALES_ALLIGATOR;
-			case HARPY:
-				return BodyCoveringType.BODY_HAIR_HARPY;
-			case HORSE_MORPH:
-				return BodyCoveringType.BODY_HAIR_HORSE_HAIR;
-			case REINDEER_MORPH:
-				return BodyCoveringType.BODY_HAIR_REINDEER_HAIR;
-			case HUMAN:
-				return BodyCoveringType.BODY_HAIR_HUMAN;
-			case SQUIRREL_MORPH:
-				return BodyCoveringType.BODY_HAIR_SQUIRREL_FUR;
-			case WOLF_MORPH:
-				return BodyCoveringType.BODY_HAIR_LYCAN_FUR;
-			case SLIME:
-				return BodyCoveringType.SLIME_BODY_HAIR;
-			case BAT_MORPH:
-				return BodyCoveringType.BODY_HAIR_BAT_FUR;
-			case RAT_MORPH:
-				return BodyCoveringType.BODY_HAIR_RAT_FUR;
-			case RABBIT_MORPH:
-				return BodyCoveringType.BODY_HAIR_RABBIT_FUR;
-			case ELEMENTAL:
-				break; // Doesn't matter what is passed in here, as getCovering will catch whatever BodyCoveringType the body is made up of.
-			case FOX_MORPH:
-				return BodyCoveringType.BODY_HAIR_FOX_FUR;
-		}
-		return BodyCoveringType.BODY_HAIR_HUMAN;
+	public static BodyCoveringType getBodyHairCoveringType(AbstractRace race) {
+		return race.getBodyHairType();
 	}
 	
 	private void applyStartingCoveringValues() {
@@ -1073,8 +1035,12 @@ public class Body implements XMLSaving {
 		if(eyeTypeConverterMap.containsKey(eyeTypeFromSave)) {
 			eyeTypeFromSave = eyeTypeConverterMap.get(eyeTypeFromSave);
 		}
-
+		
 		Eye importedEye = new Eye(EyeType.getEyeTypeFromId(eyeTypeFromSave));
+		
+		if(Main.isVersionOlderThan(version, "0.3.9") && importedSubspeciesOverride==Subspecies.HALF_DEMON) { // Fix to taurs spawning with no demon parts at all in v0.3.8.9
+			importedEye = new Eye(EyeType.DEMON_COMMON);
+		}
 		
 		importedEye.eyePairs = (Integer.valueOf(eye.getAttribute("eyePairs")));
 		importedEye.irisShape = (EyeShape.valueOf(eye.getAttribute("irisShape")));
@@ -1512,7 +1478,7 @@ public class Body implements XMLSaving {
 		
 		try {
 			depth = OrificeDepth.TWO_AVERAGE.getValue();
-			depthAttribute = penis.getAttribute("urethraDepth");
+			depthAttribute = vagina.getAttribute("urethraDepth");
 			if(!depthAttribute.isEmpty()) {
 				depth = Integer.valueOf(depthAttribute);
 			}
@@ -1835,6 +1801,8 @@ public class Body implements XMLSaving {
 		} catch(Exception ex) {	
 		}
 		
+		body.addDiscoveredBodyCoveringsFromMaterial(importedBodyMaterial);
+		
 		body.calculateRace(null);
 		
 		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.0.5")) {
@@ -2001,7 +1969,7 @@ public class Body implements XMLSaving {
 
 		if (hair.getRawLengthValue() == 0) {
 			if (face.isBaldnessNatural()) {
-				sb.append(" [npc.Her] head is covered in [npc.faceFullDescription(true)].");
+				sb.append(" [npc.Her] head is [npc.materialDescriptor] [npc.faceFullDescription(true)].");
 			} else {
 				sb.append(" [npc.SheHasFull] no hair on [npc.her] head, revealing the [npc.faceSkin] that covers [npc.her] scalp.");
 			}
@@ -2123,7 +2091,7 @@ public class Body implements XMLSaving {
 			sb.append(" Around [npc.her] [npc.eyes], [npc.sheHas] got a layer of "+owner.getEyeLiner().getColourDescriptor(owner, true, false)+" eye liner.");
 		}
 		if(owner.getEyeShadow().getPrimaryColour()!=PresetColour.COVERING_NONE) {
-			sb.append(" [npc.sheIs] wearing a tasteful amount of "+owner.getEyeShadow().getFullDescription(owner, true)+".");
+			sb.append(" [npc.SheIs] wearing a tasteful amount of "+owner.getEyeShadow().getFullDescription(owner, true)+".");
 		}
 		
 		// Ear:
@@ -2254,39 +2222,26 @@ public class Body implements XMLSaving {
 		
 		
 		if (owner.isPlayer() || owner.isAreaKnownByCharacter(CoverableArea.MOUTH, Main.game.getPlayer())) {
-			if (face.getMouth().getOrificeMouth().isVirgin()) {
+			if(face.getMouth().getOrificeMouth().isVirgin()) { //TODO
 				sb.append(" [npc.SheHas] [style.colourExcellent(never given head before)], so [npc.is] unsure of how much [npc.she] could fit down [npc.her] throat.</span>");
 				
 			} else {
-//				switch(face.getMouth().getOrificeMouth().getCapacity()) {
-//					case ZERO_IMPENETRABLE:
-//						sb.append(" [style.colourSex([npc.SheIs] terrible at giving head)], and would struggle to fit the tip of even the smallest of cocks into [npc.her] mouth without gagging.");
-//						break;
-//					case ONE_EXTREMELY_TIGHT:
-//						sb.append(" [style.colourSex([npc.SheIs] really bad at giving head)], and would struggle to fit even tiny cocks into [npc.her] mouth without gagging.");
-//						break;
-//					case TWO_TIGHT:
-//						sb.append(" [style.colourSex([npc.SheIs] not great at giving head)], and putting anything larger than an average-sized human cock into [npc.her] mouth would cause [npc.her] to gag.");
-//						break;
-//					case THREE_SLIGHTLY_LOOSE:
-//						sb.append(" [style.colourSex([npc.SheIs] somewhat competent at giving head)], and can suppress [npc.her] gag reflex enough to comfortably suck large cocks.");
-//						break;
-//					case FOUR_LOOSE:
-//						sb.append(" [style.colourSex([npc.SheIs] pretty good at giving head)], and can comfortably suck huge cocks without gagging.");
-//						break;
-//					case FIVE_ROOMY:
-//						sb.append(" [style.colourSex([npc.SheIs] somewhat of an expert at giving head)], and can suck enormous cocks without too much difficulty.");
-//						break;
-//					case SIX_STRETCHED_OPEN:
-//						sb.append(" [style.colourSex([npc.SheIs] amazing at giving head)], and can comfortably suck all but the most absurdly-sized cocks with ease.");
-//						break;
-//					case SEVEN_GAPING:
-//						sb.append(" [style.colourSex([npc.SheIs])] [style.colourLegendary(legendary)] [style.colourSex(at giving head)]; it's almost as though [npc.her] throat was purposefully designed to fit phallic objects of any size or shape.");
-//						break;
-//				}
-
-				sb.append(" It is "+Capacity.getCapacityFromValue(face.getMouth().getOrificeMouth().getStretchedCapacity()).getDescriptor(true)
-						+", and can comfortably accommodate objects of up to [style.colourSex("+ Units.size(Capacity.getCapacityFromValue(face.getMouth().getOrificeMouth().getStretchedCapacity()).getMaximumValue(true)) + ")] in diameter.");
+				boolean virginityLossFound = false;
+				for(SexAreaPenetration pt : SexAreaPenetration.values()) {
+					if(pt.isTakesVirginity()) {
+						if(owner.getVirginityLoss(new SexType(SexParticipantType.NORMAL, SexAreaOrifice.MOUTH, pt))!=null) {
+							sb.append(" <span style='color:" + PresetColour.GENERIC_ARCANE.toWebHexString() + ";'>"+ owner.getVirginityLossDescription(new SexType(SexParticipantType.NORMAL, SexAreaOrifice.MOUTH, pt)) + "</span>");
+							virginityLossFound = true;
+							break;
+						}
+					}
+				}
+				if(!virginityLossFound) {
+					sb.append(" <span style='color:" + PresetColour.GENERIC_ARCANE.toWebHexString() + ";'>[npc.Name] [npc.has] lost [npc.her] oral virginity.</span>");
+				}
+				
+				sb.append(" It is "+Capacity.getCapacityFromValue(face.getMouth().getOrificeMouth().getStretchedCapacity()).getDescriptor(true)+", and can comfortably accommodate objects of up to"
+						+ " [style.colourSex("+ Units.size(Capacity.getMaximumComfortableDiameter(face.getMouth().getOrificeMouth().getElasticity(), face.getMouth().getOrificeMouth().getRawCapacityValue(), true)) + ")] in diameter.");
 				
 				if(Main.game.isPenetrationLimitationsEnabled()) {
 					switch(owner.getFaceDepth()) {
@@ -2815,7 +2770,7 @@ public class Body implements XMLSaving {
 		return UtilText.parse(owner, sb.toString());
 	}
 
-	private void addRaceWeight(Map<Race, Integer> raceWeightMap, Race race, int weight) {
+	private void addRaceWeight(Map<AbstractRace, Integer> raceWeightMap, AbstractRace race, int weight) {
 		if(race!=null && race!=Race.NONE) {
 			raceWeightMap.putIfAbsent(race, 0);
 			raceWeightMap.put(race, raceWeightMap.get(race)+weight);
@@ -2833,7 +2788,7 @@ public class Body implements XMLSaving {
 //			target.removeStatusEffect(StatusEffect.SUBSPECIES_BONUS);
 //		}
 		
-		Race race = Race.HUMAN;
+		AbstractRace race = Race.HUMAN;
 		switch(this.getBodyMaterial()) {
 			case AIR:
 				race = Race.ELEMENTAL;
@@ -2909,12 +2864,12 @@ public class Body implements XMLSaving {
 //		}
 	}
 
-	public Race getRaceFromPartWeighting() {
+	public AbstractRace getRaceFromPartWeighting() {
 		return getRaceFromPartWeighting(false);
 	}
 	
-	public Race getRaceFromPartWeighting(boolean ignoreOverride) {
-		Race race = Race.HUMAN;
+	public AbstractRace getRaceFromPartWeighting(boolean ignoreOverride) {
+		AbstractRace race = Race.HUMAN;
 		
 		raceWeightMap.clear();
 		
@@ -2945,7 +2900,7 @@ public class Body implements XMLSaving {
 		int max = 0;
 		boolean demonPartFound = false;
 		
-		for(Entry<Race, Integer> e : raceWeightMap.entrySet()) {
+		for(Entry<AbstractRace, Integer> e : raceWeightMap.entrySet()) {
 			if(e.getKey()!=null && e.getKey()==Race.DEMON) {
 				demonPartFound = true;
 				
@@ -2977,11 +2932,11 @@ public class Body implements XMLSaving {
 		}
 	}
 
-	public Map<Race, Integer> getRaceWeightMap() {
+	public Map<AbstractRace, Integer> getRaceWeightMap() {
 		return raceWeightMap;
 	}
 	
-	public Race getRace() {
+	public AbstractRace getRace() {
 		if(subspecies == null) {
 			calculateRace(null);
 		}
@@ -3191,8 +3146,8 @@ public class Body implements XMLSaving {
 			descriptionSB.append(" [style.colourBestial(Being a part of [npc.her] bestial lower body, it is entirely feral in form, and is no different to that of a feral [npc.assRace]'s.)]");
 		}
 
-		descriptionSB.append(" It is "+Capacity.getCapacityFromValue(ass.getAnus().getOrificeAnus().getStretchedCapacity()).getDescriptor(true)
-				+", and when lubricated can comfortably accommodate objects of up to [style.colourSex("+ Units.size(Capacity.getCapacityFromValue(ass.getAnus().getOrificeAnus().getStretchedCapacity()).getMaximumValue(true)) + ")] in diameter.");
+		descriptionSB.append(" It is "+Capacity.getCapacityFromValue(ass.getAnus().getOrificeAnus().getStretchedCapacity()).getDescriptor(true)+", and when lubricated can comfortably accommodate objects of up to"
+				+ " [style.colourSex("+ Units.size(Capacity.getMaximumComfortableDiameter(ass.getAnus().getOrificeAnus().getElasticity(), ass.getAnus().getOrificeAnus().getRawCapacityValue(), true)) + ")] in diameter.");
 
 		if(Main.game.isPenetrationLimitationsEnabled()) {
 			switch(owner.getAssDepth()) {
@@ -3520,41 +3475,14 @@ public class Body implements XMLSaving {
 						+ " ("+ Units.fluid(viewedBreast.getRawStoredMilkValue()) + " currently stored) at [npc.a_milkRegen] rate.");
 				
 				switch(viewedBreast.getMilk().getFlavour()) {
-					case CHOCOLATE:
-						descriptionSB.append(" [npc.Her] [npc.milk] tastes of chocolate.");
-						break;
-					case CUM:
-						descriptionSB.append(" [npc.Her] [npc.milk] tastes exactly like cum.");
-						break;
-					case GIRL_CUM:
-						descriptionSB.append(" [npc.Her] [npc.milk] tastes of girl-cum.");
-						break;
-					case HONEY:
-						descriptionSB.append(" [npc.Her] [npc.milk] tastes of honey.");
-						break;
 					case MILK:
 						descriptionSB.append(" [npc.Her] [npc.milk] tastes like regular milk.");
-						break;
-					case MINT:
-						descriptionSB.append(" [npc.Her] [npc.milk] tastes of mint.");
-						break;
-					case PINEAPPLE:
-						descriptionSB.append(" [npc.Her] [npc.milk] tastes of pineapple.");
 						break;
 					case BUBBLEGUM:
 						descriptionSB.append(" [npc.Her] [npc.milk] has the fruity taste of bubblegum.");
 						break;
-					case STRAWBERRY:
-						descriptionSB.append(" [npc.Her] [npc.milk] tastes of strawberries.");
-						break;
-					case BEER:
-						descriptionSB.append(" [npc.Her] [npc.milk] tastes like beer.");
-						break;
-					case VANILLA:
-						descriptionSB.append(" [npc.Her] [npc.milk] tastes of vanilla.");
-						break;
-					case CHERRY:
-						descriptionSB.append(" [npc.Her] [npc.milk] tastes of cherries.");
+					default:
+						descriptionSB.append(" [npc.Her] [npc.milk] tastes exactly like "+viewedBreast.getMilk().getFlavour().getName()+".");
 						break;
 				}
 				
@@ -3808,41 +3736,14 @@ public class Body implements XMLSaving {
 						+ Units.fluid(viewedBreastCrotch.getRawStoredMilkValue(), Units.UnitType.LONG) + " currently stored) at [npc.a_crotchMilkRegen] rate.");
 				
 				switch(viewedBreastCrotch.getMilk().getFlavour()) {
-					case CHOCOLATE:
-						descriptionSB.append(" [npc.Her] [npc.crotchMilk] tastes of chocolate.");
-						break;
-					case CUM:
-						descriptionSB.append(" [npc.Her] [npc.crotchMilk] tastes exactly like cum.");
-						break;
-					case GIRL_CUM:
-						descriptionSB.append(" [npc.Her] [npc.crotchMilk] tastes of girl-cum.");
-						break;
-					case HONEY:
-						descriptionSB.append(" [npc.Her] [npc.crotchMilk] tastes of honey.");
-						break;
 					case MILK:
 						descriptionSB.append(" [npc.Her] [npc.crotchMilk] tastes like regular milk.");
-						break;
-					case MINT:
-						descriptionSB.append(" [npc.Her] [npc.crotchMilk] tastes of mint.");
-						break;
-					case PINEAPPLE:
-						descriptionSB.append(" [npc.Her] [npc.crotchMilk] tastes of pineapple.");
 						break;
 					case BUBBLEGUM:
 						descriptionSB.append(" [npc.Her] [npc.crotchMilk] has the fruity taste of bubblegum.");
 						break;
-					case STRAWBERRY:
-						descriptionSB.append(" [npc.Her] [npc.crotchMilk] tastes of strawberries.");
-						break;
-					case BEER:
-						descriptionSB.append(" [npc.Her] [npc.crotchMilk] tastes like beer.");
-						break;
-					case VANILLA:
-						descriptionSB.append(" [npc.Her] [npc.crotchMilk] tastes of vanilla.");
-						break;
-					case CHERRY:
-						descriptionSB.append(" [npc.Her] [npc.crotchMilk] tastes of cherries.");
+					default:
+						descriptionSB.append(" [npc.Her] [npc.crotchMilk] tastes exactly like "+viewedBreastCrotch.getMilk().getFlavour().getName()+".");
 						break;
 				}
 				
@@ -4254,41 +4155,14 @@ public class Body implements XMLSaving {
 			descriptionSB.append(" [npc.Her] [npc.cum]");
 			
 			switch(viewedPenis.getTesticle().getCum().getFlavour()) {
-				case CHOCOLATE:
-					descriptionSB.append(" tastes of chocolate.");
-					break;
 				case CUM:
 					descriptionSB.append(", much to nobody's surprise, tastes like cum.");
-					break;
-				case GIRL_CUM:
-					descriptionSB.append(" tastes of girl-cum.");
-					break;
-				case HONEY:
-					descriptionSB.append(" tastes of honey.");
-					break;
-				case MILK:
-					descriptionSB.append(" tastes like milk.");
-					break;
-				case MINT:
-					descriptionSB.append(" tastes of mint.");
-					break;
-				case PINEAPPLE:
-					descriptionSB.append(" tastes of pineapple.");
 					break;
 				case BUBBLEGUM:
 					descriptionSB.append(" has the fruity taste of bubblegum.");
 					break;
-				case STRAWBERRY:
-					descriptionSB.append(" tastes of strawberries.");
-					break;
-				case BEER:
-					descriptionSB.append(" tastes like beer.");
-					break;
-				case VANILLA:
-					descriptionSB.append(" tastes of vanilla.");
-					break;
-				case CHERRY:
-					descriptionSB.append(" tastes of cherries.");
+				default:
+					descriptionSB.append(" tastes exactly like "+viewedPenis.getTesticle().getCum().getFlavour().getName()+".");
 					break;
 			}
 			
@@ -4452,7 +4326,7 @@ public class Body implements XMLSaving {
 		
 		if (isPlayer || !hallucinating) {
 			descriptionSB.append(" [npc.Her] pussy is " + Capacity.getCapacityFromValue(viewedVagina.getOrificeVagina().getStretchedCapacity()).getDescriptor(true)+" and when lubricated can comfortably accommodate objects of up to"
-					+ " [style.colourSex("+ Units.size(Capacity.getCapacityFromValue(viewedVagina.getOrificeVagina().getStretchedCapacity()).getMaximumValue(true)) + ")] in diameter.");
+					+ " [style.colourSex("+ Units.size(Capacity.getMaximumComfortableDiameter(viewedVagina.orificeVagina.getElasticity(), viewedVagina.getOrificeVagina().getRawCapacityValue(), true)) + ")] in diameter.");
 		}
 
 		if(Main.game.isPenetrationLimitationsEnabled()) {
@@ -4567,41 +4441,14 @@ public class Body implements XMLSaving {
 		descriptionSB.append(" [npc.Her] [npc.girlcum]");
 		
 		switch(viewedVagina.getGirlcum().getFlavour()) {
-			case CHOCOLATE:
-				descriptionSB.append(" tastes of chocolate.");
-				break;
-			case CUM:
-				descriptionSB.append(" tastes of salty cum.");
-				break;
 			case GIRL_CUM:
 				descriptionSB.append(", much to nobody's surprise, tastes like ordinary girlcum.");
-				break;
-			case HONEY:
-				descriptionSB.append(" tastes of honey.");
-				break;
-			case MILK:
-				descriptionSB.append(" tastes like milk.");
-				break;
-			case MINT:
-				descriptionSB.append(" tastes of mint.");
-				break;
-			case PINEAPPLE:
-				descriptionSB.append(" tastes of pineapple.");
 				break;
 			case BUBBLEGUM:
 				descriptionSB.append(" has the fruity taste of bubblegum.");
 				break;
-			case STRAWBERRY:
-				descriptionSB.append(" tastes of strawberries.");
-				break;
-			case BEER:
-				descriptionSB.append(" tastes like beer.");
-				break;
-			case VANILLA:
-				descriptionSB.append(" tastes of vanilla.");
-				break;
-			case CHERRY:
-				descriptionSB.append(" tastes of cherries.");
+			default:
+				descriptionSB.append(" tastes exactly like "+viewedVagina.getGirlcum().getFlavour().getName()+".");
 				break;
 		}
 		
@@ -4643,7 +4490,7 @@ public class Body implements XMLSaving {
 		// Urethra:
 		if (Capacity.getCapacityFromValue(viewedVagina.getOrificeUrethra().getStretchedCapacity()) != Capacity.ZERO_IMPENETRABLE) {
 			descriptionSB.append("[npc.Her] vagina's urethra has been loosened enough that it presents a ready orifice for penetration, and when lubricated can comfortably accommodate objects of up to"
-					+ " [style.colourSex("+ Units.size(Capacity.getCapacityFromValue(viewedVagina.getOrificeUrethra().getStretchedCapacity()).getMaximumValue(true)) + ")] in diameter.");
+					+ " [style.colourSex("+ Units.size(Capacity.getMaximumComfortableDiameter(viewedVagina.getOrificeUrethra().getElasticity(), viewedVagina.getOrificeUrethra().getRawCapacityValue(), true)) + ")] in diameter.");
 			
 			if(Main.game.isPenetrationLimitationsEnabled()) {
 				switch(owner.getVaginaUrethraDepth()) {
@@ -5343,63 +5190,9 @@ public class Body implements XMLSaving {
 		}
 		
 		if(updateBodyHairColours) {
-			for(Race r : Race.values()) {
-				switch(r) {
-					case NONE:
-						break;
-					case ANGEL:
-						coverings.put(BodyCoveringType.BODY_HAIR_ANGEL, new Covering(BodyCoveringType.BODY_HAIR_ANGEL, coverings.get(BodyCoveringType.HAIR_ANGEL).getPrimaryColour()));
-						break;
-					case CAT_MORPH:
-						coverings.put(BodyCoveringType.BODY_HAIR_FELINE_FUR, new Covering(BodyCoveringType.BODY_HAIR_FELINE_FUR, coverings.get(BodyCoveringType.HAIR_FELINE_FUR).getPrimaryColour()));
-						break;
-					case DEMON:
-						coverings.put(BodyCoveringType.BODY_HAIR_DEMON, new Covering(BodyCoveringType.BODY_HAIR_DEMON, coverings.get(BodyCoveringType.HAIR_DEMON).getPrimaryColour()));
-						break;
-					case DOG_MORPH:
-						coverings.put(BodyCoveringType.BODY_HAIR_CANINE_FUR, new Covering(BodyCoveringType.BODY_HAIR_CANINE_FUR, coverings.get(BodyCoveringType.HAIR_CANINE_FUR).getPrimaryColour()));
-						break;
-					case FOX_MORPH:
-						coverings.put(BodyCoveringType.BODY_HAIR_FOX_FUR, new Covering(BodyCoveringType.BODY_HAIR_FOX_FUR, coverings.get(BodyCoveringType.HAIR_FOX_FUR).getPrimaryColour()));
-						break;
-					case ALLIGATOR_MORPH:
-						coverings.put(BodyCoveringType.ALLIGATOR_SCALES, new Covering(BodyCoveringType.ALLIGATOR_SCALES, coverings.get(BodyCoveringType.ALLIGATOR_SCALES).getPrimaryColour()));
-						break;
-					case HARPY:
-						coverings.put(BodyCoveringType.BODY_HAIR_HARPY, new Covering(BodyCoveringType.BODY_HAIR_HARPY, coverings.get(BodyCoveringType.HAIR_HARPY).getPrimaryColour()));
-						break;
-					case HORSE_MORPH:
-						coverings.put(BodyCoveringType.BODY_HAIR_HORSE_HAIR, new Covering(BodyCoveringType.BODY_HAIR_HORSE_HAIR, coverings.get(BodyCoveringType.HAIR_HORSE_HAIR).getPrimaryColour()));
-						break;
-					case REINDEER_MORPH:
-						coverings.put(BodyCoveringType.BODY_HAIR_REINDEER_HAIR, new Covering(BodyCoveringType.BODY_HAIR_REINDEER_HAIR, coverings.get(BodyCoveringType.HAIR_REINDEER_FUR).getPrimaryColour()));
-						break;
-					case COW_MORPH:
-						coverings.put(BodyCoveringType.BODY_HAIR_BOVINE_FUR, new Covering(BodyCoveringType.BODY_HAIR_BOVINE_FUR, coverings.get(BodyCoveringType.HAIR_BOVINE_FUR).getPrimaryColour()));
-						break;
-					case HUMAN:
-						coverings.put(BodyCoveringType.BODY_HAIR_HUMAN, new Covering(BodyCoveringType.BODY_HAIR_HUMAN, coverings.get(BodyCoveringType.HAIR_HUMAN).getPrimaryColour()));
-						break;
-					case SLIME:
-						coverings.put(BodyCoveringType.SLIME_BODY_HAIR, new Covering(BodyCoveringType.SLIME_BODY_HAIR, coverings.get(BodyCoveringType.SLIME_HAIR).getPrimaryColour()));
-						break;
-					case SQUIRREL_MORPH:
-						coverings.put(BodyCoveringType.BODY_HAIR_SQUIRREL_FUR, new Covering(BodyCoveringType.BODY_HAIR_SQUIRREL_FUR, coverings.get(BodyCoveringType.HAIR_SQUIRREL_FUR).getPrimaryColour()));
-						break;
-					case RAT_MORPH:
-						coverings.put(BodyCoveringType.BODY_HAIR_RAT_FUR, new Covering(BodyCoveringType.BODY_HAIR_RAT_FUR, coverings.get(BodyCoveringType.HAIR_RAT_FUR).getPrimaryColour()));
-						break;
-					case RABBIT_MORPH:
-						coverings.put(BodyCoveringType.BODY_HAIR_RABBIT_FUR, new Covering(BodyCoveringType.BODY_HAIR_RABBIT_FUR, coverings.get(BodyCoveringType.HAIR_RABBIT_FUR).getPrimaryColour()));
-						break;
-					case BAT_MORPH:
-						coverings.put(BodyCoveringType.BODY_HAIR_BAT_FUR, new Covering(BodyCoveringType.BODY_HAIR_BAT_FUR, coverings.get(BodyCoveringType.HAIR_BAT_FUR).getPrimaryColour()));
-						break;
-					case WOLF_MORPH:
-						coverings.put(BodyCoveringType.BODY_HAIR_LYCAN_FUR, new Covering(BodyCoveringType.BODY_HAIR_LYCAN_FUR, coverings.get(BodyCoveringType.HAIR_LYCAN_FUR).getPrimaryColour()));
-						break;
-					case ELEMENTAL:
-						break;
+			for(AbstractRace race : Race.getAllRaces()) {
+				if(!HairType.getHairTypes(race).isEmpty()) {
+					coverings.put(race.getBodyHairType(), new Covering(race.getBodyHairType(), coverings.get(HairType.getHairTypes(race).get(0).getBodyCoveringType(this)).getPrimaryColour()));
 				}
 			}
 		}
@@ -5445,120 +5238,82 @@ public class Body implements XMLSaving {
 	}
 	
 	public void updateAnusColouring() {
-		switch(ass.getType().getRace()) {
-			case ANGEL:
-				coverings.put(BodyCoveringType.ANUS, new Covering(BodyCoveringType.ANUS, CoveringPattern.ORIFICE_ANUS, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-				break;
-			case DEMON:
-				coverings.put(BodyCoveringType.ANUS, new Covering(BodyCoveringType.ANUS, CoveringPattern.ORIFICE_ANUS, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-				break;
-			default:
-				coverings.put(BodyCoveringType.ANUS, new Covering(BodyCoveringType.ANUS, CoveringPattern.ORIFICE_ANUS, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-				break;
+		if(ass.getType().getRace()==Race.ANGEL) {
+			coverings.put(BodyCoveringType.ANUS, new Covering(BodyCoveringType.ANUS, CoveringPattern.ORIFICE_ANUS, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
+			
+		} else if(ass.getType().getRace()==Race.DEMON) {
+			coverings.put(BodyCoveringType.ANUS, new Covering(BodyCoveringType.ANUS, CoveringPattern.ORIFICE_ANUS, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
+			
+		} else {
+			coverings.put(BodyCoveringType.ANUS, new Covering(BodyCoveringType.ANUS, CoveringPattern.ORIFICE_ANUS, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
 		}
 	}
 	
 	public void updateNippleColouring() {
-		switch(breast.getType().getRace()) {
-			case ANGEL:
-				coverings.put(BodyCoveringType.NIPPLES, new Covering(BodyCoveringType.NIPPLES, CoveringPattern.ORIFICE_NIPPLE, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-				break;
-			case DEMON:
-				coverings.put(BodyCoveringType.NIPPLES, new Covering(BodyCoveringType.NIPPLES, CoveringPattern.ORIFICE_NIPPLE, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-				break;
-			default:
-				coverings.put(BodyCoveringType.NIPPLES, new Covering(BodyCoveringType.NIPPLES, CoveringPattern.ORIFICE_NIPPLE, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-				break;
+		if(breast.getType().getRace()==Race.ANGEL) {
+			coverings.put(BodyCoveringType.NIPPLES, new Covering(BodyCoveringType.NIPPLES, CoveringPattern.ORIFICE_NIPPLE, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
+			
+		} else if(breast.getType().getRace()==Race.DEMON) {
+			coverings.put(BodyCoveringType.NIPPLES, new Covering(BodyCoveringType.NIPPLES, CoveringPattern.ORIFICE_NIPPLE, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
+			
+		} else {
+			coverings.put(BodyCoveringType.NIPPLES, new Covering(BodyCoveringType.NIPPLES, CoveringPattern.ORIFICE_NIPPLE, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
 		}
 	}
 	
 	public void updateNippleCrotchColouring() {
-		switch(breastCrotch.getType().getRace()) {
-			case ANGEL:
-				coverings.put(BodyCoveringType.NIPPLES_CROTCH, new Covering(BodyCoveringType.NIPPLES_CROTCH, CoveringPattern.ORIFICE_NIPPLE_CROTCH, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-				break;
-			case DEMON:
-				coverings.put(BodyCoveringType.NIPPLES_CROTCH, new Covering(BodyCoveringType.NIPPLES_CROTCH, CoveringPattern.ORIFICE_NIPPLE_CROTCH, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-				break;
-			default:
-				coverings.put(BodyCoveringType.NIPPLES_CROTCH, new Covering(BodyCoveringType.NIPPLES_CROTCH, CoveringPattern.ORIFICE_NIPPLE_CROTCH, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-				break;
+		if(breastCrotch.getType().getRace()==Race.ANGEL) {
+			coverings.put(BodyCoveringType.NIPPLES_CROTCH,
+					new Covering(BodyCoveringType.NIPPLES_CROTCH, CoveringPattern.ORIFICE_NIPPLE_CROTCH, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
+			
+		} else if(breastCrotch.getType().getRace()==Race.DEMON) {
+			coverings.put(BodyCoveringType.NIPPLES_CROTCH,
+					new Covering(BodyCoveringType.NIPPLES_CROTCH, CoveringPattern.ORIFICE_NIPPLE_CROTCH, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
+			
+		} else {
+			coverings.put(BodyCoveringType.NIPPLES_CROTCH,
+					new Covering(BodyCoveringType.NIPPLES_CROTCH, CoveringPattern.ORIFICE_NIPPLE_CROTCH, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
 		}
 	}
 	
 	public void updateMouthColouring() {
-		switch(face.getType().getRace()) {
-			case ANGEL:
-				coverings.put(BodyCoveringType.MOUTH, new Covering(BodyCoveringType.MOUTH, CoveringPattern.ORIFICE_MOUTH, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-				break;
-			case DEMON:
-				coverings.put(BodyCoveringType.MOUTH, new Covering(BodyCoveringType.MOUTH, CoveringPattern.ORIFICE_MOUTH, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-				break;
-			default:
-				coverings.put(BodyCoveringType.MOUTH, new Covering(BodyCoveringType.MOUTH, CoveringPattern.ORIFICE_MOUTH, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-				break;
+		if(face.getType().getRace()==Race.ANGEL) {
+			coverings.put(BodyCoveringType.MOUTH, new Covering(BodyCoveringType.MOUTH, CoveringPattern.ORIFICE_MOUTH, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
+			
+		} else if(face.getType().getRace()==Race.DEMON) {
+			coverings.put(BodyCoveringType.MOUTH, new Covering(BodyCoveringType.MOUTH, CoveringPattern.ORIFICE_MOUTH, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
+			
+		} else {
+			coverings.put(BodyCoveringType.MOUTH, new Covering(BodyCoveringType.MOUTH, CoveringPattern.ORIFICE_MOUTH, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
 		}
 	}
 	
 	public void updateVaginaColouring() {
-		if(vagina.getType()!=VaginaType.NONE) {
-			switch(vagina.getType().getRace()) {
-				case ANGEL:
-					coverings.put(BodyCoveringType.VAGINA, new Covering(BodyCoveringType.VAGINA, CoveringPattern.ORIFICE_VAGINA, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-				case DEMON:
-					coverings.put(BodyCoveringType.VAGINA, new Covering(BodyCoveringType.VAGINA, CoveringPattern.ORIFICE_VAGINA, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-				default:
-					coverings.put(BodyCoveringType.VAGINA, new Covering(BodyCoveringType.VAGINA, CoveringPattern.ORIFICE_VAGINA, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-			}
+		AbstractRace race = vagina.getType()!=VaginaType.NONE?vagina.getType().getRace():getRace();
+		if(race==Race.ANGEL) {
+			coverings.put(BodyCoveringType.VAGINA, new Covering(BodyCoveringType.VAGINA, CoveringPattern.ORIFICE_VAGINA, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
+			
+		} else if(race==Race.DEMON) {
+			coverings.put(BodyCoveringType.VAGINA, new Covering(BodyCoveringType.VAGINA, CoveringPattern.ORIFICE_VAGINA, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
+			
 		} else {
-			switch(getRace()) {
-				case ANGEL:
-					coverings.put(BodyCoveringType.VAGINA, new Covering(BodyCoveringType.VAGINA, CoveringPattern.ORIFICE_VAGINA, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-				case DEMON:
-					coverings.put(BodyCoveringType.VAGINA, new Covering(BodyCoveringType.VAGINA, CoveringPattern.ORIFICE_VAGINA, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-				default:
-					coverings.put(BodyCoveringType.VAGINA, new Covering(BodyCoveringType.VAGINA, CoveringPattern.ORIFICE_VAGINA, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-			}
+			coverings.put(BodyCoveringType.VAGINA, new Covering(BodyCoveringType.VAGINA, CoveringPattern.ORIFICE_VAGINA, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
 		}
 	}
 	
 	public void updatePenisColouring() {
-		if(penis.getType()!=PenisType.NONE) {
-			switch(penis.getType().getRace()) {
-				case ANGEL:
-					coverings.put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, CoveringPattern.NONE, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-				case DEMON:
-					coverings.put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, CoveringPattern.NONE, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-				case DOG_MORPH: case WOLF_MORPH:
-					coverings.put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, CoveringPattern.NONE, PresetColour.SKIN_RED, false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-				default:
-					coverings.put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, CoveringPattern.NONE, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-			}
+		AbstractRace race = penis.getType()!=PenisType.NONE?penis.getType().getRace():getRace();
+		if(race==Race.ANGEL) {
+			coverings.put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, CoveringPattern.NONE, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
+			
+		} else if(race==Race.DEMON) {
+			coverings.put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, CoveringPattern.NONE, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
+			
+		} else if(race==Race.DOG_MORPH || race==Race.WOLF_MORPH || race==Race.FOX_MORPH) {
+			coverings.put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, CoveringPattern.NONE, PresetColour.SKIN_RED, false, PresetColour.ORIFICE_INTERIOR, false));
+			
 		} else {
-			switch(getRace()) {
-				case ANGEL:
-					coverings.put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, CoveringPattern.NONE, coverings.get(BodyCoveringType.ANGEL).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-				case DEMON:
-					coverings.put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, CoveringPattern.NONE, coverings.get(BodyCoveringType.DEMON_COMMON).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-				case DOG_MORPH: case WOLF_MORPH:
-					coverings.put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, CoveringPattern.NONE, PresetColour.SKIN_RED, false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-				default:
-					coverings.put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, CoveringPattern.NONE, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
-					break;
-			}
+			coverings.put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, CoveringPattern.NONE, coverings.get(BodyCoveringType.HUMAN).getPrimaryColour(), false, PresetColour.ORIFICE_INTERIOR, false));
 		}
 	}
 	

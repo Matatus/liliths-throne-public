@@ -13,6 +13,7 @@ import com.lilithsthrone.game.character.attributes.Attribute;
 import com.lilithsthrone.game.character.body.CoverableArea;
 import com.lilithsthrone.game.character.body.types.BodyPartType;
 import com.lilithsthrone.game.character.body.valueEnums.BodyMaterial;
+import com.lilithsthrone.game.character.body.valueEnums.CupSize;
 import com.lilithsthrone.game.character.fetishes.Fetish;
 import com.lilithsthrone.game.character.gender.Gender;
 import com.lilithsthrone.game.character.npc.NPC;
@@ -22,6 +23,7 @@ import com.lilithsthrone.game.character.npc.misc.GenericSexualPartner;
 import com.lilithsthrone.game.character.persona.PersonalityTrait;
 import com.lilithsthrone.game.character.quests.Quest;
 import com.lilithsthrone.game.character.quests.QuestLine;
+import com.lilithsthrone.game.character.race.Race;
 import com.lilithsthrone.game.character.race.RaceStage;
 import com.lilithsthrone.game.character.race.Subspecies;
 import com.lilithsthrone.game.combat.spells.SpellSchool;
@@ -34,7 +36,6 @@ import com.lilithsthrone.game.inventory.ItemTag;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothingType;
 import com.lilithsthrone.game.inventory.clothing.ClothingType;
-import com.lilithsthrone.game.inventory.enchanting.TFEssence;
 import com.lilithsthrone.game.inventory.item.AbstractItemType;
 import com.lilithsthrone.game.inventory.item.ItemType;
 import com.lilithsthrone.game.inventory.weapon.AbstractWeaponType;
@@ -184,9 +185,7 @@ public class DebugDialogue {
 					return new Response("+1000 essences", "Add 1000 arcane essences.", DEBUG_MENU){
 						@Override
 						public void effects() {
-							for(TFEssence essence : TFEssence.values()) {
-								Main.game.getPlayer().incrementEssenceCount(essence, 1000, false);
-							}
+							Main.game.getPlayer().incrementEssenceCount(1000, false);
 						}
 					};
 					
@@ -362,6 +361,25 @@ public class DebugDialogue {
 							}
 						};
 						
+				} else if(index==5) {
+					return new Response("Bimbos!", "Turn every feminine NPC in the game into a busty, slovenly bimbo.<br/>[style.italicsBad(Warning! This cannot easily be undone!)]", DEBUG_MENU){
+						@Override
+						public Colour getHighlightColour() {
+							return PresetColour.BASE_PINK_DEEP;
+						}
+						@Override
+						public void effects() {
+							for(NPC npc : Main.game.getAllNPCs()) {
+								if(npc.isFeminine()) {
+									npc.addFetish(Fetish.FETISH_BIMBO);
+									npc.addPersonalityTrait(PersonalityTrait.SLOVENLY);
+									if(npc.getBreastSize().getMeasurement()<CupSize.E.getMeasurement()) {
+										npc.setBreastSize(CupSize.E);
+									}
+								}
+							}
+						}
+					};
 				}
 //				else if (index == 5) {
 //					if(!Main.game.getPlayer().getLocationPlace().getPlaceType().equals(PlaceType.DOMINION_BACK_ALLEYS)) {
@@ -992,8 +1010,12 @@ public class DebugDialogue {
 		
 		@Override
 		public Response getResponse(int responseTab, int index) {
-			if (index != 0 && index < Subspecies.values().length) {
-				Subspecies subspecies = Subspecies.values()[index - 1];
+			List<Subspecies> availableSubspecies = new ArrayList<>();
+			Collections.addAll(availableSubspecies, Subspecies.values());
+			availableSubspecies.removeIf(s->s.getRace()==Race.ELEMENTAL);
+			
+			if (index != 0 && index < availableSubspecies.size()) {
+				Subspecies subspecies = availableSubspecies.get(index - 1);
 				String name = subspecies.getName(null);
 				
 				return new Response(
@@ -1078,7 +1100,7 @@ public class DebugDialogue {
 		clothingCollageSB = new StringBuilder("<div style='position:inline-block;width:90vw;float:left;'>");
 
 		for (AbstractClothingType c : ClothingType.getAllClothing()) {
-			AbstractClothing ac = AbstractClothingType.generateClothing(c);
+			AbstractClothing ac = Main.game.getItemGen().generateClothing(c);
 			clothingCollageSB.append("<html><div style='width:10vw;height:10vw;float:left;all: unset;'>" + ac.getSVGString() + "</div></html>");
 		}
 

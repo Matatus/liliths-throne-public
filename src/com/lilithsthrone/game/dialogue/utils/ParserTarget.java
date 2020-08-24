@@ -68,7 +68,6 @@ import com.lilithsthrone.game.character.npc.submission.SlimeQueen;
 import com.lilithsthrone.game.character.npc.submission.SlimeRoyalGuard;
 import com.lilithsthrone.game.character.npc.submission.SubmissionCitadelArcanist;
 import com.lilithsthrone.game.character.npc.submission.Vengar;
-import com.lilithsthrone.game.combat.Combat;
 import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.Util;
 
@@ -134,7 +133,7 @@ public enum ParserTarget {
 						}
 						
 					} else if(Main.game.isInCombat()) {
-						return Combat.getActiveNPC();
+						return Main.combat.getActiveNPC();
 						
 					} else if (Main.game.isInSex()) {
 						return Main.sex.getTargetedPartner(Main.game.getPlayer());
@@ -192,6 +191,20 @@ public enum ParserTarget {
 					throw new NullPointerException();
 				}
 			},
+
+	ELEMENTAL(Util.newArrayListOfValues(
+			"el",
+			"elemental"),
+			"The player's elemental. <b>Should only ever be used when you know for certain that the player's elemental has been created!</b>") {
+		@Override
+		public GameCharacter getCharacter(String tag, List<GameCharacter> specialNPCList) {
+			if(!Main.game.getPlayer().hasDiscoveredElemental()) {
+//				System.err.println("Warning: Player's elemental not found when accessing ParserTarget.ELEMENTAL!");
+				return Main.game.getNpc(GenericAndrogynousNPC.class);
+			}
+			return Main.game.getPlayer().getElemental();
+		}
+	},
 	
 	PROLOGUE_MALE(Util.newArrayListOfValues("prologueMale"), "") {
 		public String getDescription() {

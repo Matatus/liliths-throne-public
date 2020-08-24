@@ -38,8 +38,8 @@ import com.lilithsthrone.game.character.body.abstractTypes.AbstractHairType;
 import com.lilithsthrone.game.character.body.abstractTypes.AbstractHornType;
 import com.lilithsthrone.game.character.body.abstractTypes.AbstractLegType;
 import com.lilithsthrone.game.character.body.abstractTypes.AbstractPenisType;
-import com.lilithsthrone.game.character.body.abstractTypes.AbstractTorsoType;
 import com.lilithsthrone.game.character.body.abstractTypes.AbstractTailType;
+import com.lilithsthrone.game.character.body.abstractTypes.AbstractTorsoType;
 import com.lilithsthrone.game.character.body.abstractTypes.AbstractVaginaType;
 import com.lilithsthrone.game.character.body.abstractTypes.AbstractWingType;
 import com.lilithsthrone.game.character.body.types.AntennaType;
@@ -54,13 +54,14 @@ import com.lilithsthrone.game.character.body.types.HairType;
 import com.lilithsthrone.game.character.body.types.HornType;
 import com.lilithsthrone.game.character.body.types.LegType;
 import com.lilithsthrone.game.character.body.types.PenisType;
-import com.lilithsthrone.game.character.body.types.TorsoType;
 import com.lilithsthrone.game.character.body.types.TailType;
+import com.lilithsthrone.game.character.body.types.TorsoType;
 import com.lilithsthrone.game.character.body.types.VaginaType;
 import com.lilithsthrone.game.character.body.types.WingType;
 import com.lilithsthrone.game.character.body.valueEnums.AreolaeSize;
 import com.lilithsthrone.game.character.body.valueEnums.AssSize;
 import com.lilithsthrone.game.character.body.valueEnums.BodyHair;
+import com.lilithsthrone.game.character.body.valueEnums.BodyMaterial;
 import com.lilithsthrone.game.character.body.valueEnums.BodySize;
 import com.lilithsthrone.game.character.body.valueEnums.BreastShape;
 import com.lilithsthrone.game.character.body.valueEnums.Capacity;
@@ -113,6 +114,7 @@ import com.lilithsthrone.game.character.markings.TattooWriting;
 import com.lilithsthrone.game.character.markings.TattooWritingStyle;
 import com.lilithsthrone.game.character.persona.PersonalityTrait;
 import com.lilithsthrone.game.character.persona.SexualOrientation;
+import com.lilithsthrone.game.character.race.AbstractRace;
 import com.lilithsthrone.game.character.race.Race;
 import com.lilithsthrone.game.character.race.RacialBody;
 import com.lilithsthrone.game.character.race.Subspecies;
@@ -135,7 +137,7 @@ import com.lilithsthrone.utils.colours.PresetColour;
 
 /**
  * @since 0.1.7?
- * @version 0.3.7.5
+ * @version 0.3.9.1
  * @author Innoxia
  */
 public class CharacterModificationUtils {
@@ -722,7 +724,7 @@ public class CharacterModificationUtils {
 		}
 		
 		if(type.getPerformingSexArea()==SexAreaPenetration.PENIS) {
-			if(index==0) {
+			if(index==0 || type.getTargetedSexArea().isPenetration() || (type.getTargetedSexArea().isOrifice() && !((SexAreaOrifice)type.getTargetedSexArea()).isInternalOrifice())) {
 				BodyChanging.getTarget().setPenisVirgin(true);
 			} else {
 				BodyChanging.getTarget().setPenisVirgin(false);
@@ -953,7 +955,62 @@ public class CharacterModificationUtils {
 				BodyChanging.getTarget().getFemininityValue()>=100);
 	}
 	
-	public static String getSelfTransformTailChoiceDiv(List<Race> availableRaces, boolean removeNone) {
+	public static String getSelfTransformBodyMaterialChoiceDiv(GameCharacter target) {
+		contentSB.setLength(0);
+		
+		List<BodyMaterial> materials = new ArrayList<>();
+		switch(target.getBodyMaterial()) {
+			case AIR:
+				materials.add(BodyMaterial.AIR);
+				break;
+			case ARCANE:
+				materials.add(BodyMaterial.ARCANE);
+				break;
+			case FIRE:
+				materials.add(BodyMaterial.FIRE);
+				break;
+			case FLESH:
+				materials.add(BodyMaterial.FLESH);
+				break;
+			case ICE:
+			case WATER:
+				materials.add(BodyMaterial.WATER);
+				materials.add(BodyMaterial.ICE);
+				break;
+			case SLIME:
+				materials.add(BodyMaterial.SLIME);
+				break;
+			case RUBBER:
+			case STONE:
+				materials.add(BodyMaterial.STONE);
+				materials.add(BodyMaterial.RUBBER);
+				break;
+		}
+		
+		for(BodyMaterial mat : materials) {
+			if(BodyChanging.getTarget().getBodyMaterial() == mat) {
+				contentSB.append(
+						"<div class='cosmetics-button active'>"
+							+ "<span style='color:"+mat.getColour().toWebHexString()+";'>"+Util.capitaliseSentence(mat.getName())+"</span>"
+						+ "</div>");
+				
+			} else {
+				contentSB.append(
+						"<div id='CHANGE_BODY_MATERIAL_"+mat+"' class='cosmetics-button'>"
+							+ "<span style='color:"+mat.getColour().getShades()[0]+";'>"+Util.capitaliseSentence(mat.getName())+"</span>"
+						+ "</div>");
+			}
+		}
+		
+		return applyWrapper("Body Material",
+				UtilText.parse(BodyChanging.getTarget(), "Change [npc.namePos] body material."
+						+ "<br/><i>Different body material types give different passive bonuses. Hover over this character's racial status effect tooltip to see them!</i>"),
+				"BODY_MATERIAL",
+				contentSB.toString(),
+				false);
+	}
+	
+	public static String getSelfTransformTailChoiceDiv(List<AbstractRace> availableRaces, boolean removeNone) {
 		contentSB.setLength(0);
 		
 		for(AbstractTailType tail : TailType.getAllTailTypes()) {
@@ -1091,7 +1148,7 @@ public class CharacterModificationUtils {
 				true);
 	}
 	
-	public static String getSelfTransformWingChoiceDiv(List<Race> availableRaces, boolean removeNone) {
+	public static String getSelfTransformWingChoiceDiv(List<AbstractRace> availableRaces, boolean removeNone) {
 		contentSB.setLength(0);
 		
 		for(AbstractWingType wing : WingType.getAllWingTypes()) {
@@ -1127,11 +1184,11 @@ public class CharacterModificationUtils {
 				true);
 	}
 	
-	public static String getSelfTransformHornChoiceDiv(List<Race> availableRaces) {
+	public static String getSelfTransformHornChoiceDiv(List<AbstractRace> availableRaces) {
 		contentSB.setLength(0);
 		
 		Set<AbstractHornType> types = new HashSet<>();
-		for(Race race : availableRaces) {
+		for(AbstractRace race : availableRaces) {
 			types.addAll(RacialBody.valueOfRace(race).getHornTypes(false));
 		}
 		
@@ -1246,7 +1303,7 @@ public class CharacterModificationUtils {
 				true);
 	}
 	
-	public static String getSelfTransformAntennaChoiceDiv(List<Race> availableRaces) {
+	public static String getSelfTransformAntennaChoiceDiv(List<AbstractRace> availableRaces) {
 		contentSB.setLength(0);
 		
 		for(AbstractAntennaType antenna : AntennaType.getAllAntennaTypes()) {
@@ -1281,7 +1338,7 @@ public class CharacterModificationUtils {
 				true);
 	}
 
-	public static String getSelfTransformHairChoiceDiv(List<Race> availableRaces) {
+	public static String getSelfTransformHairChoiceDiv(List<AbstractRace> availableRaces) {
 		contentSB.setLength(0);
 		
 		for(AbstractHairType hair : HairType.getAllHairTypes()) {
@@ -1367,7 +1424,7 @@ public class CharacterModificationUtils {
 				false);
 	}
 	
-	public static String getSelfTransformAssChoiceDiv(List<Race> availableRaces) {
+	public static String getSelfTransformAssChoiceDiv(List<AbstractRace> availableRaces) {
 		contentSB.setLength(0);
 		
 		for(AbstractAssType ass : AssType.getAllAssTypes()) {
@@ -1396,7 +1453,7 @@ public class CharacterModificationUtils {
 				false);
 	}
 	
-	public static String getSelfTransformBreastChoiceDiv(List<Race> availableRaces) {
+	public static String getSelfTransformBreastChoiceDiv(List<AbstractRace> availableRaces) {
 		contentSB.setLength(0);
 		
 		for(AbstractBreastType breast : BreastType.getAllBreastTypes()) {
@@ -1424,7 +1481,7 @@ public class CharacterModificationUtils {
 				false);
 	}
 	
-	public static String getSelfTransformBreastCrotchChoiceDiv(List<Race> availableRaces) {
+	public static String getSelfTransformBreastCrotchChoiceDiv(List<AbstractRace> availableRaces) {
 		contentSB.setLength(0);
 		
 		for(AbstractBreastType breast : BreastType.getAllBreastTypes()) {
@@ -1453,7 +1510,7 @@ public class CharacterModificationUtils {
 				false);
 	}
 	
-	public static String getSelfTransformArmChoiceDiv(List<Race> availableRaces) {
+	public static String getSelfTransformArmChoiceDiv(List<AbstractRace> availableRaces) {
 		contentSB.setLength(0);
 		
 		for(AbstractArmType arm : ArmType.getAllArmTypes()) {
@@ -1507,7 +1564,7 @@ public class CharacterModificationUtils {
 				true);
 	}
 	
-	public static String getSelfTransformLegChoiceDiv(List<Race> availableRaces) {
+	public static String getSelfTransformLegChoiceDiv(List<AbstractRace> availableRaces) {
 		contentSB.setLength(0);
 		
 		for(AbstractLegType leg : LegType.getAllLegTypes()) {
@@ -1564,7 +1621,7 @@ public class CharacterModificationUtils {
 				true);
 	}
 	
-	public static String getSelfTransformFaceChoiceDiv(List<Race> availableRaces) {
+	public static String getSelfTransformFaceChoiceDiv(List<AbstractRace> availableRaces) {
 		contentSB.setLength(0);
 		
 		for(AbstractFaceType face : FaceType.getAllFaceTypes()) {
@@ -1592,7 +1649,7 @@ public class CharacterModificationUtils {
 				true);
 	}
 	
-	public static String getSelfTransformBodyChoiceDiv(List<Race> availableRaces) {
+	public static String getSelfTransformBodyChoiceDiv(List<AbstractRace> availableRaces) {
 		contentSB.setLength(0);
 		
 		for(AbstractTorsoType skin : TorsoType.getAllTorsoTypes()) {
@@ -1688,7 +1745,7 @@ public class CharacterModificationUtils {
 	}
 	
 	
-	public static String getSelfTransformEarChoiceDiv(List<Race> availableRaces) {
+	public static String getSelfTransformEarChoiceDiv(List<AbstractRace> availableRaces) {
 		contentSB.setLength(0);
 		
 		for(AbstractEarType ear : EarType.getAllEarTypes()) {
@@ -1716,7 +1773,7 @@ public class CharacterModificationUtils {
 				false);
 	}
 	
-	public static String getSelfTransformEyeChoiceDiv(List<Race> availableRaces) {
+	public static String getSelfTransformEyeChoiceDiv(List<AbstractRace> availableRaces) {
 		contentSB.setLength(0);
 		
 		for(AbstractEyeType eye : EyeType.getAllEyeTypes()) {
@@ -3143,7 +3200,7 @@ public class CharacterModificationUtils {
 				true);
 	}
 	
-	public static String getSelfTransformVaginaChoiceDiv(List<Race> availableRaces) {
+	public static String getSelfTransformVaginaChoiceDiv(List<AbstractRace> availableRaces) {
 		contentSB.setLength(0);
 		
 		for(AbstractVaginaType vagina : VaginaType.getAllVaginaTypes()) {
@@ -3673,7 +3730,7 @@ public class CharacterModificationUtils {
 				true);
 	}
 	
-	public static String getSelfTransformPenisChoiceDiv(List<Race> availableRaces, boolean halfWidth) {
+	public static String getSelfTransformPenisChoiceDiv(List<AbstractRace> availableRaces, boolean halfWidth) {
 		contentSB.setLength(0);
 		
 		for(AbstractPenisType penis : PenisType.getAllPenisTypes()) {

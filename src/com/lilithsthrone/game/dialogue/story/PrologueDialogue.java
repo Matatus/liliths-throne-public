@@ -22,12 +22,9 @@ import com.lilithsthrone.game.dialogue.responses.Response;
 import com.lilithsthrone.game.dialogue.responses.ResponseSex;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
-import com.lilithsthrone.game.inventory.clothing.AbstractClothingType;
 import com.lilithsthrone.game.inventory.clothing.ClothingType;
 import com.lilithsthrone.game.inventory.item.AbstractItem;
-import com.lilithsthrone.game.inventory.item.AbstractItemType;
 import com.lilithsthrone.game.inventory.item.ItemType;
-import com.lilithsthrone.game.inventory.weapon.AbstractWeaponType;
 import com.lilithsthrone.game.sex.managers.universal.SMGeneric;
 import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.Util;
@@ -131,7 +128,7 @@ public class PrologueDialogue {
 						@Override
 						public void effects() {
 							if(Main.game.getPlayer().hasPenis()) {
-								Main.game.getPlayer().addClothing(AbstractClothingType.generateClothing("innoxia_penis_condom", PresetColour.CLOTHING_WHITE, false), false);
+								Main.game.getPlayer().addClothing(Main.game.getItemGen().generateClothing("innoxia_penis_condom", PresetColour.CLOTHING_WHITE, false), false);
 							}
 						}
 					};
@@ -152,9 +149,9 @@ public class PrologueDialogue {
 						@Override
 						public void effects() {
 							if(Main.game.getPlayer().hasPenis()) {
-								Main.game.getPlayer().addClothing(AbstractClothingType.generateClothing("innoxia_penis_condom", PresetColour.CLOTHING_WHITE, false), false);
+								Main.game.getPlayer().addClothing(Main.game.getItemGen().generateClothing("innoxia_penis_condom", PresetColour.CLOTHING_WHITE, false), false);
 							}
-							Main.game.getPlayer().addClothing(AbstractClothingType.generateClothing("innoxia_penis_condom", PresetColour.CLOTHING_WHITE, false), false);
+							Main.game.getPlayer().addClothing(Main.game.getItemGen().generateClothing("innoxia_penis_condom", PresetColour.CLOTHING_WHITE, false), false);
 						}
 					};
 				}
@@ -720,7 +717,7 @@ public class PrologueDialogue {
 							}
 						}
 						
-						Main.game.getPlayer().equipMainWeaponFromNowhere(AbstractWeaponType.generateWeapon("innoxia_crystal_rare", DamageType.FIRE));
+						Main.game.getPlayer().equipMainWeaponFromNowhere(Main.game.getItemGen().generateWeapon("innoxia_crystal_rare", DamageType.FIRE));
 						
 						Main.game.clearTextStartStringBuilder();
 						Main.game.clearTextEndStringBuilder();
@@ -813,9 +810,18 @@ public class PrologueDialogue {
 					public void effects() {
 						Main.game.getPlayer().incrementMoney(5000);
 						Main.game.getTextStartStringBuilder().append(Main.game.getPlayer().setQuestProgress(QuestLine.MAIN, Quest.MAIN_1_A_LILAYAS_TESTS));
-						AbstractItem spellBook = AbstractItemType.generateItem(ItemType.getSpellBookType(Spell.ICE_SHARD));
-						Main.game.getPlayerCell().getInventory().addItem(spellBook);
+						
+						AbstractItem spellBook = Main.game.getItemGen().generateItem(ItemType.getSpellBookType(Spell.FIREBALL));
+						if(Main.game.getPlayer().getBirthMonth().getValue() % 4 == 1) {
+							spellBook = Main.game.getItemGen().generateItem(ItemType.getSpellBookType(Spell.SLAM));
+						} else if(Main.game.getPlayer().getBirthMonth().getValue() % 4 == 2) {
+							spellBook = Main.game.getItemGen().generateItem(ItemType.getSpellBookType(Spell.POISON_VAPOURS));
+						} else if(Main.game.getPlayer().getBirthMonth().getValue()  % 4 == 3) {
+							spellBook = Main.game.getItemGen().generateItem(ItemType.getSpellBookType(Spell.ICE_SHARD));
+						}
+						Main.game.getWorlds().get(WorldType.LILAYAS_HOUSE_FIRST_FLOOR).getCell(PlaceType.LILAYA_HOME_ROOM_PLAYER).getInventory().addItem(spellBook);
 						Main.game.getTextEndStringBuilder().append("<p style='text-align:center;'>[style.boldExcellent("+spellBook.getName()+")] added to your room's storage!</p>");
+						
 					}
 				};
 				

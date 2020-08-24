@@ -1128,16 +1128,15 @@ public enum Quest {
 	VENGAR_THREE_COOPERATION_END(QuestType.SIDE, 1, 5) {
 		@Override
 		public String getName() {
-			return "Turning a new leaf";
+			return "Vengar's End";
 		}
 		@Override
 		public String getDescription() {
-			return "Now that Vengar has sworn to obey the law, and greased the pockets of the Enforcers who were responsible for hunting him down, you've agreed to report his change of ways to the Submission Enforcers."
-					+ " You should go and speak to Claire about this.";
+			return "Now that [axel.name] has shown [axel.her] submission to Vengar, all that's left to do is head back to the Gambling Den...";
 		}
 		@Override
 		public String getCompletedDescription() {
-			return "You reported all that happened with Vengar to Claire, who said that due to both his bribes and turning over several of his lieutenants, Vengar is no longer wanted.";
+			return "After [axel.name] had shown [axel.her] submission to Vengar, a group of SWORD Enforcers turned up to raid the Rat Warrens and arrest the rat-boy!";
 		}
 	},
 

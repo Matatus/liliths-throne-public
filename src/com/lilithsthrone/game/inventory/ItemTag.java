@@ -7,12 +7,13 @@ import com.lilithsthrone.utils.Util;
 
 /**
  * @since 0.2.1
- * @version 0.3.7.7
+ * @version 0.3.9
  * @author Innoxia
  */
 public enum ItemTag {
 
 	CHEAT_ITEM(false), // Cheat items are hidden in the debug spawner, and are also not added to the Encyclopedia.
+	SILLY_MODE(false), // Silly mode items only appear in shopkeepers inventories when silly mode is on.
 	
 	REMOVE_FROM_DEBUG_SPAWNER(false),
 	NOT_FOR_SALE(false),
@@ -23,7 +24,7 @@ public enum ItemTag {
 	SOLD_BY_KATE(false), // Jewellery
 	SOLD_BY_FINCH(false), // BDSM and sex-related stuff
 	SOLD_BY_VICKY(false), // Weapons
-
+	
 	SPELL_BOOK(false),
 	SPELL_SCROLL(false),
 	ESSENCE(false),
@@ -35,6 +36,7 @@ public enum ItemTag {
 	DOMINION_ALLEYWAY_SPAWN(false),
 	SUBMISSION_TUNNEL_SPAWN(false),
 	BAT_CAVERNS_SPAWN(false),
+	ALCOHOLIC(false), // For easy detection of alcoholic items in some scenes
 	
 	//-------------- WEAPONS & CLOTHING --------------//
 
@@ -237,6 +239,10 @@ public enum ItemTag {
 					"[style.colourSex(Seals nipples (does not get dirty from creampies))]"),
 			true),
 	
+	MILKING_EQUIPMENT(
+			Util.newArrayListOfValues(
+					"[style.colourMilk(Milking equipment (drains creampies))]"),
+			true),
 	
 	/** <b>This is automatically assigned to items, and should not be manually added to ItemTags!</b> */
 	DILDO_SELF(

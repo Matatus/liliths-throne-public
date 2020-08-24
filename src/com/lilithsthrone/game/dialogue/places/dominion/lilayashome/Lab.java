@@ -17,6 +17,7 @@ import com.lilithsthrone.game.character.quests.Quest;
 import com.lilithsthrone.game.character.quests.QuestLine;
 import com.lilithsthrone.game.character.race.Race;
 import com.lilithsthrone.game.character.race.RaceStage;
+import com.lilithsthrone.game.character.race.Subspecies;
 import com.lilithsthrone.game.dialogue.DialogueFlagValue;
 import com.lilithsthrone.game.dialogue.DialogueNode;
 import com.lilithsthrone.game.dialogue.npcDialogue.dominion.DaddyDialogue;
@@ -26,8 +27,6 @@ import com.lilithsthrone.game.dialogue.responses.ResponseSex;
 import com.lilithsthrone.game.dialogue.responses.ResponseTag;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
-import com.lilithsthrone.game.inventory.enchanting.TFEssence;
-import com.lilithsthrone.game.inventory.item.AbstractItemType;
 import com.lilithsthrone.game.inventory.item.ItemType;
 import com.lilithsthrone.game.sex.managers.universal.SMGeneric;
 import com.lilithsthrone.game.sex.managers.universal.SMSitting;
@@ -42,18 +41,18 @@ import com.lilithsthrone.world.places.PlaceType;
 
 /**
  * @since 0.1.75
- * @version 0.3.8.7
+ * @version 0.3.9
  * @author Innoxia
  */
 public class Lab {
 	
-	private static boolean isLilayaAngryAtPlayerDemonTF() {
+	public static boolean isLilayaAngryAtPlayerDemonTF() {
 		return Main.game.getPlayer().getTrueRace()==Race.DEMON
-				&& Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_2_D_MEETING_A_LILIN);
+				&& Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_2_D_MEETING_A_LILIN)
+				&& Main.game.getNpc(Lilaya.class).getSubspeciesOverride()!=Subspecies.DEMON;
 	}
 	
 	public static final DialogueNode LAB = new DialogueNode("Lilaya's Laboratory", "", false) {
-
 		@Override
 		public String getContent() {
 			if(Main.game.isExtendedWorkTime()) {
@@ -134,6 +133,19 @@ public class Lab {
 	
 	private static List<Response> getLabEntryGeneratedResponses() {
 		List<Response> generatedResponses = new ArrayList<>();
+		
+		if(Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.lilayaHug)) {
+			generatedResponses.add(new Response("Hug",
+					"You've already given Lilaya an unexpected hug today, and although she liked it, she seemed serious about not doing again..."
+							+ "<br/><i>You should wait until tomorrow before giving her another hug!</i>",
+					null));
+		} else if(isLilayaAngryAtPlayerDemonTF()) {
+			generatedResponses.add(new Response("Hug",
+					"Due to her resentment towards you for being a full demon, Lilaya absolutely does not want a hug!",
+					null));
+		} else {
+			generatedResponses.add(new Response("Hug", "[pc.Step] up to Lilaya and give her a big hug.", LAB_LILAYA_HUG));
+		}
 		
 		if(Main.game.getPlayer().isVisiblyPregnant()) {
 			if (!Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_1_A_LILAYAS_TESTS)) {
@@ -231,7 +243,7 @@ public class Lab {
 		}
 		
 		if(Main.game.getPlayer().hasItemType(ItemType.PRESENT) && !Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.givenLilayaPresent3)) {
-			if(isLilayaAngryAtPlayerDemonTF() && Main.game.getNpc(Lilaya.class).getRaceStage()!=RaceStage.GREATER) {
+			if(isLilayaAngryAtPlayerDemonTF()) {
 				generatedResponses.add(new Response("Give Present", "Although you have a present in your inventory, Lilaya is not interested in receiving it, due to her resentment towards you for being a full demon, while she is not.", null));
 				
 			} else {
@@ -239,7 +251,7 @@ public class Lab {
 					@Override
 					public void effects() {
 						setEntryFlags();
-						Main.game.getPlayer().removeItem(AbstractItemType.generateItem(ItemType.PRESENT));
+						Main.game.getPlayer().removeItem(Main.game.getItemGen().generateItem(ItemType.PRESENT));
 						
 						if(Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.givenLilayaPresent2)) {
 							Main.game.getDialogueFlags().setFlag(DialogueFlagValue.givenLilayaPresent3, true);
@@ -256,7 +268,7 @@ public class Lab {
 		}
 		
 		if(Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.givenLilayaPresent3)) {
-			if(isLilayaAngryAtPlayerDemonTF() && Main.game.getNpc(Lilaya.class).getRaceStage()!=RaceStage.GREATER) {
+			if(isLilayaAngryAtPlayerDemonTF()) {
 				generatedResponses.add(new Response("Geisha Lilaya", "Lilaya is not interested in showing off her kimono, nor having sex with you, until she's a full demon as well.", null));
 				
 			} else {
@@ -405,7 +417,7 @@ public class Lab {
 	
 						UtilText.nodeContentSB.append(UtilText.parseFromXMLFile("places/dominion/lilayasHome/lab", "LAB_ENTRY_NAUGHTY_ROSE"));
 						
-						if(isLilayaAngryAtPlayerDemonTF() && Main.game.getNpc(Lilaya.class).getRaceStage()!=RaceStage.GREATER) {
+						if(isLilayaAngryAtPlayerDemonTF()) {
 							if(Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.roseToldOnYou)) {
 								UtilText.nodeContentSB.append(UtilText.parseFromXMLFile("places/dominion/lilayasHome/lab", "LAB_ENTRY_ROSE_TOLD_ON_YOU_DEMON"));
 							} else {
@@ -501,7 +513,7 @@ public class Lab {
 					};
 					
 				} else if (index == 1) {
-					if(isLilayaAngryAtPlayerDemonTF() && Main.game.getNpc(Lilaya.class).getRaceStage()!=RaceStage.GREATER) {
+					if(isLilayaAngryAtPlayerDemonTF()) {
 						return new Response("Full demon",
 								"Tell Lilaya that you'll help her convince her mother to turn her into a full demon.<br/>[style.italicsDemon(This will end with Lilaya being permanently transformed into a full demon!)]",
 								LAB_DEMON_TF_AGREE) {
@@ -876,12 +888,26 @@ public class Lab {
 	};
 	
 	public static final DialogueNode LAB_JINX_REMOVAL = new DialogueNode("", "", true) {
-		
 		@Override
 		public String getContent() {
 			return UtilText.parseFromXMLFile("places/dominion/lilayasHome/lab", "LAB_JINX_REMOVAL");
 		}
-
+		@Override
+		public Response getResponse(int responseTab, int index) {
+			return LAB_ENTRY.getResponse(0, index);
+		}
+	};
+	
+	public static final DialogueNode LAB_LILAYA_HUG = new DialogueNode("", "", true) {
+		@Override
+		public void applyPreParsingEffects() {
+			Main.game.getTextEndStringBuilder().append(Main.game.getNpc(Lilaya.class).incrementAffection(Main.game.getPlayer(), 5));
+			Main.game.getDialogueFlags().setFlag(DialogueFlagValue.lilayaHug, true);
+		}
+		@Override
+		public String getContent() {
+			return UtilText.parseFromXMLFile("places/dominion/lilayasHome/lab", "LAB_LILAYA_HUG");
+		}
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			return LAB_ENTRY.getResponse(0, index);
@@ -896,10 +922,8 @@ public class Lab {
 				UtilText.addSpecialParsingString(getJinxedClothingExample().getName(), true);
 				UtilText.addSpecialParsingString((getJinxedClothingExample().getClothingType().isPlural()?"them":"it"), false);
 				UtilText.addSpecialParsingString((getJinxedClothingExample().getClothingType().isPlural()?"these":"this"), false);
-			} else {
-				UtilText.addSpecialParsingString("false", true);
 			}
-
+			
 			return UtilText.parseFromXMLFile("places/dominion/lilayasHome/lab", "LILAYA_EXPLAINS_ESSENCES");
 		}
 
@@ -912,7 +936,7 @@ public class Lab {
 						if(!Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.essenceBottledDiscovered)
 								&& !Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.essenceOrgasmDiscovered)
 								&& !Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.essencePostCombatDiscovered)) {
-							Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, 1, false);
+							Main.game.getPlayer().incrementEssenceCount(1, false);
 						}
 					}
 				};
@@ -976,27 +1000,27 @@ public class Lab {
 		public Response getResponse(int responseTab, int index) {
 			
 			if(index == 1) {
-				if((!Main.game.getPlayer().isInventoryFull() || Main.game.getPlayer().hasItem(AbstractItemType.generateItem(TFEssence.essenceToItem(TFEssence.ARCANE))))) {
-					if(Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE)>=1) {
-						return new Response("Extract (1)", "Extract one of your "+TFEssence.ARCANE.getName()+" essences.", ESSENCE_EXTRACTION_BOTTLED) {
+				if((!Main.game.getPlayer().isInventoryFull() || Main.game.getPlayer().hasItem(Main.game.getItemGen().generateItem(ItemType.BOTTLED_ESSENCE_ARCANE)))) {
+					if(Main.game.getPlayer().getEssenceCount()>=1) {
+						return new Response("Extract (1)", "Extract one of your arcane essences.", ESSENCE_EXTRACTION_BOTTLED) {
 							@Override
 							public void effects() {
-								Main.game.getPlayer().addItem(AbstractItemType.generateItem(TFEssence.essenceToItem(TFEssence.ARCANE)), false, false);
-								int count = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(TFEssence.essenceToItem(TFEssence.ARCANE)));
+								Main.game.getPlayer().addItem(Main.game.getItemGen().generateItem(ItemType.BOTTLED_ESSENCE_ARCANE), false, false);
+								int count = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.BOTTLED_ESSENCE_ARCANE));
 								
 								Main.game.getTextEndStringBuilder().append(
 										"<p style='text-align:center;'>"
-											+ "<b style='color:" + PresetColour.GENERIC_GOOD.toWebHexString() + ";'>Item added to inventory:</b> <b>" + (TFEssence.essenceToItem(TFEssence.ARCANE)).getDisplayName(true) + "</b>"
+											+ "<b style='color:" + PresetColour.GENERIC_GOOD.toWebHexString() + ";'>Item added to inventory:</b> <b>" + (ItemType.BOTTLED_ESSENCE_ARCANE).getDisplayName(true) + "</b>"
 										+ "</p>"
 										+ "<p>"
-											+ "You now have <b>"+count+" "+(count>1?TFEssence.essenceToItem(TFEssence.ARCANE).getNamePlural(true):TFEssence.essenceToItem(TFEssence.ARCANE).getName(true))+"</b> in your inventory."
+											+ "You now have <b>"+count+" "+(count>1?ItemType.BOTTLED_ESSENCE_ARCANE.getNamePlural(true):ItemType.BOTTLED_ESSENCE_ARCANE.getName(true))+"</b> in your inventory."
 										+ "</p>");
-								Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, -1, false);
+								Main.game.getPlayer().incrementEssenceCount(-1, false);
 							}
 						};
 						
 					} else {
-						return new Response("Extract (1)", "You don't have any "+TFEssence.ARCANE.getName()+" essences!", null);
+						return new Response("Extract (1)", "You don't have any arcane essences!", null);
 					}
 				} else {
 					return new Response("Extract (1)", "You don't have any free space in your inventory!", null);
@@ -1004,89 +1028,89 @@ public class Lab {
 				
 				
 			} else if(index == 2) {
-				if((!Main.game.getPlayer().isInventoryFull() || Main.game.getPlayer().hasItem(AbstractItemType.generateItem(TFEssence.essenceToItem(TFEssence.ARCANE))))) {
-					if(Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE)>=5) {
-						return new Response("Extract (5)", "Extract five of your "+TFEssence.ARCANE.getName()+" essences.", ESSENCE_EXTRACTION_BOTTLED) {
+				if((!Main.game.getPlayer().isInventoryFull() || Main.game.getPlayer().hasItem(Main.game.getItemGen().generateItem(ItemType.BOTTLED_ESSENCE_ARCANE)))) {
+					if(Main.game.getPlayer().getEssenceCount()>=5) {
+						return new Response("Extract (5)", "Extract five of your arcane essences.", ESSENCE_EXTRACTION_BOTTLED) {
 							@Override
 							public void effects() {
 								for(int i =0; i<5; i++) {
-									Main.game.getPlayer().addItem(AbstractItemType.generateItem(TFEssence.essenceToItem(TFEssence.ARCANE)), false, false);
+									Main.game.getPlayer().addItem(Main.game.getItemGen().generateItem(ItemType.BOTTLED_ESSENCE_ARCANE), false, false);
 								}
-								int count = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(TFEssence.essenceToItem(TFEssence.ARCANE)));
+								int count = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.BOTTLED_ESSENCE_ARCANE));
 								Main.game.getTextEndStringBuilder().append(
 										"<p>"
 											+ "Grabbing another vial, you set about repeating the process several times..."
 										+ "</p>"
 										+ "<p style='text-align:center;'>"
-											+ "<b style='color:" + PresetColour.GENERIC_GOOD.toWebHexString() + ";'>Items added to inventory:</b> <b>5x</b> <b>" + TFEssence.essenceToItem(TFEssence.ARCANE).getDisplayName(true) + "</b>"
+											+ "<b style='color:" + PresetColour.GENERIC_GOOD.toWebHexString() + ";'>Items added to inventory:</b> <b>5x</b> <b>" + ItemType.BOTTLED_ESSENCE_ARCANE.getDisplayName(true) + "</b>"
 										+ "</p>"
 										+ "<p>"
-											+ "You now have <b>"+count+" "+(count>1?TFEssence.essenceToItem(TFEssence.ARCANE).getNamePlural(true):TFEssence.essenceToItem(TFEssence.ARCANE).getName(true))+"</b> in your inventory."
+											+ "You now have <b>"+count+" "+(count>1?ItemType.BOTTLED_ESSENCE_ARCANE.getNamePlural(true):ItemType.BOTTLED_ESSENCE_ARCANE.getName(true))+"</b> in your inventory."
 										+ "</p>");
-								Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, -5, false);
+								Main.game.getPlayer().incrementEssenceCount(-5, false);
 							}
 						};
 						
 					} else {
-						return new Response("Extract (5)", "You don't have enough "+TFEssence.ARCANE.getName()+" essences!", null);
+						return new Response("Extract (5)", "You don't have enough arcane essences!", null);
 					}
 				} else {
 					return new Response("Extract (5)", "You don't have any free space in your inventory!", null);
 				}
 				
 			} else if(index == 3) {
-				if((!Main.game.getPlayer().isInventoryFull() || Main.game.getPlayer().hasItem(AbstractItemType.generateItem(TFEssence.essenceToItem(TFEssence.ARCANE))))) {
-					if(Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE)>=25) {
-						return new Response("Extract (25)", "Extract twenty-five of your "+TFEssence.ARCANE.getName()+" essences.", ESSENCE_EXTRACTION_BOTTLED) {
+				if((!Main.game.getPlayer().isInventoryFull() || Main.game.getPlayer().hasItem(Main.game.getItemGen().generateItem(ItemType.BOTTLED_ESSENCE_ARCANE)))) {
+					if(Main.game.getPlayer().getEssenceCount()>=25) {
+						return new Response("Extract (25)", "Extract twenty-five of your arcane essences.", ESSENCE_EXTRACTION_BOTTLED) {
 							@Override
 							public void effects() {
 								for(int i =0; i<25; i++) {
-									Main.game.getPlayer().addItem(AbstractItemType.generateItem(TFEssence.essenceToItem(TFEssence.ARCANE)), false, false);
+									Main.game.getPlayer().addItem(Main.game.getItemGen().generateItem(ItemType.BOTTLED_ESSENCE_ARCANE), false, false);
 								}
-								int count = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(TFEssence.essenceToItem(TFEssence.ARCANE)));
+								int count = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.BOTTLED_ESSENCE_ARCANE));
 								Main.game.getTextEndStringBuilder().append(
 										"<p>"
 											+ "Grabbing another vial, you set about repeating the process several times..."
 										+ "</p>"
 										+ "<p style='text-align:center;'>"
-											+ "<b style='color:" + PresetColour.GENERIC_GOOD.toWebHexString() + ";'>Items added to inventory:</b> <b>25x</b> <b>" + TFEssence.essenceToItem(TFEssence.ARCANE).getDisplayName(true) + "</b>"
+											+ "<b style='color:" + PresetColour.GENERIC_GOOD.toWebHexString() + ";'>Items added to inventory:</b> <b>25x</b> <b>" + ItemType.BOTTLED_ESSENCE_ARCANE.getDisplayName(true) + "</b>"
 										+ "</p>"
 										+ "<p>"
-											+ "You now have <b>"+count+" "+(count>1?TFEssence.essenceToItem(TFEssence.ARCANE).getNamePlural(true):TFEssence.essenceToItem(TFEssence.ARCANE).getName(true))+"</b> in your inventory."
+											+ "You now have <b>"+count+" "+(count>1?ItemType.BOTTLED_ESSENCE_ARCANE.getNamePlural(true):ItemType.BOTTLED_ESSENCE_ARCANE.getName(true))+"</b> in your inventory."
 										+ "</p>");
-								Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, -25, false);
+								Main.game.getPlayer().incrementEssenceCount(-25, false);
 							}
 						};
 						
 					} else {
-						return new Response("Extract (25)", "You don't have enough "+TFEssence.ARCANE.getName()+" essences!", null);
+						return new Response("Extract (25)", "You don't have enough arcane essences!", null);
 					}
 				} else {
 					return new Response("Extract (25)", "You don't have any free space in your inventory!", null);
 				}
 				
 			} else if(index == 4) {
-				if((!Main.game.getPlayer().isInventoryFull() || Main.game.getPlayer().hasItem(AbstractItemType.generateItem(TFEssence.essenceToItem(TFEssence.ARCANE))))) {
-					if(Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE)>=1) {
-						return new Response("Extract (all)", "Extract all of your "+TFEssence.ARCANE.getName()+" essences.", ESSENCE_EXTRACTION_BOTTLED) {
+				if((!Main.game.getPlayer().isInventoryFull() || Main.game.getPlayer().hasItem(Main.game.getItemGen().generateItem(ItemType.BOTTLED_ESSENCE_ARCANE)))) {
+					if(Main.game.getPlayer().getEssenceCount()>=1) {
+						return new Response("Extract (all)", "Extract all of your arcane essences.", ESSENCE_EXTRACTION_BOTTLED) {
 							@Override
 							public void effects() {
-								for(int i =0; i<Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE); i++) {
-									Main.game.getPlayer().addItem(AbstractItemType.generateItem(TFEssence.essenceToItem(TFEssence.ARCANE)), false, false);
+								for(int i =0; i<Main.game.getPlayer().getEssenceCount(); i++) {
+									Main.game.getPlayer().addItem(Main.game.getItemGen().generateItem(ItemType.BOTTLED_ESSENCE_ARCANE), false, false);
 								}
-								int count = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(TFEssence.essenceToItem(TFEssence.ARCANE)));
+								int count = Main.game.getPlayer().getItemCount(Main.game.getItemGen().generateItem(ItemType.BOTTLED_ESSENCE_ARCANE));
 								Main.game.getTextEndStringBuilder().append(
 										"<p>"
 											+ "Grabbing another vial, you set about repeating the process several times..."
 										+ "</p>"
 										+ "<p style='text-align:center;'>"
-											+ "<b style='color:" + PresetColour.GENERIC_GOOD.toWebHexString() + ";'>Items added to inventory:</b> <b>"+Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE)+"x</b> <b>"
-												+ TFEssence.essenceToItem(TFEssence.ARCANE).getDisplayName(true) + "</b>"
+											+ "<b style='color:" + PresetColour.GENERIC_GOOD.toWebHexString() + ";'>Items added to inventory:</b> <b>"+Main.game.getPlayer().getEssenceCount()+"x</b> <b>"
+												+ ItemType.BOTTLED_ESSENCE_ARCANE.getDisplayName(true) + "</b>"
 										+ "</p>"
 										+ "<p>"
-											+ "You now have <b>"+count+" "+(count>1?TFEssence.essenceToItem(TFEssence.ARCANE).getNamePlural(true):TFEssence.essenceToItem(TFEssence.ARCANE).getName(true))+"</b> in your inventory."
+											+ "You now have <b>"+count+" "+(count>1?ItemType.BOTTLED_ESSENCE_ARCANE.getNamePlural(true):ItemType.BOTTLED_ESSENCE_ARCANE.getName(true))+"</b> in your inventory."
 										+ "</p>");
-								Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, -Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE), false);
+								Main.game.getPlayer().incrementEssenceCount(-Main.game.getPlayer().getEssenceCount(), false);
 								
 							}
 						};

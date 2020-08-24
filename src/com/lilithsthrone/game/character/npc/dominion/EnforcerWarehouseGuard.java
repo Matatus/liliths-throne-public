@@ -22,6 +22,7 @@ import com.lilithsthrone.game.character.persona.Occupation;
 import com.lilithsthrone.game.character.persona.SexualOrientation;
 import com.lilithsthrone.game.character.race.RaceStage;
 import com.lilithsthrone.game.character.race.Subspecies;
+import com.lilithsthrone.game.combat.CombatBehaviour;
 import com.lilithsthrone.game.dialogue.DialogueNode;
 import com.lilithsthrone.game.dialogue.places.dominion.EnforcerWarehouse;
 import com.lilithsthrone.game.dialogue.responses.Response;
@@ -30,7 +31,6 @@ import com.lilithsthrone.game.inventory.CharacterInventory;
 import com.lilithsthrone.game.inventory.InventorySlot;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
 import com.lilithsthrone.game.inventory.clothing.ClothingType;
-import com.lilithsthrone.game.inventory.enchanting.TFEssence;
 import com.lilithsthrone.game.inventory.outfit.OutfitType;
 import com.lilithsthrone.game.sex.SexAreaOrifice;
 import com.lilithsthrone.game.sex.SexAreaPenetration;
@@ -93,7 +93,9 @@ public class EnforcerWarehouseGuard extends NPC {
 			
 			initPerkTreeAndBackgroundPerks(); // Set starting perks based on the character's race
 			
-			this.setEssenceCount(TFEssence.ARCANE, 100);
+			this.setCombatBehaviour(CombatBehaviour.ATTACK);
+			
+			this.setEssenceCount(100);
 			
 			initHealthAndManaToMax();
 		}

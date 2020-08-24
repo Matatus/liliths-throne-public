@@ -3,7 +3,6 @@ package com.lilithsthrone.game.character.npc.dominion;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.w3c.dom.Document;
@@ -61,19 +60,16 @@ import com.lilithsthrone.game.inventory.AbstractCoreItem;
 import com.lilithsthrone.game.inventory.CharacterInventory;
 import com.lilithsthrone.game.inventory.InventorySlot;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
-import com.lilithsthrone.game.inventory.clothing.AbstractClothingType;
 import com.lilithsthrone.game.inventory.clothing.ClothingType;
 import com.lilithsthrone.game.inventory.enchanting.EnchantingUtils;
 import com.lilithsthrone.game.inventory.enchanting.ItemEffect;
 import com.lilithsthrone.game.inventory.enchanting.PossibleItemEffect;
-import com.lilithsthrone.game.inventory.enchanting.TFEssence;
 import com.lilithsthrone.game.inventory.enchanting.TFModifier;
 import com.lilithsthrone.game.inventory.enchanting.TFPotency;
 import com.lilithsthrone.game.inventory.item.AbstractItem;
 import com.lilithsthrone.game.inventory.item.AbstractItemType;
 import com.lilithsthrone.game.inventory.item.ItemType;
 import com.lilithsthrone.game.inventory.item.TransformativePotion;
-import com.lilithsthrone.game.inventory.weapon.AbstractWeaponType;
 import com.lilithsthrone.game.inventory.weapon.WeaponType;
 import com.lilithsthrone.game.sex.SexPace;
 import com.lilithsthrone.main.Main;
@@ -106,7 +102,7 @@ public class Brax extends NPC {
 
 			TransformativePotion tfPotion = this.generateTransformativePotion(this); // Generate effects based on Brax's body
 			AbstractItem potion = EnchantingUtils.craftItem(
-				AbstractItemType.generateItem(tfPotion.getItemType()),
+				Main.game.getItemGen().generateItem(tfPotion.getItemType()),
 				tfPotion.getEffects().stream().map(x -> x.getEffect()).collect(Collectors.toList()));
 			potion.setName("Brax's Surprise");
 			this.addItem(potion, false);
@@ -143,7 +139,7 @@ public class Brax extends NPC {
 		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.7.7") && !this.isSlave()) {
 			TransformativePotion tfPotion = this.generateTransformativePotion(this); // Generate effects based on Brax's body
 			AbstractItem potion = EnchantingUtils.craftItem(
-				AbstractItemType.generateItem(tfPotion.getItemType()),
+				Main.game.getItemGen().generateItem(tfPotion.getItemType()),
 				tfPotion.getEffects().stream().map(x -> x.getEffect()).collect(Collectors.toList()));
 			potion.setName("Brax's Surprise");
 			this.addItem(potion, false);
@@ -265,7 +261,7 @@ public class Brax extends NPC {
 		this.unequipAllClothingIntoVoid(true, true);
 		
 		if(Main.game.getPlayer().hasQuest(QuestLine.MAIN) && Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_1_C_WOLFS_DEN)) {
-			AbstractClothing collar = AbstractClothingType.generateClothing("innoxia_bdsm_metal_collar", false);
+			AbstractClothing collar = Main.game.getItemGen().generateClothing("innoxia_bdsm_metal_collar", false);
 			collar.setSealed(true);
 			collar.setColour(0, PresetColour.CLOTHING_SILVER);
 			this.equipClothingFromNowhere(collar, true, this);
@@ -273,50 +269,50 @@ public class Brax extends NPC {
 		
 		if(isFeminine()) {
 			if(hasFetish(Fetish.FETISH_BIMBO)) {
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.GROIN_CROTCHLESS_PANTIES, PresetColour.CLOTHING_PINK, false), true, this);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.NIPPLE_TAPE_CROSSES, PresetColour.CLOTHING_PINK, false), true, this);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.TORSO_FISHNET_TOP, PresetColour.CLOTHING_WHITE, false), true, this);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_leg_micro_skirt_pleated", PresetColour.CLOTHING_PINK, false), true, this);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_sock_fishnets", PresetColour.CLOTHING_WHITE, false), true, this);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_hand_fishnet_gloves", PresetColour.CLOTHING_WHITE, false), true, this);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_finger_ring", PresetColour.CLOTHING_GOLD, false), true, this);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.WRIST_BANGLE, PresetColour.CLOTHING_GOLD, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.GROIN_CROTCHLESS_PANTIES, PresetColour.CLOTHING_PINK, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.NIPPLE_TAPE_CROSSES, PresetColour.CLOTHING_PINK, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.TORSO_FISHNET_TOP, PresetColour.CLOTHING_WHITE, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_leg_micro_skirt_pleated", PresetColour.CLOTHING_PINK, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_sock_fishnets", PresetColour.CLOTHING_WHITE, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_hand_fishnet_gloves", PresetColour.CLOTHING_WHITE, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_finger_ring", PresetColour.CLOTHING_GOLD, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.WRIST_BANGLE, PresetColour.CLOTHING_GOLD, false), true, this);
 
 				this.setPiercedEar(true);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_piercing_ear_hoops", PresetColour.CLOTHING_GOLD, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_piercing_ear_hoops", PresetColour.CLOTHING_GOLD, false), true, this);
 				this.setPiercedNose(true);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_piercing_nose_ring", PresetColour.CLOTHING_GOLD, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_piercing_nose_ring", PresetColour.CLOTHING_GOLD, false), true, this);
 				this.setPiercedNavel(true);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_piercing_gemstone_barbell", PresetColour.CLOTHING_GOLD, false), InventorySlot.PIERCING_STOMACH, true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_piercing_gemstone_barbell", PresetColour.CLOTHING_GOLD, false), InventorySlot.PIERCING_STOMACH, true, this);
 				
 			} else {
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.GROIN_THONG, PresetColour.CLOTHING_WHITE, false), true, this);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.CHEST_PLUNGE_BRA, PresetColour.CLOTHING_WHITE, false), true, this);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_sock_kneehigh_socks", PresetColour.CLOTHING_WHITE, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.GROIN_THONG, PresetColour.CLOTHING_WHITE, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.CHEST_PLUNGE_BRA, PresetColour.CLOTHING_WHITE, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_sock_kneehigh_socks", PresetColour.CLOTHING_WHITE, false), true, this);
 
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing("dsg_eep_servequipset_enfskirt", PresetColour.CLOTHING_BLACK, false), true, this);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing("dsg_eep_ptrlequipset_flsldshirt", PresetColour.CLOTHING_PINK, false), true, this);
-				this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_neck_tie", PresetColour.CLOTHING_BLACK, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("dsg_eep_servequipset_enfskirt", PresetColour.CLOTHING_BLACK, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("dsg_eep_ptrlequipset_flsldshirt", PresetColour.CLOTHING_PINK, false), true, this);
+				this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_neck_tie", PresetColour.CLOTHING_BLACK, false), true, this);
 			}
 			
 		} else {
 			// These are hanging up in his office:
-//			this.equipClothingFromNowhere(AbstractClothingType.generateClothing("dsg_eep_uniques_enfdjacket_brax", PresetColour.CLOTHING_BLACK, false), true, this);
-//			this.equipClothingFromNowhere(AbstractClothingType.generateClothing("dsg_eep_servequipset_enfdbelt", PresetColour.CLOTHING_DESATURATED_BROWN, false), true, this);
-//			this.equipClothingFromNowhere(AbstractClothingType.generateClothing("dsg_eep_ptrlequipset_pcap", PresetColour.CLOTHING_BLACK, false), true, this);
+//			this.equipClothingFromNowhere(Main.game.getItemGeneration().generateClothing("dsg_eep_uniques_enfdjacket_brax", PresetColour.CLOTHING_BLACK, false), true, this);
+//			this.equipClothingFromNowhere(Main.game.getItemGeneration().generateClothing("dsg_eep_servequipset_enfdbelt", PresetColour.CLOTHING_DESATURATED_BROWN, false), true, this);
+//			this.equipClothingFromNowhere(Main.game.getItemGeneration().generateClothing("dsg_eep_ptrlequipset_pcap", PresetColour.CLOTHING_BLACK, false), true, this);
 			
-			this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.GROIN_BOXERS, PresetColour.CLOTHING_BLACK, false), true, this);
-			this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.WRIST_MENS_WATCH, PresetColour.CLOTHING_STEEL, false), true, this);
+			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.GROIN_BOXERS, PresetColour.CLOTHING_BLACK, false), true, this);
+			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.WRIST_MENS_WATCH, PresetColour.CLOTHING_STEEL, false), true, this);
 
-			this.equipClothingFromNowhere(AbstractClothingType.generateClothing("dsg_eep_servequipset_enfdslacks", PresetColour.CLOTHING_BLACK, false), true, this);
-			this.equipClothingFromNowhere(AbstractClothingType.generateClothing("dsg_eep_ptrlequipset_ssldshirt", PresetColour.CLOTHING_BLUE, false), true, this);
-			this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_neck_tie", PresetColour.CLOTHING_BLACK, false), true, this);
+			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("dsg_eep_servequipset_enfdslacks", PresetColour.CLOTHING_BLACK, false), true, this);
+			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("dsg_eep_ptrlequipset_ssldshirt", PresetColour.CLOTHING_BLUE, false), true, this);
+			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_neck_tie", PresetColour.CLOTHING_BLACK, false), true, this);
 			
 			if(Main.game.getPlayer().hasQuest(QuestLine.MAIN) && !Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_1_C_WOLFS_DEN)) {
 				if(settings.contains(EquipClothingSetting.ADD_WEAPONS)) {
-					this.equipMainWeaponFromNowhere(AbstractWeaponType.generateWeapon("innoxia_crystal_epic", DamageType.FIRE));
-					this.setEssenceCount(TFEssence.ARCANE, 10);
-					this.equipOffhandWeaponFromNowhere(AbstractWeaponType.generateWeapon(WeaponType.getWeaponTypeFromId("dsg_eep_pbweap_pbpistol")));
+					this.equipMainWeaponFromNowhere(Main.game.getItemGen().generateWeapon("innoxia_crystal_epic", DamageType.FIRE));
+					this.setEssenceCount(10);
+					this.equipOffhandWeaponFromNowhere(Main.game.getItemGen().generateWeapon(WeaponType.getWeaponTypeFromId("dsg_eep_pbweap_pbpistol")));
 				}
 			}
 		}
@@ -484,8 +480,8 @@ public class Brax extends NPC {
 	}
 	
 	@Override
-	public Map<TFEssence, Integer> getLootEssenceDrops() {
-		return Util.newHashMapOfValues(new Value<>(TFEssence.ARCANE, 8));
+	public int getLootEssenceDrops() {
+		return 8;
 	}
 
 	@SuppressWarnings("fallthrough")

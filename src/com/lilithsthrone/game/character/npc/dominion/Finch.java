@@ -213,11 +213,11 @@ public class Finch extends NPC {
 
 		this.setMoney(10);
 		
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.GROIN_CROTCHLESS_BRIEFS, PresetColour.CLOTHING_BLACK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_leg_crotchless_chaps", PresetColour.CLOTHING_BLACK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("rfpnj_slavery_administration_shirt", false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_sock_socks", PresetColour.CLOTHING_BLACK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_foot_work_boots", PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.GROIN_CROTCHLESS_BRIEFS, PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_leg_crotchless_chaps", PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("rfpnj_slavery_administration_shirt", false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_sock_socks", PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_foot_work_boots", PresetColour.CLOTHING_BLACK, false), true, this);
 
 	}
 	
@@ -232,25 +232,28 @@ public class Finch extends NPC {
 		
 		// Always at least 4 slave collars:
 		for(int i = 0; i<4; i++) {
-			this.addClothing(AbstractClothingType.generateClothing("innoxia_bdsm_metal_collar", false), false);
+			this.addClothing(Main.game.getItemGen().generateClothing("innoxia_bdsm_metal_collar", false), false);
 		}
 
 		for(AbstractWeaponType wt : WeaponType.getAllWeapons()) {
-			if(wt.getItemTags().contains(ItemTag.SOLD_BY_FINCH)) {
-				this.addWeapon(AbstractWeaponType.generateWeapon(wt), false);
+			if(wt.getItemTags().contains(ItemTag.SOLD_BY_FINCH)
+					&& (!wt.getItemTags().contains(ItemTag.SILLY_MODE) || Main.game.isSillyMode())) {
+				this.addWeapon(Main.game.getItemGen().generateWeapon(wt), false);
 			}
 		}
 		for(AbstractItemType item : ItemType.getAllItems()) {
-			if(item.getItemTags().contains(ItemTag.SOLD_BY_FINCH)) {
-				this.addItem(AbstractItemType.generateItem(item), false);
+			if(item.getItemTags().contains(ItemTag.SOLD_BY_FINCH)
+					&& (!item.getItemTags().contains(ItemTag.SILLY_MODE) || Main.game.isSillyMode())) {
+				this.addItem(Main.game.getItemGen().generateItem(item), false);
 			}
 		}
 		
 		List<AbstractClothing> clothingToSell = new ArrayList<>();
 		
 		for(AbstractClothingType clothing : ClothingType.getAllClothing()) {
-			if(clothing.getDefaultItemTags().contains(ItemTag.SOLD_BY_FINCH)) {
-				clothingToSell.add(AbstractClothingType.generateClothing(clothing, false));
+			if(clothing.getDefaultItemTags().contains(ItemTag.SOLD_BY_FINCH)
+					&& (!clothing.getDefaultItemTags().contains(ItemTag.SILLY_MODE) || Main.game.isSillyMode())) {
+				clothingToSell.add(Main.game.getItemGen().generateClothing(clothing, false));
 			}
 		}
 

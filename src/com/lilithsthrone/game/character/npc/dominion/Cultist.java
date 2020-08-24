@@ -38,7 +38,6 @@ import com.lilithsthrone.game.inventory.clothing.AbstractClothingType;
 import com.lilithsthrone.game.inventory.clothing.ClothingType;
 import com.lilithsthrone.game.inventory.item.AbstractItem;
 import com.lilithsthrone.game.inventory.item.ItemType;
-import com.lilithsthrone.game.inventory.weapon.AbstractWeaponType;
 import com.lilithsthrone.game.sex.SexAreaOrifice;
 import com.lilithsthrone.game.sex.SexAreaPenetration;
 import com.lilithsthrone.game.sex.SexParticipantType;
@@ -199,31 +198,31 @@ public class Cultist extends NPC {
 		
 		clothingChoices.add(ClothingType.GROIN_CROTCHLESS_PANTIES);
 		clothingChoices.add(ClothingType.GROIN_CROTCHLESS_THONG);
-		equipClothingFromNowhere(AbstractClothingType.generateClothing(clothingChoices.get(Util.random.nextInt(clothingChoices.size())), underwearColour, false), true, this);
+		equipClothingFromNowhere(Main.game.getItemGen().generateClothing(clothingChoices.get(Util.random.nextInt(clothingChoices.size())), underwearColour, false), true, this);
 		
 		clothingChoices.clear();
 		clothingChoices.add(ClothingType.getClothingTypeFromId("innoxia_chest_lacy_plunge_bra"));
 		clothingChoices.add(ClothingType.CHEST_PLUNGE_BRA);
-		equipClothingFromNowhere(AbstractClothingType.generateClothing(clothingChoices.get(Util.random.nextInt(clothingChoices.size())), underwearColour, false), true, this);
+		equipClothingFromNowhere(Main.game.getItemGen().generateClothing(clothingChoices.get(Util.random.nextInt(clothingChoices.size())), underwearColour, false), true, this);
 		
 		clothingChoices.clear();
 		clothingChoices.add(ClothingType.getClothingTypeFromId("innoxia_sock_thighhigh_socks"));
-		equipClothingFromNowhere(AbstractClothingType.generateClothing(clothingChoices.get(Util.random.nextInt(clothingChoices.size())), witchColour, false), true, this);
+		equipClothingFromNowhere(Main.game.getItemGen().generateClothing(clothingChoices.get(Util.random.nextInt(clothingChoices.size())), witchColour, false), true, this);
 
-		equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_witch_witch_dress", witchColour, false), true, this);
+		equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_witch_witch_dress", witchColour, false), true, this);
 		if(Math.random()<0.5) {
-			equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_witch_witch_hat", witchColour, PresetColour.CLOTHING_GOLD, witchColour, false), true, this);
+			equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_witch_witch_hat", witchColour, PresetColour.CLOTHING_GOLD, witchColour, false), true, this);
 		} else {
-			equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_witch_witch_hat_wide", witchColour, PresetColour.CLOTHING_GOLD, witchColour, false), true, this);
+			equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_witch_witch_hat_wide", witchColour, PresetColour.CLOTHING_GOLD, witchColour, false), true, this);
 		}
 		if(Math.random()>0.5f) {
-			equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_witch_witch_boots", witchColour, false), true, this);
+			equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_witch_witch_boots", witchColour, false), true, this);
 		} else {
-			equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_witch_witch_boots_thigh_high", witchColour, false), true, this);
+			equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_witch_witch_boots_thigh_high", witchColour, false), true, this);
 		}
 		
 		if(settings.contains(EquipClothingSetting.ADD_WEAPONS)) {
-			this.equipMainWeaponFromNowhere(AbstractWeaponType.generateWeapon("innoxia_cleaning_witch_broom"));
+			this.equipMainWeaponFromNowhere(Main.game.getItemGen().generateWeapon("innoxia_cleaning_witch_broom"));
 		}
 		
 		// Makeup:
@@ -287,41 +286,45 @@ public class Cultist extends NPC {
 	@Override
 	public Value<Boolean, String> getItemUseEffects(AbstractItem item, GameCharacter itemOwner, GameCharacter user, GameCharacter target) {
 		if(user.isPlayer() && !target.isPlayer()) {
-			if(item.getItemType().equals(ItemType.PROMISCUITY_PILL)) {
+			if(item.getItemType().equals(ItemType.getItemTypeFromId("innoxia_pills_sterility"))) {
 				if(Main.sex.isDom(Main.game.getPlayer())) {
 					Main.game.getPlayer().useItem(item, target, false);
 					return new Value<>(true,
 							"<p>"
-								+ "Holding out a '[#ITEM_PROMISCUITY_PILL.getName(false)]' to [npc.name], you tell [npc.her] to swallow it so that you don't have to worry about any unexpected pregnancies."
-								+ " [npc.She] lets out an angry huff, but as [npc.sheIs] in no position to refuse, [npc.she] reluctantly does as you ask,"
-								+ " [npc.speech(This is an insult to Lilith herself...)]"
+								+ UtilText.parse(user, target,
+									"Holding out a '[#ITEM_innoxia_pills_sterility.getName(false)]' to [npc2.name], you tell [npc2.herHim] to swallow it so that you don't have to worry about any unexpected pregnancies."
+									+ " [npc2.She] lets out an angry huff, but as [npc2.sheIs] in no position to refuse, [npc2.she] reluctantly does as you ask,"
+									+ " [npc2.speech(This is an insult to Lilith herself...)]")
 							+ "</p>");
 				} else {
-					itemOwner.removeItemByType(ItemType.PROMISCUITY_PILL);
+					itemOwner.removeItemByType(ItemType.getItemTypeFromId("innoxia_pills_sterility"));
 					return new Value<>(true,
 							"<p>"
-								+ "Holding out a '[#ITEM_PROMISCUITY_PILL.getName(false)]' to [npc.name], you ask [npc.her] to swallow it so that you don't have to worry about any unexpected pregnancies."
-								+ " With an angry huff, [npc.she] slaps the pill out of your hand,"
-								+ " [npc.speech(How dare you! Lilith demands that her followers' seed remain strong!)]"
+								+ UtilText.parse(user, target,
+									"Holding out a '[#ITEM_innoxia_pills_sterility.getName(false)]' to [npc2.name], you ask [npc2.herHim] to swallow it so that you don't have to worry about any unexpected pregnancies."
+									+ " With an angry huff, [npc2.she] slaps the pill out of your hand,"
+									+ " [npc2.speech(How dare you! Lilith demands that her followers' seed remain strong!)]")
 							+ "</p>");
 				}
 					
-			} else if(item.getItemType().equals(ItemType.VIXENS_VIRILITY)) {
+			} else if(item.getItemType().equals(ItemType.getItemTypeFromId("innoxia_pills_fertility"))) {
 				Main.game.getPlayer().useItem(item, target, false);
 				if(Main.sex.isDom(Main.game.getPlayer())) {
 					return new Value<>(true,
 							"<p>"
-								+ "Holding out a '[#ITEM_VIXENS_VIRILITY.getName(false)]' to [npc.name], you tell [npc.her] to swallow it."
-								+ " [npc.She] lets out a delighted cry, and eagerly swallows the little pink pill,"
-								+ " [npc.speech(Thank you! Being as fertile as possible is one of the best ways in which to worship Lilith!)]"
+								+ UtilText.parse(user, target,
+									"Holding out a '[#ITEM_innoxia_pills_fertility.getName(false)]' to [npc2.name], you tell [npc2.herHim] to swallow it."
+									+ " [npc2.She] lets out a delighted cry, and eagerly swallows the little pink pill,"
+									+ " [npc2.speech(Thank you! Being as fertile as possible is one of the best ways in which to worship Lilith!)]")
 							+ "</p>");
 					
 				} else {
 					return new Value<>(true,
 							"<p>"
-								+ "Holding out a '[#ITEM_VIXENS_VIRILITY.getName(false)]' to [npc.name], you ask [npc.her] to swallow it."
-								+ " [npc.She] lets out a delighted cry, and eagerly swallows the little pink pill,"
-								+ " [npc.speech(Good toy! Being as fertile as possible is one of the best ways in which to worship Lilith!)]"
+								+ UtilText.parse(user, target,
+									"Holding out a '[#ITEM_innoxia_pills_fertility.getName(false)]' to [npc2.name], you ask [npc2.herHim] to swallow it."
+									+ " [npc2.She] lets out a delighted cry, and eagerly swallows the little pink pill,"
+									+ " [npc2.speech(Good toy! Being as fertile as possible is one of the best ways in which to worship Lilith!)]")
 							+ "</p>");
 				}
 			}

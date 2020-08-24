@@ -9,6 +9,7 @@ import java.util.Map;
 import com.lilithsthrone.game.character.body.abstractTypes.AbstractTentacleType;
 import com.lilithsthrone.game.character.body.tags.TentacleTypeTag;
 import com.lilithsthrone.game.character.body.valueEnums.PenetrationGirth;
+import com.lilithsthrone.game.character.race.AbstractRace;
 import com.lilithsthrone.game.character.race.Race;
 import com.lilithsthrone.utils.Util;
 
@@ -72,7 +73,7 @@ public class TentacleType {
 				+ "#ELSE"
 					+ " a [style.boldDemon(demonic tentacle)]"
 				+ "#ENDIF"
-				+ ", covered in [npc.tentacleFullDescription(true)]."
+				+ ", [npc.materialDescriptor] [npc.tentacleFullDescription(true)]."
 			+ "#ELSE"
 				+ " [npc.TentacleCount] demonic tentacles sprout from [npc.her] back, rapidly growing in size until they're each about [npc.tentacleLength] long."
 				+ " [npc.She] quickly [npc.verb(realise)] that [npc.she] [npc.has] complete control over where they go, allowing [npc.herHim] to use them like extra limbs."
@@ -83,7 +84,7 @@ public class TentacleType {
 				+ "#ELSE"
 					+ " [style.boldDemon(demonic tentacles)]"
 				+ "#ENDIF"
-				+ ", covered in [npc.tentacleFullDescription(true)]."
+				+ ", [npc.materialDescriptor] [npc.tentacleFullDescription(true)]."
 			+ "#ENDIF",
 			"Growing out from [npc.her] back, [npc.sheHasFull]"
 				+ "#IF(npc.getTentacleCount()==1)"
@@ -140,9 +141,9 @@ public class TentacleType {
 		return allTentacleTypes;
 	}
 	
-	private static Map<Race, List<AbstractTentacleType>> typesMap = new HashMap<>();
+	private static Map<AbstractRace, List<AbstractTentacleType>> typesMap = new HashMap<>();
 	
-	public static List<AbstractTentacleType> getTentacleTypes(Race r) {
+	public static List<AbstractTentacleType> getTentacleTypes(AbstractRace r) {
 		if(typesMap.containsKey(r)) {
 			return typesMap.get(r);
 		}

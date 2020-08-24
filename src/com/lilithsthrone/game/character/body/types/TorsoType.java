@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.lilithsthrone.game.character.body.abstractTypes.AbstractTorsoType;
+import com.lilithsthrone.game.character.race.AbstractRace;
 import com.lilithsthrone.game.character.race.Race;
 import com.lilithsthrone.utils.Util;
 
@@ -23,7 +24,7 @@ public class TorsoType {
 			Util.newArrayListOfValues(""),
 			"After just a few moments, the transformation comes to an end, and [npc.she] [npc.verb(let)] out a deep sigh as the itching finally stops, leaving [npc.her] torso covered with human skin."
 				+ "<br/>[npc.Name] now [npc.has] [style.boldHuman(human)], [npc.skinFullDescription].",
-			"[npc.Her] torso has [npc.a_femininity(true)] appearance[npc.Her] torso has [npc.a_femininity(true)] appearance, and is [npc.materialCompositionDescriptor] [npc.skinFullDescription(true)].") {
+			"[npc.Her] torso has [npc.a_femininity(true)] appearance, and is [npc.materialCompositionDescriptor] [npc.skinFullDescription(true)].") {
 	};
 
 	public static AbstractTorsoType DEMON_COMMON = new AbstractTorsoType(BodyCoveringType.DEMON_COMMON,
@@ -253,9 +254,9 @@ public class TorsoType {
 		return allTorsoTypes;
 	}
 	
-	private static Map<Race, List<AbstractTorsoType>> typesMap = new HashMap<>();
+	private static Map<AbstractRace, List<AbstractTorsoType>> typesMap = new HashMap<>();
 	
-	public static List<AbstractTorsoType> getTorsoTypes(Race r) {
+	public static List<AbstractTorsoType> getTorsoTypes(AbstractRace r) {
 		if(typesMap.containsKey(r)) {
 			return typesMap.get(r);
 		}

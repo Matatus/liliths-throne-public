@@ -304,17 +304,17 @@ public class Kate extends NPC {
 
 		this.setMoney(10);
 
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.GROIN_VSTRING, PresetColour.CLOTHING_PINK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_leg_micro_skirt_belted", PresetColour.CLOTHING_BLACK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.TORSO_CAMITOP_STRAPS, PresetColour.CLOTHING_PINK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.TORSO_OVER_WOMENS_LEATHER_JACKET, PresetColour.CLOTHING_BLACK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_sock_fishnets", PresetColour.CLOTHING_BLACK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_foot_heels", PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.GROIN_VSTRING, PresetColour.CLOTHING_PINK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_leg_micro_skirt_belted", PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.TORSO_CAMITOP_STRAPS, PresetColour.CLOTHING_PINK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.TORSO_OVER_WOMENS_LEATHER_JACKET, PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_sock_fishnets", PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_foot_heels", PresetColour.CLOTHING_BLACK, false), true, this);
 
 		this.setPiercedEar(true);
 		this.setPiercedNavel(true);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_piercing_ear_ring", PresetColour.CLOTHING_GOLD, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_piercing_gemstone_barbell", PresetColour.CLOTHING_GOLD, false), InventorySlot.PIERCING_STOMACH, true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_piercing_ear_ring", PresetColour.CLOTHING_GOLD, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_piercing_gemstone_barbell", PresetColour.CLOTHING_GOLD, false), InventorySlot.PIERCING_STOMACH, true, this);
 
 	}
 	
@@ -328,16 +328,18 @@ public class Kate extends NPC {
 		clearNonEquippedInventory(false);
 
 		for(AbstractItemType item : ItemType.getAllItems()) {
-			if(item.getItemTags().contains(ItemTag.SOLD_BY_KATE)) {
-				this.addItem(AbstractItemType.generateItem(item), !item.isConsumedOnUse()?1:(6+Util.random.nextInt(12)), false, false);
+			if(item.getItemTags().contains(ItemTag.SOLD_BY_KATE)
+					&& (!item.getItemTags().contains(ItemTag.SILLY_MODE) || Main.game.isSillyMode())) {
+				this.addItem(Main.game.getItemGen().generateItem(item), !item.isConsumedOnUse()?1:(6+Util.random.nextInt(12)), false, false);
 			}
 		}
 		
 		List<AbstractClothing> clothingToSell = new ArrayList<>();
 		
 		for(AbstractClothingType clothing : ClothingType.getAllClothing()) {
-			if(clothing.getDefaultItemTags().contains(ItemTag.SOLD_BY_KATE)) {
-				clothingToSell.add(AbstractClothingType.generateClothing(clothing, false));
+			if(clothing.getDefaultItemTags().contains(ItemTag.SOLD_BY_KATE)
+					&& (!clothing.getDefaultItemTags().contains(ItemTag.SILLY_MODE) || Main.game.isSillyMode())) {
+				clothingToSell.add(Main.game.getItemGen().generateClothing(clothing, false));
 			}
 		}
 
@@ -482,11 +484,11 @@ public class Kate extends NPC {
 	@Override
 	public Value<Boolean, String> getItemUseEffects(AbstractItem item,  GameCharacter itemOwner, GameCharacter user, GameCharacter target) {
 		if(user.isPlayer() && !target.isPlayer()) {
-			if(item.getItemType().equals(ItemType.VIXENS_VIRILITY)) {
+			if(item.getItemType().equals(ItemType.getItemTypeFromId("innoxia_pills_fertility"))) {
 				itemOwner.useItem(item, target, false);
 				return new Value<>(true,
 						"<p>"
-							+ "Producing a '[#ITEM_VIXENS_VIRILITY.getName(false)]' from your inventory, you pop it out of its plastic wrapper before pushing it into Kate's mouth."
+							+ "Producing a '[#ITEM_innoxia_pills_fertility.getName(false)]' from your inventory, you pop it out of its plastic wrapper before pushing it into Kate's mouth."
 							+ " She giggles as she happily swallows the little pink pill, knowing that it's going to make her womb far more fertile."
 						+ "</p>");
 			} else {

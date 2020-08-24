@@ -38,12 +38,14 @@ import com.lilithsthrone.game.character.persona.Relationship;
 import com.lilithsthrone.game.character.quests.Quest;
 import com.lilithsthrone.game.character.quests.QuestLine;
 import com.lilithsthrone.game.character.quests.QuestType;
+import com.lilithsthrone.game.character.race.AbstractRace;
 import com.lilithsthrone.game.character.race.Race;
 import com.lilithsthrone.game.character.race.RaceStage;
 import com.lilithsthrone.game.character.race.Subspecies;
 import com.lilithsthrone.game.combat.DamageType;
 import com.lilithsthrone.game.dialogue.DialogueNode;
 import com.lilithsthrone.game.dialogue.DialogueNodeType;
+import com.lilithsthrone.game.dialogue.npcDialogue.elemental.ElementalDialogue;
 import com.lilithsthrone.game.dialogue.responses.Response;
 import com.lilithsthrone.game.dialogue.responses.ResponseEffectsOnly;
 import com.lilithsthrone.game.dialogue.responses.ResponseSex;
@@ -74,7 +76,7 @@ import com.lilithsthrone.world.WorldType;
 
 /**
  * @since 0.1.0
- * @version 0.3.1
+ * @version 0.3.9
  * @author Innoxia, tukaima
  */
 public class PhoneDialogue {
@@ -250,6 +252,32 @@ public class PhoneDialogue {
 					return new Response("Loiter", "This is not a suitable place in which to be loitering about!", null);
 				}
 				return new Response("Loiter", "THink about loitering in this area for an as-yet undetermined length of time.", LOITER_SELECTION);
+				
+			} else if (index == 14){
+				if(!Main.game.getPlayer().isElementalSummoned()) {
+					if(Main.game.getPlayer().hasDiscoveredElemental()) {
+						return new Response("[el.Name]",
+								"You have not summoned [el.name], so you cannot talk to [el.herHim]!"
+										+ "<br/>[style.italicsMinorGood(You can summon your elemental from your 'Spells' screen!)]",
+								null);
+					}
+					return new Response("Elemental",
+							"You have not summoned your elemental, so you cannot talk to them..."
+									+ "<br/>[style.italicsMinorGood(You can summon your elemental by learning an elemental-summoning spell and casting it from your 'Spells' screen!)]",
+							null);
+				}
+				if(!Main.game.isSavedDialogueNeutral()) {
+					return new Response("[el.Name]",
+							Main.game.isInSex()
+								?"You cannot talk to [el.name] during sex!"
+								:(Main.game.isInCombat()
+									?"You cannot talk to [el.name] during combat!"
+									:"You cannot talk to [el.name] in this scene!"),
+							null);
+				}
+				return new Response("[el.Name]",
+						"Spend some time talking with [el.name].",
+						ElementalDialogue.ELEMENTAL_START);
 				
 			} else if (index == 0){
 				return new ResponseEffectsOnly("Back", "Put your phone away."){
@@ -2005,19 +2033,21 @@ public class PhoneDialogue {
 	}
 
 	private static String getWeaponsDiscoveredIndication() {
-		return Main.getProperties().getWeaponsDiscoveredCount()+"/"+weaponsDiscoveredList.size();
+		int size = weaponsDiscoveredList.size();
+		return Math.min(size, Main.getProperties().getWeaponsDiscoveredCount())+"/"+size;
 	}
 	
 	private static String getClothingDiscoveredIndication() {
-		return Main.getProperties().getClothingDiscoveredCount()+"/"+clothingDiscoveredList.size();
+		int size = clothingDiscoveredList.size();
+		return Math.min(size, Main.getProperties().getClothingDiscoveredCount())+"/"+size;
 	}
 	
 	private static String getItemsDiscoveredIndication() {
-		return Main.getProperties().getItemsDiscoveredCount()+"/"+itemsDiscoveredList.size();
+		int size = itemsDiscoveredList.size();
+		return Math.min(size, Main.getProperties().getItemsDiscoveredCount())+"/"+size;
 	}
 	
 	public static final DialogueNode ENCYCLOPEDIA = new DialogueNode("Encyclopedia", "", true) {
-
 		@Override
 		public String getContent() {
 			StringBuilder sb = new StringBuilder();
@@ -2028,21 +2058,24 @@ public class PhoneDialogue {
 			
 			sb.append("<p style='text-align:center;'>");
 				sb.append("You have discovered:");
-				sb.append((Main.getProperties().getSubspeciesDiscoveredCount()==Subspecies.values().length
+				sb.append(Main.getProperties().getSubspeciesDiscoveredCount()==Subspecies.values().length
 								?"<br/>[style.colourGood(Subspecies: "+getSubspeciesDiscoveredIndication()+")]"
-								:"<br/>Subspecies: "+getSubspeciesDiscoveredIndication()));
-	
-				sb.append((Main.getProperties().getWeaponsDiscoveredCount()==weaponsDiscoveredList.size()
+								:"<br/>Subspecies: "+getSubspeciesDiscoveredIndication());
+
+				int size = weaponsDiscoveredList.size();
+				sb.append(Math.min(size, Main.getProperties().getWeaponsDiscoveredCount())==weaponsDiscoveredList.size()
 								?"<br/>[style.colourGood(Weapons: "+getWeaponsDiscoveredIndication()+")]"
-								:"<br/>Weapons: "+getWeaponsDiscoveredIndication()));
-	
-				sb.append((Main.getProperties().getClothingDiscoveredCount()==clothingDiscoveredList.size()
+								:"<br/>Weapons: "+getWeaponsDiscoveredIndication());
+				
+				size = clothingDiscoveredList.size();
+				sb.append(Math.min(size, Main.getProperties().getClothingDiscoveredCount())==clothingDiscoveredList.size()
 								?"<br/>[style.colourGood(Clothing: "+getClothingDiscoveredIndication()+")]"
-								:"<br/>Clothing: "+getClothingDiscoveredIndication()));
-	
-				sb.append((Main.getProperties().getItemsDiscoveredCount()==itemsDiscoveredList.size()
+								:"<br/>Clothing: "+getClothingDiscoveredIndication());
+				
+				size = itemsDiscoveredList.size();
+				sb.append(Math.min(size, Main.getProperties().getItemsDiscoveredCount())==itemsDiscoveredList.size()
 								?"<br/>[style.colourGood(Items: "+getItemsDiscoveredIndication()+")]"
-								:"<br/>Items: "+getItemsDiscoveredIndication()));
+								:"<br/>Items: "+getItemsDiscoveredIndication());
 			sb.append("</p>");
 			
 			return sb.toString();
@@ -2111,15 +2144,15 @@ public class PhoneDialogue {
 	
 	static {
 		itemsDiscoveredList.addAll(ItemType.getAllItems());
-		itemsDiscoveredList.removeIf((it) -> it.getItemTags().contains(ItemTag.CHEAT_ITEM));
+		itemsDiscoveredList.removeIf((it) -> it.getItemTags().contains(ItemTag.CHEAT_ITEM) || it.getItemTags().contains(ItemTag.SILLY_MODE));
 		Collections.sort(itemsDiscoveredList, (i1, i2) -> i1.getRarity().compareTo(i2.getRarity()));
 		
 		weaponsDiscoveredList.addAll(WeaponType.getAllWeapons());
-		weaponsDiscoveredList.removeIf((wt) -> wt.getItemTags().contains(ItemTag.CHEAT_ITEM));
+		weaponsDiscoveredList.removeIf((wt) -> wt.getItemTags().contains(ItemTag.CHEAT_ITEM) || wt.getItemTags().contains(ItemTag.SILLY_MODE));
 		Collections.sort(weaponsDiscoveredList, (i1, i2) -> i1.getRarity().compareTo(i2.getRarity()));
 		
 		clothingDiscoveredList.addAll(ClothingType.getAllClothing());
-		clothingDiscoveredList.removeIf((ct) -> ct.getDefaultItemTags().contains(ItemTag.CHEAT_ITEM));
+		clothingDiscoveredList.removeIf((ct) -> ct.getDefaultItemTags().contains(ItemTag.CHEAT_ITEM) || ct.getDefaultItemTags().contains(ItemTag.SILLY_MODE));
 		Collections.sort(clothingDiscoveredList, (i1, i2) -> i1.getRarity().compareTo(i2.getRarity()));
 		
 		clothingSlotCategories = new LinkedHashMap<>();
@@ -2459,9 +2492,9 @@ public class PhoneDialogue {
 		}
 	};
 
-	private static List<Race> racesDiscovered = new ArrayList<>();
+	private static List<AbstractRace> racesDiscovered = new ArrayList<>();
 	private static List<Subspecies> subspeciesDiscovered = new ArrayList<>();
-	private static Race raceSelected;
+	private static AbstractRace raceSelected;
 	private static Subspecies subspeciesSelected;
 	private static StringBuilder subspeciesSB = new StringBuilder();
 	
@@ -2471,7 +2504,7 @@ public class PhoneDialogue {
 		
 		for (Subspecies subspecies : Subspecies.values()) {
 			if(Main.getProperties().isRaceDiscovered(subspecies)) {
-				Race race = subspecies.getRace();
+				AbstractRace race = subspecies.getRace();
 				if(!racesDiscovered.contains(race)) {
 					racesDiscovered.add(race);
 				}
@@ -2498,11 +2531,11 @@ public class PhoneDialogue {
 						+ "You have encountered the following races in your travels:<br/>"
 						+ "(Discovered races are [style.boldGood(highlighted)], while undiscovered races are [style.colourDisabled(greyed out)].)"
 					+ "</p>");
-			List<Race> sortedRaces = new ArrayList<>();
-			Collections.addAll(sortedRaces, Race.values());
+			List<AbstractRace> sortedRaces = new ArrayList<>();
+			sortedRaces.addAll(Race.getAllRaces());
 			sortedRaces.remove(Race.NONE);
 			sortedRaces.sort((r1, r2) -> r1.getName(false).compareTo(r2.getName(false)));
-			for(Race race : sortedRaces) {
+			for(AbstractRace race : sortedRaces) {
 				UtilText.nodeContentSB.append("<div style='box-sizing: border-box; text-align:center; width:50%; padding:8px; margin:0; float:left;'>");
 				if(racesDiscovered.contains(race)) {
 					UtilText.nodeContentSB.append("<b style='color:"+race.getColour().toWebHexString()+";'>" + Util.capitaliseSentence(race.getName(false)) + "</b>");
@@ -2593,9 +2626,14 @@ public class PhoneDialogue {
 										:maleBody.getBreast().getSize().getCupSizeName()+"-cup")+"</td>"
 						+ "</tr>"
 						+ "<tr>"
-							+ "<td>Penis size</td>"
+							+ "<td>Penis length</td>"
 							+ "<td>-</td>"
 							+ "<td>"+Units.size(maleBody.getPenis().getRawLengthValue())+"</td>"
+						+ "</tr>"
+						+ "<tr>"
+							+ "<td>Penis diameter</td>"
+							+ "<td>-</td>"
+							+ "<td>"+Units.size(maleBody.getPenis().getRawGirthValue())+"</td>"
 						+ "</tr>"
 						+ "<tr>"
 							+ "<td>Vagina capacity</td>"
