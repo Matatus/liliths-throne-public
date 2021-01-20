@@ -2956,7 +2956,7 @@ public class ScarlettsShop {
 			sb.append("<div class='cosmetics-container' style='background:transparent;'>"
 						+ CharacterModificationUtils.getAgeChoiceDiv()
 						+ CharacterModificationUtils.getOrientationChoiceDiv()
-						+ CharacterModificationUtils.getPersonalityChoiceDiv()
+						+ CharacterModificationUtils.getPersonalityChoiceDiv(true)
 						+ CharacterModificationUtils.getObedienceChoiceDiv()
 						+ CharacterModificationUtils.getAffectionChoiceDiv()
 						+ CharacterModificationUtils.getFetishChoiceDiv()
@@ -5081,7 +5081,7 @@ public class ScarlettsShop {
 								
 							} else {
 								Main.game.getNpc(Scarlett.class).setPenisSize(30);
-								Main.game.getNpc(Scarlett.class).setPenisGirth(PenetrationGirth.FOUR_THICK);
+								Main.game.getNpc(Scarlett.class).setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
 								Main.game.getNpc(Scarlett.class).setPenisCumStorage(150);
 							}
 

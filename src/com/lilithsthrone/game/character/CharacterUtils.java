@@ -1009,6 +1009,7 @@ public class CharacterUtils {
 		
 		body.setAss(new Ass(AssType.DEMON_COMMON,
 				(startingGender.isFeminine() ? demonBody.getFemaleAssSize() : demonBody.getMaleAssSize()),
+				(startingGender.isFeminine() ? demonBody.getFemaleHipSize() : demonBody.getMaleHipSize()),
 				demonBody.getAnusWetness(),
 				demonBody.getAnusCapacity(),
 				demonBody.getAnusDepth(),
@@ -1216,6 +1217,7 @@ public class CharacterUtils {
 				new Arm((stage.isArmFurry()?startingBodyType.getArmType():ArmType.HUMAN), startingBodyType.getArmRows()),
 				new Ass(stage.isAssFurry()?startingBodyType.getAssType():AssType.HUMAN,
 						(startingGender.isFeminine() ? startingBodyType.getFemaleAssSize() : startingBodyType.getMaleAssSize()),
+						(startingGender.isFeminine() ? startingBodyType.getFemaleHipSize() : startingBodyType.getMaleHipSize()),
 						startingBodyType.getAnusWetness(),
 						startingBodyType.getAnusCapacity(),
 						startingBodyType.getAnusDepth(),
@@ -1355,6 +1357,7 @@ public class CharacterUtils {
 		
 		body.setAss(new Ass(stage.isAssFurry()?startingBodyType.getAssType():AssType.HUMAN,
 						(startingGender.isFeminine() ? startingBodyType.getFemaleAssSize() : startingBodyType.getMaleAssSize()),
+						(startingGender.isFeminine() ? startingBodyType.getFemaleHipSize() : startingBodyType.getMaleHipSize()),
 						startingBodyType.getAnusWetness(),
 						startingBodyType.getAnusCapacity(),
 						startingBodyType.getAnusDepth(),
@@ -1559,7 +1562,7 @@ public class CharacterUtils {
 				if(!halfDemon) {
 					character.setBreastType(BreastType.HUMAN);
 					character.setEyeType(Util.randomItemFrom(EyeType.getEyeTypes(character.getLegRace())));
-					character.setHornType(Util.randomItemFrom(HornType.getHornTypes(character.getLegRace())));
+					character.setHornType(Util.randomItemFrom(HornType.getHornTypes(character.getLegRace(), false)));
 				}
 				character.setAntennaType(Util.randomItemFrom(AntennaType.getAntennaTypes(character.getLegRace())));
 				character.setArmType(ArmType.HUMAN);
@@ -1575,7 +1578,7 @@ public class CharacterUtils {
 				if(!halfDemon) {
 					character.setBreastType(Util.randomItemFrom(BreastType.getBreastTypes(character.getLegRace())));
 					character.setEyeType(Util.randomItemFrom(EyeType.getEyeTypes(character.getLegRace())));
-					character.setHornType(Util.randomItemFrom(HornType.getHornTypes(character.getLegRace())));
+					character.setHornType(Util.randomItemFrom(HornType.getHornTypes(character.getLegRace(), false)));
 				}
 				character.setAntennaType(Util.randomItemFrom(AntennaType.getAntennaTypes(character.getLegRace())));
 				character.setArmType(Util.randomItemFrom(ArmType.getArmTypes(character.getLegRace())));
@@ -1592,7 +1595,7 @@ public class CharacterUtils {
 				if(!halfDemon) {
 					character.setBreastType(Util.randomItemFrom(BreastType.getBreastTypes(character.getLegRace())));
 					character.setEyeType(Util.randomItemFrom(EyeType.getEyeTypes(character.getLegRace())));
-					character.setHornType(Util.randomItemFrom(HornType.getHornTypes(character.getLegRace())));
+					character.setHornType(Util.randomItemFrom(HornType.getHornTypes(character.getLegRace(), false)));
 				}
 				
 				AbstractFaceType faceType = Util.randomItemFrom(FaceType.getFaceTypes(character.getLegRace()));
@@ -1876,8 +1879,8 @@ public class CharacterUtils {
 		// Body:
 		int height = character.getHeightValue()-15 + Util.random.nextInt(30) +1;
 		
-		if(character.getHeight()==Height.NEGATIVE_TWO_MIMIMUM) {
-			character.setHeight(Math.min(Height.NEGATIVE_TWO_MIMIMUM.getMaximumValue()-1, Math.max(Height.NEGATIVE_TWO_MIMIMUM.getMinimumValue(), height)));
+		if(character.getHeight()==Height.NEGATIVE_TWO_MINIMUM) {
+			character.setHeight(Math.min(Height.NEGATIVE_TWO_MINIMUM.getMaximumValue()-1, Math.max(Height.NEGATIVE_TWO_MINIMUM.getMinimumValue(), height)));
 			
 		} else if(character.getHeight()==Height.NEGATIVE_ONE_TINY) {
 			character.setHeight(Math.min(Height.NEGATIVE_ONE_TINY.getMaximumValue()-1, Math.max(Height.NEGATIVE_ONE_TINY.getMinimumValue(), height)));
@@ -2252,9 +2255,15 @@ public class CharacterUtils {
 				&& !character.hasIncubationLitter(SexAreaOrifice.VAGINA)
 				&& character.hasVagina()) {
 			character.addItem(Main.game.getItemGen().generateItem("innoxia_pills_fertility"), 2+Util.random.nextInt(4), false, false);
+			if(Math.random()<0.2f) {
+				character.addItem(Main.game.getItemGen().generateItem("innoxia_pills_broodmother"), 1+Util.random.nextInt(2), false, false);
+			}
 		}
 		if(character.getFetishDesire(Fetish.FETISH_IMPREGNATION).isPositive() && character.hasPenisIgnoreDildo()) {
 			character.addItem(Main.game.getItemGen().generateItem("innoxia_pills_fertility"), 2+Util.random.nextInt(4), false, false);
+			if(Math.random()<0.2f) {
+				character.addItem(Main.game.getItemGen().generateItem("innoxia_pills_broodmother"), 1+Util.random.nextInt(2), false, false);
+			}
 		}
 
 		if(character.getFetishDesire(Fetish.FETISH_PREGNANCY).isNegative()

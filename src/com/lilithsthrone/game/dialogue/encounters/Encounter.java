@@ -357,8 +357,8 @@ public enum Encounter {
 				if(Math.random()<IncestEncounterRate()) { // Incest
 					List<NPC> offspringAvailable = Main.game.getOffspringNotSpawned(
 						npc-> (npc.getSubspecies()==Subspecies.HALF_DEMON
-								?(npc.getHalfDemonSubspecies().isAbleToNaturallySpawnInLocation(WorldType.DOMINION))
-								:(npc.getSubspecies().isAbleToNaturallySpawnInLocation(WorldType.DOMINION)
+								?(npc.getHalfDemonSubspecies().isAbleToNaturallySpawnInLocation(WorldType.DOMINION, PlaceType.DOMINION_BACK_ALLEYS))
+								:(npc.getSubspecies().isAbleToNaturallySpawnInLocation(WorldType.DOMINION, PlaceType.DOMINION_BACK_ALLEYS)
 										|| npc.getSubspecies()==Subspecies.ANGEL
 										|| npc.getSubspecies()==Subspecies.FOX_ASCENDANT
 										|| npc.getSubspecies()==Subspecies.FOX_ASCENDANT_ARCTIC
@@ -406,8 +406,9 @@ public enum Encounter {
 					List<AbstractClothingType> randomClothingList = new ArrayList<>(ClothingType.getAllClothing());
 					randomClothingList.removeIf((clothing) ->
 							(!clothing.getDefaultItemTags().contains(ItemTag.SOLD_BY_KATE)
-							&& !clothing.getDefaultItemTags().contains(ItemTag.SOLD_BY_NYAN)
-							&& !clothing.getDefaultItemTags().contains(ItemTag.DOMINION_ALLEYWAY_SPAWN))
+								&& !clothing.getDefaultItemTags().contains(ItemTag.SOLD_BY_NYAN)
+								&& !clothing.getDefaultItemTags().contains(ItemTag.DOMINION_ALLEYWAY_SPAWN))
+							|| clothing.getDefaultItemTags().contains(ItemTag.NO_RANDOM_SPAWN)
 							|| clothing.getRarity()==Rarity.EPIC
 							|| clothing.getRarity()==Rarity.LEGENDARY);
 					randomItem = Main.game.getItemGen().generateClothing(randomClothingList.get(Util.random.nextInt(randomClothingList.size())));
@@ -508,11 +509,11 @@ public enum Encounter {
 				if(Math.random()<IncestEncounterRate()) { // Incest
 					List<NPC> offspringAvailable = Main.game.getOffspringNotSpawned(
 							npc-> (npc.getSubspecies()==Subspecies.HALF_DEMON
-								?(npc.getHalfDemonSubspecies().isAbleToNaturallySpawnInLocation(WorldType.DOMINION)
+								?(npc.getHalfDemonSubspecies().isAbleToNaturallySpawnInLocation(WorldType.DOMINION, PlaceType.DOMINION_CANAL)
 										|| npc.getHalfDemonSubspecies()==Subspecies.SLIME
 										|| npc.getHalfDemonSubspecies()==Subspecies.ALLIGATOR_MORPH
 										|| npc.getHalfDemonSubspecies()==Subspecies.RAT_MORPH)
-								:(npc.getSubspecies().isAbleToNaturallySpawnInLocation(WorldType.DOMINION)
+								:(npc.getSubspecies().isAbleToNaturallySpawnInLocation(WorldType.DOMINION, PlaceType.DOMINION_CANAL)
 										|| npc.getSubspecies()==Subspecies.SLIME
 										|| npc.getSubspecies()==Subspecies.ALLIGATOR_MORPH
 										|| npc.getSubspecies()==Subspecies.RAT_MORPH)),
@@ -555,8 +556,9 @@ public enum Encounter {
 					List<AbstractClothingType> randomClothingList = new ArrayList<>(ClothingType.getAllClothing());
 					randomClothingList.removeIf((clothing) ->
 							(!clothing.getDefaultItemTags().contains(ItemTag.SOLD_BY_KATE)
-							&& !clothing.getDefaultItemTags().contains(ItemTag.SOLD_BY_NYAN)
-							&& !clothing.getDefaultItemTags().contains(ItemTag.DOMINION_ALLEYWAY_SPAWN))
+								&& !clothing.getDefaultItemTags().contains(ItemTag.SOLD_BY_NYAN)
+								&& !clothing.getDefaultItemTags().contains(ItemTag.DOMINION_ALLEYWAY_SPAWN))
+							|| clothing.getDefaultItemTags().contains(ItemTag.NO_RANDOM_SPAWN)
 							|| clothing.getRarity()==Rarity.EPIC
 							|| clothing.getRarity()==Rarity.LEGENDARY);
 					randomItem = Main.game.getItemGen().generateClothing(randomClothingList.get(Util.random.nextInt(randomClothingList.size())));
@@ -627,8 +629,8 @@ public enum Encounter {
 				if(Math.random()<IncestEncounterRate()) { // Incest
 					List<NPC> offspringAvailable = Main.game.getOffspringNotSpawned(
 							npc-> (npc.getSubspecies()==Subspecies.HALF_DEMON
-								?(npc.getHalfDemonSubspecies().isAbleToNaturallySpawnInLocation(WorldType.HARPY_NEST))
-								:(npc.getSubspecies().isAbleToNaturallySpawnInLocation(WorldType.HARPY_NEST))),
+								?(npc.getHalfDemonSubspecies().isAbleToNaturallySpawnInLocation(WorldType.HARPY_NEST, PlaceType.HARPY_NESTS_WALKWAYS))
+								:(npc.getSubspecies().isAbleToNaturallySpawnInLocation(WorldType.HARPY_NEST, PlaceType.HARPY_NESTS_WALKWAYS))),
 							true);
 					
 					if(!offspringAvailable.isEmpty()) {
@@ -688,8 +690,8 @@ public enum Encounter {
 				if(Math.random()<IncestEncounterRate()) { // Incest
 					List<NPC> offspringAvailable = Main.game.getOffspringNotSpawned(
 							npc-> (npc.getSubspecies()==Subspecies.HALF_DEMON
-								?(npc.getHalfDemonSubspecies().isAbleToNaturallySpawnInLocation(WorldType.HARPY_NEST))
-								:(npc.getSubspecies().isAbleToNaturallySpawnInLocation(WorldType.HARPY_NEST))),
+								?(npc.getHalfDemonSubspecies().isAbleToNaturallySpawnInLocation(WorldType.HARPY_NEST, PlaceType.HARPY_NESTS_WALKWAYS))
+								:(npc.getSubspecies().isAbleToNaturallySpawnInLocation(WorldType.HARPY_NEST, PlaceType.HARPY_NESTS_WALKWAYS))),
 							true);
 					
 					if(!offspringAvailable.isEmpty()) {
@@ -938,8 +940,8 @@ public enum Encounter {
 				if(Math.random()<IncestEncounterRate()) {
 					List<NPC> offspringAvailable = Main.game.getOffspringNotSpawned(
 							npc-> (npc.getSubspecies()==Subspecies.HALF_DEMON
-								?(npc.getHalfDemonSubspecies().isAbleToNaturallySpawnInLocation(WorldType.SUBMISSION))
-								:(npc.getSubspecies().isAbleToNaturallySpawnInLocation(WorldType.SUBMISSION))),
+								?(npc.getHalfDemonSubspecies().isAbleToNaturallySpawnInLocation(WorldType.SUBMISSION, PlaceType.SUBMISSION_TUNNELS))
+								:(npc.getSubspecies().isAbleToNaturallySpawnInLocation(WorldType.SUBMISSION, PlaceType.SUBMISSION_TUNNELS))),
 							true);
 					
 					if(!offspringAvailable.isEmpty()) {

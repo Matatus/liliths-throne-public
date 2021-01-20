@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.lilithsthrone.game.inventory.AbstractCoreItem;
 import org.w3c.dom.Document;
 import org.w3c.dom.events.EventTarget;
 
@@ -3524,28 +3525,44 @@ public class MainControllerInitMethod {
 				id = "TAIL_LENGTH_INCREASE";
 				if (((EventTarget) MainController.document.getElementById(id)) != null) {
 					((EventTarget) MainController.document.getElementById(id)).addEventListener("click", e -> {
-						BodyChanging.getTarget().incrementTailLengthAsPercentageOfHeight(0.05f);
+						if(BodyChanging.getTarget().getLegConfiguration()==LegConfiguration.TAIL_LONG) {
+							BodyChanging.getTarget().incrementLegTailLengthAsPercentageOfHeight(0.05f);
+						} else {
+							BodyChanging.getTarget().incrementTailLengthAsPercentageOfHeight(0.05f);
+						}
 						Main.game.setContent(new Response("", "", Main.game.getCurrentDialogueNode()));
 					}, false);
 				}
 				id = "TAIL_LENGTH_INCREASE_LARGE";
 				if (((EventTarget) MainController.document.getElementById(id)) != null) {
 					((EventTarget) MainController.document.getElementById(id)).addEventListener("click", e -> {
-						BodyChanging.getTarget().incrementTailLengthAsPercentageOfHeight(0.25f);
+						if(BodyChanging.getTarget().getLegConfiguration()==LegConfiguration.TAIL_LONG) {
+							BodyChanging.getTarget().incrementLegTailLengthAsPercentageOfHeight(0.25f);
+						} else {
+							BodyChanging.getTarget().incrementTailLengthAsPercentageOfHeight(0.25f);
+						}
 						Main.game.setContent(new Response("", "", Main.game.getCurrentDialogueNode()));
 					}, false);
 				}
 				id = "TAIL_LENGTH_DECREASE";
 				if (((EventTarget) MainController.document.getElementById(id)) != null) {
 					((EventTarget) MainController.document.getElementById(id)).addEventListener("click", e -> {
-						BodyChanging.getTarget().incrementTailLengthAsPercentageOfHeight(-0.05f);
+						if(BodyChanging.getTarget().getLegConfiguration()==LegConfiguration.TAIL_LONG) {
+							BodyChanging.getTarget().incrementLegTailLengthAsPercentageOfHeight(-0.05f);
+						} else {
+							BodyChanging.getTarget().incrementTailLengthAsPercentageOfHeight(-0.05f);
+						}
 						Main.game.setContent(new Response("", "", Main.game.getCurrentDialogueNode()));
 					}, false);
 				}
 				id = "TAIL_LENGTH_DECREASE_LARGE";
 				if (((EventTarget) MainController.document.getElementById(id)) != null) {
 					((EventTarget) MainController.document.getElementById(id)).addEventListener("click", e -> {
-						BodyChanging.getTarget().incrementTailLengthAsPercentageOfHeight(-0.25f);
+						if(BodyChanging.getTarget().getLegConfiguration()==LegConfiguration.TAIL_LONG) {
+							BodyChanging.getTarget().incrementLegTailLengthAsPercentageOfHeight(-0.25f);
+						} else {
+							BodyChanging.getTarget().incrementTailLengthAsPercentageOfHeight(-0.25f);
+						}
 						Main.game.setContent(new Response("", "", Main.game.getCurrentDialogueNode()));
 					}, false);
 				}
@@ -6360,13 +6377,14 @@ public class MainControllerInitMethod {
 			}
 			
 			
-			for (AbstractSubspecies s : Subspecies.getAllSubspecies()) {
+			for (AbstractSubspecies subspecies : Subspecies.getAllSubspecies()) {
+				String subspeciesId = Subspecies.getIdFromSubspecies(subspecies);
 				for(FurryPreference preference : FurryPreference.values()) {
-					id = "FEMININE_" + preference+"_"+s;
+					id = "FEMININE_" + preference+"_"+subspeciesId;
 					if (((EventTarget) MainController.document.getElementById(id)) != null) {
-						if(s.isFurryPreferencesEnabled()) {
+						if(subspecies.isFurryPreferencesEnabled()) {
 							((EventTarget) MainController.document.getElementById(id)).addEventListener("click", e -> {
-								Main.getProperties().setFeminineFurryPreference(s, preference);
+								Main.getProperties().setFeminineFurryPreference(subspecies, preference);
 								Main.saveProperties();
 								Main.game.setContent(new Response("", "", Main.game.getCurrentDialogueNode()));
 							}, false);
@@ -6375,17 +6393,17 @@ public class MainControllerInitMethod {
 						MainController.addEventListener(MainController.document, id, "mouseleave", MainController.hideTooltipListener, false);
 						TooltipInformationEventListener el = new TooltipInformationEventListener().setInformation(
 								preference.getName(),
-								s.isFurryPreferencesEnabled()
-									?preference.getDescriptionFeminine(s)
+								subspecies.isFurryPreferencesEnabled()
+									?preference.getDescriptionFeminine(subspecies)
 									:"This subspecies cannot have its furry preference changed!"
 								);
 						MainController.addEventListener(MainController.document, id, "mouseenter", el, false);
 					}
-					id = "MASCULINE_" + preference+"_"+s;
+					id = "MASCULINE_" + preference+"_"+subspeciesId;
 					if (((EventTarget) MainController.document.getElementById(id)) != null) {
 						((EventTarget) MainController.document.getElementById(id)).addEventListener("click", e -> {
-							if(s.isFurryPreferencesEnabled()) {
-								Main.getProperties().setMasculineFurryPreference(s, preference);
+							if(subspecies.isFurryPreferencesEnabled()) {
+								Main.getProperties().setMasculineFurryPreference(subspecies, preference);
 								Main.saveProperties();
 								Main.game.setContent(new Response("", "", Main.game.getCurrentDialogueNode()));
 							}
@@ -6395,18 +6413,18 @@ public class MainControllerInitMethod {
 						MainController.addEventListener(MainController.document, id, "mouseleave", MainController.hideTooltipListener, false);
 						TooltipInformationEventListener el = new TooltipInformationEventListener().setInformation(
 								preference.getName(),
-								s.isFurryPreferencesEnabled()
-									?preference.getDescriptionMasculine(s)
+								subspecies.isFurryPreferencesEnabled()
+									?preference.getDescriptionMasculine(subspecies)
 									:"This subspecies cannot have its furry preference changed!");
 						MainController.addEventListener(MainController.document, id, "mouseenter", el, false);
 					}
 				}
 				for(SubspeciesPreference preference : SubspeciesPreference.values()) {
-					id = "FEMININE_SPAWN_" + preference+"_"+s;
+					id = "FEMININE_SPAWN_" + preference+"_"+subspeciesId;
 					if (((EventTarget) MainController.document.getElementById(id)) != null) {
-						if(s.isSpawnPreferencesEnabled()) {
+						if(subspecies.isSpawnPreferencesEnabled()) {
 							((EventTarget) MainController.document.getElementById(id)).addEventListener("click", e -> {
-								Main.getProperties().setFeminineSubspeciesPreference(s, preference);
+								Main.getProperties().setFeminineSubspeciesPreference(subspecies, preference);
 								Main.saveProperties();
 								Main.game.setContent(new Response("", "", Main.game.getCurrentDialogueNode()));
 							}, false);
@@ -6416,17 +6434,17 @@ public class MainControllerInitMethod {
 						MainController.addEventListener(MainController.document, id, "mouseleave", MainController.hideTooltipListener, false);
 						TooltipInformationEventListener el = new TooltipInformationEventListener().setInformation(
 								Util.capitaliseSentence(preference.getName()),
-								s.isSpawnPreferencesEnabled()
+								subspecies.isSpawnPreferencesEnabled()
 									?"Set the weighted chance for feminine genders of this subspecies to spawn. The spawn frequency of '"+preference.getName()+"' has a weight of: <b>"+preference.getValue()+"</b><br/>"
 										+ "<i>This weighting is further affected by map-specific spawn frequencies.</i>"
 									:"This subspecies cannot have its spawn preference changed!");
 						MainController.addEventListener(MainController.document, id, "mouseenter", el, false);
 					}
-					id = "MASCULINE_SPAWN_" + preference+"_"+s;
+					id = "MASCULINE_SPAWN_" + preference+"_"+subspeciesId;
 					if (((EventTarget) MainController.document.getElementById(id)) != null) {
-						if(s.isSpawnPreferencesEnabled()) {
+						if(subspecies.isSpawnPreferencesEnabled()) {
 							((EventTarget) MainController.document.getElementById(id)).addEventListener("click", e -> {
-								Main.getProperties().setMasculineSubspeciesPreference(s, preference);
+								Main.getProperties().setMasculineSubspeciesPreference(subspecies, preference);
 								Main.saveProperties();
 								Main.game.setContent(new Response("", "", Main.game.getCurrentDialogueNode()));
 							}, false);
@@ -6436,7 +6454,7 @@ public class MainControllerInitMethod {
 						MainController.addEventListener(MainController.document, id, "mouseleave", MainController.hideTooltipListener, false);
 						TooltipInformationEventListener el = new TooltipInformationEventListener().setInformation(
 								Util.capitaliseSentence(preference.getName()),
-								s.isSpawnPreferencesEnabled()
+								subspecies.isSpawnPreferencesEnabled()
 									?"Set the weighted chance for masculine genders of this subspecies to spawn. The spawn frequency of '"+preference.getName()+"' has a weight of: <b>"+preference.getValue()+"</b><br/>"
 										+ "<i>This weighting is further affected by map-specific spawn frequencies.</i>"
 									:"This subspecies cannot have its spawn preference changed!");
@@ -7259,13 +7277,13 @@ public class MainControllerInitMethod {
 						if(!Main.getProperties().hasValue(PropertyValue.overwriteWarning) || EnchantmentDialogue.overwriteConfirmationName.equals(f.getName())) {
 							EnchantmentDialogue.overwriteConfirmationName = "";
 							EnchantmentDialogue.saveEnchant(fileName, true);
-							Main.game.setContent(new Response("Save/Load", "Open the save/load game window.", EnchantmentDialogue.ENCHANTMENT_SAVE_LOAD));
+							Main.game.setContent(new Response("Save/Load", "Open the save/load enchantment window.", EnchantmentDialogue.ENCHANTMENT_SAVE_LOAD));
 							
 						} else {
 							EnchantmentDialogue.overwriteConfirmationName = f.getName();
 							EnchantmentDialogue.loadConfirmationName = "";
 							EnchantmentDialogue.deleteConfirmationName = "";
-							Main.game.setContent(new Response("Save/Load", "Open the save/load game window.", EnchantmentDialogue.ENCHANTMENT_SAVE_LOAD));
+							Main.game.setContent(new Response("Save/Load", "Open the save/load enchantment window.", EnchantmentDialogue.ENCHANTMENT_SAVE_LOAD));
 						}
 						
 					}, false);
@@ -7284,19 +7302,23 @@ public class MainControllerInitMethod {
 							LoadedEnchantment lEnch = EnchantmentDialogue.loadEnchant(fileName);
 							
 							EnchantmentDialogue.resetNonTattooEnchantmentVariables();
-							EnchantmentDialogue.initModifiers(lEnch.getSuitableItem());
+							AbstractCoreItem abstractItem = lEnch.getSuitableItem();
+							EnchantmentDialogue.initModifiers(abstractItem);
 							EnchantmentDialogue.getEffects().clear();
+							for(ItemEffect ie : abstractItem.getEffects()) {
+								EnchantmentDialogue.addEffect(ie);
+							}
 							for(ItemEffect ie : lEnch.getEffects()) {
 								EnchantmentDialogue.addEffect(ie);
 							}
 							EnchantmentDialogue.setOutputName(lEnch.getName());
-							Main.game.setContent(new Response("Save/Load", "Open the save/load game window.", EnchantmentDialogue.ENCHANTMENT_MENU));
+							Main.game.setContent(new Response("Save/Load", "Open the save/load enchantment window.", EnchantmentDialogue.ENCHANTMENT_MENU));
 							
 						} else {
 							EnchantmentDialogue.overwriteConfirmationName = "";
 							EnchantmentDialogue.loadConfirmationName = f.getName();
 							EnchantmentDialogue.deleteConfirmationName = "";
-							Main.game.setContent(new Response("Save/Load", "Open the save/load game window.", EnchantmentDialogue.ENCHANTMENT_SAVE_LOAD));
+							Main.game.setContent(new Response("Save/Load", "Open the save/load enchantment window.", EnchantmentDialogue.ENCHANTMENT_SAVE_LOAD));
 						}
 						
 					}, false);

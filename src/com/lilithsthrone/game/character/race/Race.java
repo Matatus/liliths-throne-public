@@ -20,6 +20,7 @@ import com.lilithsthrone.game.character.body.types.VaginaType;
 import com.lilithsthrone.game.character.body.valueEnums.CoveringPattern;
 import com.lilithsthrone.game.character.body.valueEnums.LegConfiguration;
 import com.lilithsthrone.game.combat.CombatBehaviour;
+import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.Util;
 import com.lilithsthrone.utils.Util.Value;
 import com.lilithsthrone.utils.colours.Colour;
@@ -291,6 +292,26 @@ public class Race {
 				FurryPreference.NORMAL,
 				FurryPreference.NORMAL,
 				true) {
+		@Override
+		public String getName(GameCharacter character, boolean feral) {
+			if(Main.game!=null && Main.game.isSillyModeEnabled()) {
+				if(feral) {
+					return "awoo";
+				}
+				return "awoo-morph";
+			}
+			return super.getName(character, feral);
+		}
+		@Override
+		public String getNamePlural(GameCharacter character, boolean feral) {
+			if(Main.game!=null && Main.game.isSillyModeEnabled()) {
+				if(feral) {
+					return "awoos";
+				}
+				return "awoo-morphs";
+			}
+			return super.getNamePlural(character, feral);
+		}
 		public void applyRaceChanges(Body body) {
 			if(body.getPenis().getType()==PenisType.WOLF_MORPH
 					|| body.getPenis().getType()==PenisType.DEMON_COMMON) {
@@ -347,6 +368,26 @@ public class Race {
 				FurryPreference.NORMAL,
 				FurryPreference.NORMAL,
 				true) {
+		@Override
+		public String getName(GameCharacter character, boolean feral) {
+			if(Main.game!=null && Main.game.isSillyModeEnabled()) {
+				if(feral) {
+					return "catte";
+				}
+				return "catte-morph";
+			}
+			return super.getName(character, feral);
+		}
+		@Override
+		public String getNamePlural(GameCharacter character, boolean feral) {
+			if(Main.game!=null && Main.game.isSillyModeEnabled()) {
+				if(feral) {
+					return "cattes";
+				}
+				return "catte-morphs";
+			}
+			return super.getNamePlural(character, feral);
+		}
 		@Override
 		public AbstractRacialBody getRacialBody() {
 			return RacialBody.CAT_MORPH;
@@ -589,6 +630,20 @@ public class Race {
 			FurryPreference.NORMAL,
 			FurryPreference.NORMAL,
 			false) {
+		@Override
+		public String getName(GameCharacter character, boolean feral) {
+			if(Main.game!=null && Main.game.isSillyModeEnabled()) {
+				return "birb";
+			}
+			return super.getName(character, feral);
+		}
+		@Override
+		public String getNamePlural(GameCharacter character, boolean feral) {
+			if(Main.game!=null && Main.game.isSillyModeEnabled()) {
+				return "birbs";
+			}
+			return super.getNamePlural(character, feral);
+		}
 		@Override
 		public boolean isFlyingRace() {
 			return true;
@@ -1321,6 +1376,7 @@ public class Race {
 						allRaces.add(race);
 						raceToIdMap.put(race, id);
 						idToRaceMap.put(id, race);
+//						System.out.println("race: "+id);
 					} catch(Exception ex) {
 						System.err.println("Loading modded race failed at 'Race'. File path: "+innerEntry.getValue().getAbsolutePath());
 						System.err.println("Actual exception: ");
@@ -1370,6 +1426,8 @@ public class Race {
 				}
 			}
 		}
+		
+		allRaces.sort((r1, r2) -> r1.getName(false).compareTo(r2.getName(false)));
 		
 		for(AbstractRace race : Race.getAllRaces()) {
 			if(race!=Race.NONE) {

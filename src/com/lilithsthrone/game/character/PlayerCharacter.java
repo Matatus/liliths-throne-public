@@ -109,6 +109,8 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 	private boolean sideQuestUpdated;
 	private boolean relationshipQuestUpdated;
 
+	private boolean isActive;
+
 	protected List<String> friendlyOccupants;
 	
 	//Discoveries:
@@ -144,7 +146,9 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 		mainQuestUpdated = false;
 		sideQuestUpdated = false;
 		relationshipQuestUpdated = false;
-		
+
+		isActive = true;
+
 		racesDiscoveredFromBook = new HashSet<>();
 
 		itemsDiscovered = new HashSet<>();
@@ -485,6 +489,9 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 							if(questString.equals("MAIN_1_E_REPORT_TO_ALEXA")) {
 								questString = "MAIN_1_E_REPORT_TO_HELENA";
 							}
+							if(!version.isEmpty() && Main.isVersionOlderThan(version, "0.3.14") && questString.startsWith("RELATIONSHIP_NYAN")) {
+								continue;
+							}
 							try {
 								Quest quest = Quest.valueOf(questString);
 								List<Quest> questList = new ArrayList<>();
@@ -672,12 +679,12 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 			Main.game.getDialogueFlags().setFlag(DialogueFlagValue.natalyaVisited, false);
 			Main.game.getDialogueFlags().setFlag(DialogueFlagValue.natalyaInterviewOffered, false);
 			Main.game.getDialogueFlags().setFlag(DialogueFlagValue.natalyaBusy, false);
-			
-//			if(!character.hasItemType(ItemType.NATALYA_BUSINESS_CARD_STAMPED)) {
-//				character.addItem(Main.game.getItemGeneration().generateItem(ItemType.NATALYA_BUSINESS_CARD_STAMPED), false);
-//			}
-//			character.removeItemByType(ItemType.NATALYA_BUSINESS_CARD);
 		}
+
+		if(Main.isVersionOlderThan(version, "0.3.8") && character.isHasSlaverLicense()) {
+			character.addItem(Main.game.getItemGen().generateItem(ItemType.SLAVER_LICENSE), false);
+		}
+		
 		if(Main.isVersionOlderThan(version, "0.3.8.1")) {
 			if(character.hasItemType(ItemType.NATALYA_BUSINESS_CARD_STAMPED)) {
 				character.removeItemByType(ItemType.NATALYA_BUSINESS_CARD);
@@ -688,11 +695,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 				character.addItem(Main.game.getItemGen().generateItem(ItemType.NATALYA_BUSINESS_CARD), false);
 			}
 		}
-		
-		if(Main.isVersionOlderThan(version, "0.3.8") && character.isHasSlaverLicense()) {
-			character.addItem(Main.game.getItemGen().generateItem(ItemType.SLAVER_LICENSE), false);
-		}
-		
+
 		return character;
 	}
 
@@ -748,9 +751,13 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 		if(!Main.game.isInNewWorld()) {
 			return ""; // This isn't displayed anywhere before the game starts for real.
 		} else {
-			return "Having been pulled into an enchanted mirror in your aunt Lily's museum, you woke up to find yourself in another world."
+			if(description==null || description.isEmpty()) {
+				return "Having been pulled into an enchanted mirror in your aunt Lily's museum, you woke up to find yourself in another world."
 					+ " By a stroke of good fortune, one of the first people you met was Lilaya; this world's version of your aunt."
 					+ " Having convinced her that your story is true, you're now working towards finding a way to get back to your old world.";
+			} else {
+				return UtilText.parse(this, description);
+			}
 		}
 	}
 	
@@ -895,7 +902,11 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 	public void setRelationshipQuestUpdated(boolean relationshipQuestUpdated) {
 		this.relationshipQuestUpdated = relationshipQuestUpdated;
 	}
-	
+
+	public boolean isActive() { return isActive; }
+
+	public void setActive(boolean active) { this.isActive = active; }
+
 	public Map<QuestLine, Quest> getQuestsFailed() {
 		return questsFailed;
 	}

@@ -59,6 +59,10 @@ public enum ItemTag {
 	
 	//-------------- WEAPONS & CLOTHING --------------//
 	
+	/** Excludes this clothing from being randomly chosen to equip on an NPC in automatic outfit generation.
+	 *  Also excludes the clothing from randomly spawning as tile-exploration loot.
+	 *  This only really affects common-rarity clothing, as all clothing of a rarity higher than common are typically only able to be added to characters directly. */
+	NO_RANDOM_SPAWN,
 	
 	NIGHT_VISION_SELF(  // Makes this clothing or weapon provide immunity to the darkness debuff for just the wearer while equipped
 			Util.newArrayListOfValues(
@@ -290,6 +294,11 @@ public enum ItemTag {
 					"[style.colourSex(Snaps if throat bulges too much during sex)]"),
 			true),
 	
+	CHASTITY( // Tags the clothing as being some form of chastity device, meaning that it will apply the 'CHASTITY_1' status effect when equipped
+			Util.newArrayListOfValues(
+					"[style.colourTerrible(Chastity device)]"),
+			true),
+	
 	// To detect whether creampies should leak out or not:
 	
 	PLUGS_ANUS( // Counts as being inserted into the wearer's anus. E.g. butt plugs or anal beads
@@ -388,7 +397,10 @@ public enum ItemTag {
 		}
 		return clothingTooltipAdditions;
 	}
-
+	
+	/**
+	 * @return true if this tag makes the clothing to which it is applied a sex toy, meaning that NPCs will not remove it during sex unless it is blocking the part they wish to access.
+	 */
 	public boolean isSexToy() {
 		return sexToy;
 	}

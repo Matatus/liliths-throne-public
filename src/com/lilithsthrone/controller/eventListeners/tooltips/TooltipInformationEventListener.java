@@ -67,7 +67,6 @@ import com.lilithsthrone.rendering.RenderingEngine;
 import com.lilithsthrone.utils.Units;
 import com.lilithsthrone.utils.Util;
 import com.lilithsthrone.utils.Util.Value;
-import com.lilithsthrone.utils.colours.BaseColour;
 import com.lilithsthrone.utils.colours.Colour;
 import com.lilithsthrone.utils.colours.PresetColour;
 import com.lilithsthrone.world.Cell;
@@ -389,14 +388,13 @@ public class TooltipInformationEventListener implements EventListener {
 			boolean coreMove = owner.getEquippedMoves().contains(move);
 			
 			tooltipSB.append("<div class='subTitle' style='width:46%; margin:2% 2% 0% 2%;'>"+(coreMove?"[style.colourMinorGood(Core)]":"[style.colourMinorBad(Non-core)]")+"</div>");
-			tooltipSB.append("<div class='subTitle' style='color:"+move.getType().getColour().toWebHexString()+"; width:46%; margin:2% 2% 0% 2%;'>"+move.getType().getName()+"</div>");
+			tooltipSB.append("<div class='subTitle' style='color:"+move.getColourByDamageType(owner).toWebHexString()+"; width:46%; margin:2% 2% 0% 2%;'>"+move.getType().getName()+"</div>");
 			
 			if(currentCooldown>0) {
 				tooltipSB.append("<div class='subTitle'><span style='color:"+PresetColour.GENERIC_MINOR_BAD.toWebHexString()+";'>On cooldown</span>: "+currentCooldown+(currentCooldown==1?" turn":" turns")+"</div>");
 			}
 			
 			// Picture:
-			tooltipSB.append("<div class='picture'>" + move.getSVGString() + "</div>");
 
 			// Description:
 			tooltipSB.append("<div class='subTitle-picture'>");
@@ -423,6 +421,8 @@ public class TooltipInformationEventListener implements EventListener {
 				}
 			}
 			tooltipSB.append("</div>");
+			
+			tooltipSB.append("<div class='picture'>" + move.getSVGString() + "</div>");
 
 			// Description:
 			Value<Boolean, String> availableValue = owner.isMoveAvailable(move.getIdentifier());
@@ -884,6 +884,8 @@ public class TooltipInformationEventListener implements EventListener {
 					}
 
 					if(!elemental) {
+						boolean feral = owner.isFeral();
+						
 						// GREATER:
 						if(owner.getCovering(owner.getFaceCovering()).getPattern()==CoveringPattern.FRECKLED_FACE) {
 							Covering c = owner.getCovering(owner.getFaceCovering());
@@ -907,7 +909,10 @@ public class TooltipInformationEventListener implements EventListener {
 								:(owner.isSizeDifferenceTallerThan(Main.game.getPlayer())
 									?"<span style='color:"+PresetColour.BODY_SIZE_FOUR.toWebHexString()+";'>"
 									:"<span>"))
-								+"Height: [unit.sizeShort(" + owner.getHeightValue()+ ")]</span>"));
+								+(feral&&!owner.getFeralAttributes().isSizeHeight()
+//										?"Length: [unit.sizeShort(" + (owner.getHeightValue() + owner.getLegTailLength(false))+ ")]</span>"
+										?"Length: [unit.sizeShort(" + (owner.getHeightValue())+ ")]</span>"
+										:"Height: [unit.sizeShort(" + owner.getHeightValue() + ")]</span>")));
 						
 						
 						// LESSER:
@@ -935,7 +940,9 @@ public class TooltipInformationEventListener implements EventListener {
 								}
 								break;
 							case TAIL_LONG:
-								tooltipSB.append(getBodyPartDiv(owner, "Serpent-tail", owner.getLegRace(), owner.getLegCovering(), owner.isLegFeral()));
+//								tooltipSB.append(getBodyPartDiv(owner, "Serpent-tail"+ (feral&&!owner.getFeralAttributes().isSizeHeight()?"":" (Length: "+(Units.size(owner.getLegTailLength(false)))+")"),
+//										owner.getLegRace(), owner.getLegCovering(), owner.isLegFeral()));
+								tooltipSB.append(getBodyPartDiv(owner, "Serpent-tail (Length: "+(Units.size(owner.getLegTailLength(false)))+")", owner.getLegRace(), owner.getLegCovering(), owner.isLegFeral()));
 								break;
 							case AVIAN:
 								tooltipSB.append(getBodyPartDiv(owner, Util.capitaliseSentence(Util.intToString(owner.getLegCount()))+" bird legs", owner.getLegRace(), owner.getLegCovering(), owner.isLegFeral()));
@@ -1154,8 +1161,8 @@ public class TooltipInformationEventListener implements EventListener {
 							+ "<span style='color:" + Femininity.valueOf(owner.getFemininityValue()).getColour().toWebHexString() + "; font-size:110%;'>"
 								+ (owner.getName(true).length() == 0
 									?"[npc.Race]"
-									:(owner.isPlayer()
-										?"[pc.Name]"
+									:(owner.isPlayer() || owner.isPlayerKnowsName()
+										?"[npc.NameFull]"
 										:"[npc.Name]"))
 							+"</span>"
 						+"<br/>Level " + owner.getLevel() + " <span style='color:" + PresetColour.TEXT_GREY.toWebHexString() + ";'>| "
@@ -1538,15 +1545,6 @@ public class TooltipInformationEventListener implements EventListener {
 		String raceName;
 		raceName = race.getName(character, feral);
 
-		if(raceName.equals("wolf-morph") && Main.getProperties().hasValue(PropertyValue.sillyMode)){
-			raceName = "awoo-morph";
-		}
-		if(raceName.equals("cat-morph") && Main.getProperties().hasValue(PropertyValue.sillyMode)){
-			raceName = "catte-morph";
-		}
-		if(raceName.equals("harpy") && Main.getProperties().hasValue(PropertyValue.sillyMode)){
-			raceName = "birb";
-		}
 		Colour primaryColour = covering.getPrimaryColour();
 		Colour secondaryColour = covering.getSecondaryColour();
 		boolean displaySecondary = covering.getPattern().isNaturalSecondColour(character);
@@ -1576,7 +1574,7 @@ public class TooltipInformationEventListener implements EventListener {
 								?"background: repeating-linear-gradient(135deg, " + primaryColour.toWebHexString() + ", " + primaryColour.getShades()[4] + " 1px);"
 								:(primaryColour.getRainbowColours()!=null
 									?"background: "+primaryColour.getRainbowDiv(1)+";"
-									:"background:" + (primaryColour.isJetBlack()?BaseColour.PITCH_BLACK.toWebHexString():primaryColour.toWebHexString()) + ";"))
+									:"background:" + (primaryColour.getCoveringIconColour()) + ";"))
 						+ "'></div>"
 						+ (displaySecondary
 							?"<div class='colour-box' style='width:8px; height:8px; margin:0; padding:0; border-radius:2px;"
@@ -1584,7 +1582,7 @@ public class TooltipInformationEventListener implements EventListener {
 									?"background: repeating-linear-gradient(135deg, " + secondaryColour.toWebHexString() + ", " + secondaryColour.getShades()[4] + " 1px);"
 									:(secondaryColour.getRainbowColours()!=null
 										?"background: "+secondaryColour.getRainbowDiv(1)+";"
-										:"background:" + (secondaryColour.isJetBlack()?BaseColour.PITCH_BLACK.toWebHexString():secondaryColour.toWebHexString()) + ";"))
+										:"background:" + (secondaryColour.getCoveringIconColour()) + ";"))
 								+ "'></div>"
 							:"")
 					+ "</div>"

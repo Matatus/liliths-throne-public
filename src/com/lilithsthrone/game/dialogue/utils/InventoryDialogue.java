@@ -152,7 +152,7 @@ public class InventoryDialogue {
 		zlayerClothing.sort(new ClothingZLayerComparator());
 		
 		for(AbstractClothing c : zlayerClothing) { 
-			if(!Main.game.isInSex() || !c.getSlotEquippedTo().isJewellery()) {
+			if((!Main.game.isInSex() || !c.getSlotEquippedTo().isJewellery()) && !c.isMilkingEquipment()) {
 				if(Main.game.isInNewWorld()) {
 					character.unequipClothingIntoInventory(c, true, Main.game.getPlayer());
 				} else {
@@ -6543,7 +6543,13 @@ public class InventoryDialogue {
 				
 				for(Colour c : cr.getAllColours()) {
 					inventorySB.append("<div class='normal-button"+(dyePreviews.size()>i && dyePreviews.get(i)==c?" selected":"")+"' id='DYE_CLOTHING_"+i+"_"+c.getId()+"'"
-										+ " style='width:auto; margin-right:4px;"+(dyePreviews.size()>i && dyePreviews.get(i)==c?" background-color:"+PresetColour.BASE_GREEN.getShades()[4]+";":"")+"'>"
+										+ " style='width:auto; margin-right:4px; border-width:1px;"
+											+(cr.getDefaultColours().contains(c)
+												?"border-color:"+PresetColour.TEXT_GREY.toWebHexString()+";"
+												:"")
+											+(dyePreviews.size()>i && dyePreviews.get(i)==c
+												?" background-color:"+PresetColour.BASE_GREEN.getShades()[4]+";"
+												:"")+"'>"
 									+ "<div class='phone-item-colour' style='"
 										+ (c.isMetallic()
 												?"background: repeating-linear-gradient(135deg, " + c.toWebHexString() + ", " + c.getShades()[4] + " 10px);"
@@ -6658,7 +6664,14 @@ public class InventoryDialogue {
 				
 				for(Colour c : cr.getAllColours()) {
 					inventorySB.append("<div class='normal-button"+(dyePreviews.size()>i && dyePreviews.get(i)==c?" selected":"")+"' id='DYE_WEAPON_"+i+"_"+c.getId()+"'"
-										+ " style='width:auto; margin-right:4px;"+(dyePreviews.size()>i && dyePreviews.get(i)==c?" background-color:"+PresetColour.BASE_GREEN.getShades()[4]+";":"")+"'>"
+										+ " style='width:auto; margin-right:4px; border-width:1px;"
+											+(cr.getDefaultColours().contains(c)
+												?"border-color:"+PresetColour.TEXT_GREY.toWebHexString()+";"
+												:"")
+											+(dyePreviews.size()>i && dyePreviews.get(i)==c
+												?" background-color:"+PresetColour.BASE_GREEN.getShades()[4]+";"
+												:"")
+										+"'>"
 									+ "<div class='phone-item-colour' style='"
 										+ (c.isMetallic()
 												?"background: repeating-linear-gradient(135deg, " + c.toWebHexString() + ", " + c.getShades()[4] + " 10px);"
@@ -7589,6 +7602,7 @@ public class InventoryDialogue {
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 							Main.game.getPlayer().removeItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), finalCount);
+							Main.game.getPlayer().removeItem(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER), finalCount);
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
 										+ getDyeBrushEffects(weapon, dyePreviews.get(0))

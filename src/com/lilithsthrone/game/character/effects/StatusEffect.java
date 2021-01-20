@@ -1512,9 +1512,11 @@ public class StatusEffect {
 			"weatherDayStorm",
 			PresetColour.CLOTHING_WHITE,
 			false,
-			Util.newHashMapOfValues(new Value<>(Attribute.RESISTANCE_LUST, -100f)),
-			Util.newArrayListOfValues("<b style='color: "+ PresetColour.GENERIC_ARCANE.toWebHexString()+ ";'>Enhanced libido</b>",
-					"[style.boldLust(+75)] Resting lust",
+			Util.newHashMapOfValues(
+					new Value<>(Attribute.RESISTANCE_LUST, -100f),
+					new Value<>(Attribute.RESTING_LUST, 50f)),
+			Util.newArrayListOfValues(
+					"<b style='color: "+ PresetColour.GENERIC_ARCANE.toWebHexString()+ ";'>Enhanced libido</b>",
 					"[style.boldExcellent(Double)] <b style='color: "+ PresetColour.GENERIC_ARCANE.toWebHexString()+ ";'>Essence gains</b> from sex & combat")) {
 		@Override
 		public String applyEffect(GameCharacter target, int secondsPassed, long totalSecondsPassed) {
@@ -1854,7 +1856,7 @@ public class StatusEffect {
 		}
 	};
 
-	public static AbstractStatusEffect AQUATIC_POSITIVE = new AbstractStatusEffect(90,
+	public static AbstractStatusEffect AQUATIC_TAIL_POSITIVE = new AbstractStatusEffect(90,
 			"Aquatic harmony",
 			"aquatic_positive",
 			PresetColour.GENERIC_GOOD,
@@ -1862,7 +1864,9 @@ public class StatusEffect {
 			true,
 			Util.newHashMapOfValues(
 					new Value<>(Attribute.ACTION_POINTS, 1f),
-					new Value<>(Attribute.MAJOR_PHYSIQUE, 10f)),
+					new Value<>(Attribute.MAJOR_PHYSIQUE, 10f),
+					new Value<>(Attribute.CRITICAL_DAMAGE, 15f),
+					new Value<>(Attribute.ENERGY_SHIELDING, 5f)),
 			Util.newArrayListOfValues(
 					"[style.boldBlueLight(Lost legs)]")) {
 		@Override
@@ -1888,11 +1892,13 @@ public class StatusEffect {
 		}
 		@Override
 		public boolean isConditionsMet(GameCharacter target) {
-			return target.getCell().getAquatic().isWater() && target.getSubspecies().isAquatic(target);
+			return target.getCell().getAquatic().isWater()
+					&& target.getLegConfiguration()==LegConfiguration.TAIL
+					&& target.getSubspecies().isAquatic(target);
 		}
 	};
 
-	public static AbstractStatusEffect AQUATIC_NEGATIVE = new AbstractStatusEffect(90,
+	public static AbstractStatusEffect AQUATIC_TAIL_NEGATIVE = new AbstractStatusEffect(90,
 			"Fish out of water",
 			"aquatic_negative",
 			PresetColour.GENERIC_BAD,
@@ -1900,7 +1906,9 @@ public class StatusEffect {
 			false,
 			Util.newHashMapOfValues(
 					new Value<>(Attribute.ACTION_POINTS, -1f),
-					new Value<>(Attribute.MAJOR_PHYSIQUE, -10f)),
+					new Value<>(Attribute.MAJOR_PHYSIQUE, -10f),
+					new Value<>(Attribute.CRITICAL_DAMAGE, -15f),
+					new Value<>(Attribute.ENERGY_SHIELDING, -5f)),
 			Util.newArrayListOfValues(
 					"[style.boldTan(Grown two legs)]")) {
 		@Override
@@ -1926,10 +1934,101 @@ public class StatusEffect {
 		}
 		@Override
 		public boolean isConditionsMet(GameCharacter target) {
-			return !target.getCell().getAquatic().isWater() && target.getSubspecies().isAquatic(target);
+			return !target.getCell().getAquatic().isWater()
+					&& target.getLegConfiguration()==LegConfiguration.TAIL
+					&& target.getSubspecies().isAquatic(target);
 		}
 	};
 	
+	public static AbstractStatusEffect AQUATIC_POSITIVE = new AbstractStatusEffect(90,
+			"Aquatic harmony",
+			"aquatic_positive",
+			PresetColour.GENERIC_GOOD,
+			PresetColour.BASE_BLUE_LIGHT,
+			true,
+			Util.newHashMapOfValues(
+					new Value<>(Attribute.MAJOR_PHYSIQUE, 10f),
+					new Value<>(Attribute.CRITICAL_DAMAGE, 15f),
+					new Value<>(Attribute.ENERGY_SHIELDING, 5f)),
+			Util.newArrayListOfValues()) {
+		@Override
+		public String getDescription(GameCharacter target) {
+			if(target!=null) {
+				return UtilText.parse(target,
+						"As [npc.nameIsFull] [npc.a_race], and [npc.she] [npc.has] access to a nearby body of water, [npc.she] [npc.verb(feel)] very comfortable!");
+			}
+			return "";
+		}
+		@Override
+		public boolean isConditionsMet(GameCharacter target) {
+			return target.getCell().getAquatic().isWater()
+					&& target.getLegConfiguration()!=LegConfiguration.TAIL
+					&& target.getSubspecies().isAquatic(target);
+		}
+	};
+
+	public static AbstractStatusEffect AQUATIC_NEGATIVE = new AbstractStatusEffect(90,
+			"Fish out of water",
+			"aquatic_negative",
+			PresetColour.GENERIC_BAD,
+			PresetColour.BASE_TAN,
+			false,
+			Util.newHashMapOfValues(
+					new Value<>(Attribute.MAJOR_PHYSIQUE, -10f),
+					new Value<>(Attribute.CRITICAL_DAMAGE, -15f),
+					new Value<>(Attribute.ENERGY_SHIELDING, -5f)),
+			Util.newArrayListOfValues()) {
+		@Override
+		public String getDescription(GameCharacter target) {
+			if(target!=null) {
+				return UtilText.parse(target,
+						"As [npc.nameIsFull] [npc.a_race], and there is no body of water nearby, [npc.she] is feeling very uncomfortable!");
+			}
+			return "";
+		}
+		@Override
+		public boolean isConditionsMet(GameCharacter target) {
+			return !target.getCell().getAquatic().isWater()
+					&& target.getLegConfiguration()!=LegConfiguration.TAIL
+					&& target.getSubspecies().isAquatic(target);
+		}
+	};
+
+//	public static AbstractStatusEffect OCCUPATION_PERK = new AbstractStatusEffect(1000,
+//			"",
+//			null,
+//			PresetColour.CLOTHING_WHITE,
+//			true,
+//			null,
+//			null) {
+//		@Override
+//		public String getName(GameCharacter target) {
+//			return target.getOccupation().getAssociatedPerk().getName(target);
+//		}
+//		@Override
+//		public String getDescription(GameCharacter target) {
+//			return target.getOccupation().getAssociatedPerk().getDescription(target);
+//		}
+////		@Override
+////		public List<Value<Integer, String>> getAdditionalDescriptions(GameCharacter target) {
+////			List<Value<Integer, String>> additionalDescriptions = new ArrayList<>();
+////			
+////			return additionalDescriptions;
+////		}
+//		@Override
+//		public boolean isConditionsMet(GameCharacter target) {
+//			return !target.isPlayer() || Main.game.isInNewWorld(); //TODO
+//		}
+//		@Override
+//		public List<String> getModifiersAsStringList(GameCharacter target) {
+//			List<String> extraModifiersList = new ArrayList<>();
+//			return extraModifiersList;
+//		}
+//		@Override
+//		public String getSVGString(GameCharacter owner) {
+//			return owner.getOccupation().getAssociatedPerk().getSVGString(owner);
+//		}
+//	};
 	
 	// SEXUAL ORIENTATIONS:
 	
@@ -2813,7 +2912,7 @@ public class StatusEffect {
 		@Override
 		public String getDescription(GameCharacter target) {
 			return UtilText.parse(target,
-					"Having recently received a full-body massage, [npc.nameIsFull] feeling extremely relaxed and limber!");
+					"Having recently received a massage, [npc.nameIsFull] feeling extremely relaxed and limber!");
 		}
 	};
 	
@@ -3544,7 +3643,8 @@ public class StatusEffect {
 							+ "<p>"
 								+ (target.getBodyMaterial()==BodyMaterial.SLIME
 									?"Taking a closer look at your swollen, slimy stomach, you suddenly realise that you can see "
-											+Util.intToString(target.getPregnantLitter().getTotalLitterCount())+" little slime core"+(target.getPregnantLitter().getTotalLitterCount()==1?"":"s")+" growing in the place where your womb should be."
+											+Util.intToString(target.getPregnantLitter().getTotalLitterCount())+" little slime core"+(target.getPregnantLitter().getTotalLitterCount()==1?"":"s")+" growing in "
+											+ (target.hasVagina()?"the place where your womb should be.":"your belly.")
 										+ " You can't help but let out a delighted squeal of happiness as you see your "
 											+(target.getPregnantLitter().getTotalLitterCount()==1?"child":"children")+" growing inside of you, and spend the next few minutes stroking and rubbing your wonderfully-swollen abdomen in a state of absolute bliss."
 										+ " Eventually, however, you decide that you should probably go and see Lilaya, so that she can help you figure out all the details of giving birth."
@@ -3583,7 +3683,8 @@ public class StatusEffect {
 								+ "<p>"
 									+ (target.getBodyMaterial()==BodyMaterial.SLIME
 										?"As you take one last look at your swollen, slimy stomach, you suddenly realise that you can see "
-												+Util.intToString(target.getPregnantLitter().getTotalLitterCount())+" little slime core"+(target.getPregnantLitter().getTotalLitterCount()==1?"":"s")+" growing in the place where your womb should be."
+												+Util.intToString(target.getPregnantLitter().getTotalLitterCount())+" little slime core"+(target.getPregnantLitter().getTotalLitterCount()==1?"":"s")+" growing in "
+												+ (target.hasVagina()?"the place where your womb should be.":"your belly.")
 											+ " You can't help but let out a shocked cry as you see your "+(target.getPregnantLitter().getTotalLitterCount()==1?"child":"children")
 												+" growing inside of you, and spend the next few minutes stroking and rubbing your swollen abdomen in a state of panic."
 											+ " Eventually, however, you start to calm down a little, and decide that you should probably go and see Lilaya as soon as possible."
@@ -3605,7 +3706,7 @@ public class StatusEffect {
 								?"</p>"
 								+ "<p>"
 									+ "Looking a little closer at your swollen, slimy stomach, you see "+Util.intToString(target.getPregnantLitter().getTotalLitterCount())+" little slime core"
-										+(target.getPregnantLitter().getTotalLitterCount()==1?"":"s")+" growing in the place where your womb should be."
+										+(target.getPregnantLitter().getTotalLitterCount()==1?"":"s")+" growing in "+ (target.hasVagina()?"the place where your womb should be.":"your belly.")
 									+ " You can't help but let out a happy little sigh as you see your "+(target.getPregnantLitter().getTotalLitterCount()==1?"child":"children")
 									+" growing inside of you, and spend the next few minutes stroking and rubbing your swollen abdomen in a state of motherly bliss."
 								:"")
@@ -4035,18 +4136,10 @@ public class StatusEffect {
 			sb.append("<p>"
 						+ "From their significant weight, you're sure that the eggs in your stomach have by now reached full maturity, and could be laid and hatched at any time of your choosing."
 					+ "</p>");
-			if (!((PlayerCharacter) target).isQuestCompleted(QuestLine.SIDE_FIRST_TIME_INCUBATION)) {
-				sb.append("<p>"
-							+ "[pc.thought(I really should go and see Lilaya...)]"
-						+ "</p>");
-			} else {
-				sb.append("<p>"
-							+ "[pc.thought(I really should go and see Lilaya... Or maybe I'll stay like this for a little while!)]"
-						+ "</p>");
-			}
 			
 			sb.append("<p style='text-align:center;'>"
 						+ "[style.boldSex(You're now ready to lay the eggs that have been incubating in your stomach!)]"
+						+ "<br/>(To lay your eggs, open your phone's menu and access the 'Eggs' tab.)"
 					+ "</p>");
 			
 			if(!Main.game.getPlayer().hasQuest(QuestLine.SIDE_FIRST_TIME_INCUBATION)) {
@@ -4079,10 +4172,7 @@ public class StatusEffect {
 		}
 		@Override
 		public String getDescription(GameCharacter target) {
-			return UtilText.parse(target, "From one of [npc.namePos] sexual encounters, [npc.sheHas] had [npc.her] stomach filled with eggs. Having reached full maturity, they're now ready to be laid and hatched.")
-					+ (target.isPlayer()
-							?" It might be a good idea to visit Lilaya..."
-							:"");
+			return UtilText.parse(target, "From one of [npc.namePos] sexual encounters, [npc.sheHas] had [npc.her] stomach filled with eggs. Having reached full maturity, they're now ready to be laid and hatched.");
 		}
 		@Override
 		public boolean isConditionsMet(GameCharacter target) {
@@ -4176,18 +4266,10 @@ public class StatusEffect {
 			sb.append("<p>"
 						+ "From their significant weight, you're sure that the eggs in your [npc.breasts] have by now reached full maturity, and could be laid and hatched at any time of your choosing."
 					+ "</p>");
-			if (!((PlayerCharacter) target).isQuestCompleted(QuestLine.SIDE_FIRST_TIME_INCUBATION)) {
-				sb.append("<p>"
-							+ "[pc.thought(I really should go and see Lilaya...)]"
-						+ "</p>");
-			} else {
-				sb.append("<p>"
-							+ "[pc.thought(I really should go and see Lilaya... Or maybe I'll stay like this for a little while!)]"
-						+ "</p>");
-			}
 			
 			sb.append("<p style='text-align:center;'>"
 						+ "[style.boldSex(You're now ready to lay the eggs that have been incubating in your [npc.breasts]!)]"
+						+ "<br/>(To lay your eggs, open your phone's menu and access the 'Eggs' tab.)"
 					+ "</p>");
 			
 			if(!Main.game.getPlayer().hasQuest(QuestLine.SIDE_FIRST_TIME_INCUBATION)) {
@@ -4219,10 +4301,7 @@ public class StatusEffect {
 		}
 		@Override
 		public String getDescription(GameCharacter target) {
-			return UtilText.parse(target, "From one of [npc.namePos] sexual encounters, [npc.sheHas] had [npc.her] [npc.breasts] filled with eggs. Having reached full maturity, they're now ready to be laid and hatched.")
-					+ (target.isPlayer()
-							?" It might be a good idea to visit Lilaya..."
-							:"");
+			return UtilText.parse(target, "From one of [npc.namePos] sexual encounters, [npc.sheHas] had [npc.her] [npc.breasts] filled with eggs. Having reached full maturity, they're now ready to be laid and hatched.");
 		}
 		@Override
 		public boolean isConditionsMet(GameCharacter target) {
@@ -4330,18 +4409,10 @@ public class StatusEffect {
 			sb.append("<p>"
 						+ "From their significant weight, you're sure that the eggs in your [npc.crotchBoobs] have by now reached full maturity, and could be laid and hatched at any time of your choosing."
 					+ "</p>");
-			if (!((PlayerCharacter) target).isQuestCompleted(QuestLine.SIDE_FIRST_TIME_INCUBATION)) {
-				sb.append("<p>"
-							+ "[pc.thought(I really should go and see Lilaya...)]"
-						+ "</p>");
-			} else {
-				sb.append("<p>"
-							+ "[pc.thought(I really should go and see Lilaya... Or maybe I'll stay like this for a little while!)]"
-						+ "</p>");
-			}
 			
 			sb.append("<p style='text-align:center;'>"
 						+ "[style.boldSex(You're now ready to lay the eggs that have been incubating in your [npc.crotchBoobs]!)]"
+						+ "<br/>(To lay your eggs, open your phone's menu and access the 'Eggs' tab.)"
 					+ "</p>");
 			
 			if(!Main.game.getPlayer().hasQuest(QuestLine.SIDE_FIRST_TIME_INCUBATION)) {
@@ -4381,10 +4452,7 @@ public class StatusEffect {
 		@Override
 		public String getDescription(GameCharacter target) {
 			return UtilText.parse(target,
-					"From one of [npc.namePos] sexual encounters, [npc.sheHas] had [npc.her] [npc.crotchBoobs] filled with eggs. Having reached full maturity, they're now ready to be laid and hatched.")
-					+ (target.isPlayer()
-							?" It might be a good idea to visit Lilaya..."
-							:"");
+					"From one of [npc.namePos] sexual encounters, [npc.sheHas] had [npc.her] [npc.crotchBoobs] filled with eggs. Having reached full maturity, they're now ready to be laid and hatched.");
 		}
 		@Override
 		public boolean isConditionsMet(GameCharacter target) {
@@ -4478,18 +4546,10 @@ public class StatusEffect {
 			sb.append("<p>"
 						+ "From their significant weight, you're sure that the eggs in your [npc.spinneret] have by now reached full maturity, and could be laid and hatched at any time of your choosing."
 					+ "</p>");
-			if (!((PlayerCharacter) target).isQuestCompleted(QuestLine.SIDE_FIRST_TIME_INCUBATION)) {
-				sb.append("<p>"
-							+ "[pc.thought(I really should go and see Lilaya...)]"
-						+ "</p>");
-			} else {
-				sb.append("<p>"
-							+ "[pc.thought(I really should go and see Lilaya... Or maybe I'll stay like this for a little while!)]"
-						+ "</p>");
-			}
 			
 			sb.append("<p style='text-align:center;'>"
 						+ "[style.boldSex(You're now ready to lay the eggs that have been incubating in your [npc.spinneret]!)]"
+						+ "<br/>(To lay your eggs, open your phone's menu and access the 'Eggs' tab.)"
 					+ "</p>");
 			
 			if(!Main.game.getPlayer().hasQuest(QuestLine.SIDE_FIRST_TIME_INCUBATION)) {
@@ -4522,10 +4582,7 @@ public class StatusEffect {
 		@Override
 		public String getDescription(GameCharacter target) {
 			return UtilText.parse(target,
-					"From one of [npc.namePos] sexual encounters, [npc.sheHas] had [npc.her] [npc.spinneret] filled with eggs. Having reached full maturity, they're now ready to be laid and hatched.")
-					+ (target.isPlayer()
-							?" It might be a good idea to visit Lilaya..."
-							:"");
+					"From one of [npc.namePos] sexual encounters, [npc.sheHas] had [npc.her] [npc.spinneret] filled with eggs. Having reached full maturity, they're now ready to be laid and hatched.");
 		}
 		@Override
 		public boolean isConditionsMet(GameCharacter target) {
@@ -4619,18 +4676,10 @@ public class StatusEffect {
 			sb.append("<p>"
 						+ "From their significant weight, you're sure that the eggs in your womb have by now reached full maturity, and could be laid and hatched at any time of your choosing."
 					+ "</p>");
-			if (!((PlayerCharacter) target).isQuestCompleted(QuestLine.SIDE_FIRST_TIME_INCUBATION)) {
-				sb.append("<p>"
-							+ "[pc.thought(I really should go and see Lilaya...)]"
-						+ "</p>");
-			} else {
-				sb.append("<p>"
-							+ "[pc.thought(I really should go and see Lilaya... Or maybe I'll stay like this for a little while!)]"
-						+ "</p>");
-			}
 			
 			sb.append("<p style='text-align:center;'>"
 						+ "[style.boldSex(You're now ready to lay the eggs that have been incubating in your womb!)]"
+						+ "<br/>(To lay your eggs, open your phone's menu and access the 'Eggs' tab.)"
 					+ "</p>");
 			
 			if(!Main.game.getPlayer().hasQuest(QuestLine.SIDE_FIRST_TIME_INCUBATION)) {
@@ -4662,10 +4711,7 @@ public class StatusEffect {
 		}
 		@Override
 		public String getDescription(GameCharacter target) {
-			return UtilText.parse(target, "From one of [npc.namePos] sexual encounters, [npc.sheHas] had [npc.her] womb filled with eggs. Having reached full maturity, they're now ready to be laid and hatched.")
-					+ (target.isPlayer()
-							?" It might be a good idea to visit Lilaya..."
-							:"");
+			return UtilText.parse(target, "From one of [npc.namePos] sexual encounters, [npc.sheHas] had [npc.her] womb filled with eggs. Having reached full maturity, they're now ready to be laid and hatched.");
 		}
 		@Override
 		public boolean isConditionsMet(GameCharacter target) {
@@ -6521,6 +6567,13 @@ public class StatusEffect {
 					+ " As a result, [npc.sheIs] feeling extremely horny and frustrated...");
 		}
 		@Override
+		public String applyEffect(GameCharacter target, int secondsPassed, long totalSecondsPassed) {
+			if(target.getLastTimeOrgasmedSeconds()>=Main.game.getSecondsPassed()-(60*60*24)) {
+				target.removeStatusEffect(FRUSTRATED_NO_ORGASM); // Remove this effect if orgasmed within the last day
+			}
+			return "";
+		}
+		@Override
 		public String extraRemovalEffects(GameCharacter target) {
 			return "";
 		}
@@ -6549,9 +6602,286 @@ public class StatusEffect {
 		public boolean isConditionsMet(GameCharacter target) {
 			return !target.isPlayer()
 					&& target.isSlave()
-//					&& (target.getOwner()!=null && target.getOwner().isPlayer())
-					&& ((NPC)target).getLastTimeOrgasmed()+60*24<Main.game.getMinutesPassed();
+					&& ((NPC)target).getLastTimeOrgasmedSeconds()+(60*60*24)<Main.game.getSecondsPassed();
 		}
+	};
+	
+	public static AbstractStatusEffect CHASTITY_1 = new AbstractStatusEffect(80,
+			"Forced chastity (calm)",
+			"chastity1",
+			PresetColour.GENERIC_SEX,
+			false,
+			Util.newHashMapOfValues(),
+			Util.newArrayListOfValues("[style.colourSex(Increasing in intensity...)]")) {
+		@Override
+		public String getDescription(GameCharacter target) {//TODO if one key-holder, mention them
+			return UtilText.parse(target, "[npc.Name] hasn't had any sexual relief for over a day now, and is feeling extremely pent-up...");
+		}
+		@Override
+		public String extraRemovalEffects(GameCharacter target) {
+			if(target.isWearingChastity()) {
+				if(target.hasStatusEffect(CHASTITY_REMOVED_2)) {
+					target.addStatusEffect(CHASTITY_2, 60*60*24*2); // 2 instead of 5
+					target.removeStatusEffect(CHASTITY_REMOVED_2);
+				} else if(target.hasStatusEffect(CHASTITY_REMOVED_3)) {
+					target.addStatusEffect(CHASTITY_3, 60*60*24*3); // 3 instead of 7
+					target.removeStatusEffect(CHASTITY_REMOVED_3);
+				} else if(target.hasStatusEffect(CHASTITY_REMOVED_4)) {
+					target.addStatusEffect(CHASTITY_4, -1);
+					target.removeStatusEffect(CHASTITY_REMOVED_4);
+				} else {
+					target.addStatusEffect(CHASTITY_2, 60*60*24*5); // 5 days
+				}
+			}
+			return "";
+		}
+		@Override
+		public String applyEffect(GameCharacter target, int secondsPassed, long totalSecondsPassed) {
+			if(target.hasStatusEffect(CHASTITY_REMOVED_2) || target.hasStatusEffect(CHASTITY_REMOVED_3) || target.hasStatusEffect(CHASTITY_REMOVED_4)) {
+				target.removeStatusEffect(CHASTITY_1);
+			}
+			return "";
+		}
+		@Override
+		public boolean isConditionsMet(GameCharacter target) {
+			return target.isWearingChastity()
+					&& !target.hasStatusEffect(CHASTITY_2)
+					&& !target.hasStatusEffect(CHASTITY_3)
+					&& !target.hasStatusEffect(CHASTITY_4);
+		}
+		@Override
+		public int getApplicationLength() {
+			return 60*60*24*2; // 2 days
+		}
+		@Override
+		public boolean isConstantRefresh() {
+			return false;
+		}
+		@Override
+		public boolean isSexEffect() {
+			return true;
+		}
+	};
+	
+	public static AbstractStatusEffect CHASTITY_2 = new AbstractStatusEffect(80,
+			"Forced chastity (restless)",
+			"chastity2",
+			PresetColour.GENERIC_SEX,
+			false,
+			Util.newHashMapOfValues(new Value<>(Attribute.RESISTANCE_LUST, -5f)),
+			Util.newArrayListOfValues("[style.colourSex(Increasing in intensity...)]")) {
+		@Override
+		public String getDescription(GameCharacter target) {
+			return UtilText.parse(target, "[npc.Name] hasn't had any sexual relief for over a day now, and is feeling extremely pent-up...");
+		}
+		@Override
+		public String extraRemovalEffects(GameCharacter target) {
+			if(target.isWearingChastity()) {
+				target.addStatusEffect(CHASTITY_3, 60*60*24*7); // 7 days
+			}
+			return "";
+		}
+		@Override
+		public boolean isSexEffect() {
+			return true;
+		}
+	};
+	
+	public static AbstractStatusEffect CHASTITY_3 = new AbstractStatusEffect(80,
+			"Forced chastity (pent-up)",
+			"chastity3",
+			PresetColour.GENERIC_SEX,
+			false,
+			Util.newHashMapOfValues(new Value<>(Attribute.RESISTANCE_LUST, -15f)),
+			Util.newArrayListOfValues("[style.colourSex(Increasing in intensity...)]")) {
+		@Override
+		public String getDescription(GameCharacter target) {
+			return UtilText.parse(target, "[npc.Name] hasn't had any sexual relief for over a day now, and is feeling extremely pent-up...");
+		}
+		@Override
+		public String extraRemovalEffects(GameCharacter target) {
+			if(target.isWearingChastity()) {
+				target.addStatusEffect(CHASTITY_4, -1); // This should be enough to prevent the effect from looping back to CHASTITY_1, as once CHASTITY_4 is applied, CHASTITY_1's conditions are now false, and therefore CHASTITY_4's are true
+			}
+			return "";
+		}
+		@Override
+		public boolean isSexEffect() {
+			return true;
+		}
+	};
+	
+	public static AbstractStatusEffect CHASTITY_4 = new AbstractStatusEffect(80,
+			"Forced chastity (desperate)",
+			"chastity4",
+			PresetColour.GENERIC_SEX,
+			false,
+			Util.newHashMapOfValues(new Value<>(Attribute.RESISTANCE_LUST, -25f)),
+			Util.newArrayListOfValues("[style.colourSex(Maximum intensity)]")) {
+		@Override
+		public String getDescription(GameCharacter target) {
+			return UtilText.parse(target, "[npc.Name] hasn't had any sexual relief for over a day now, and is feeling extremely pent-up...");
+		}
+		@Override
+		public String extraRemovalEffects(GameCharacter target) {
+			if(!target.isWearingChastity()) {
+				target.addStatusEffect(CHASTITY_REMOVED_4, 60*60*24*1); // 1 day (This effect needs this while the others don't due to the use of the isConditionsMet() method)
+			}
+			return "";
+		}
+		@Override
+		public boolean isConditionsMet(GameCharacter target) {
+			return target.isWearingChastity()
+					 && !target.hasStatusEffect(CHASTITY_1)
+					 && !target.hasStatusEffect(CHASTITY_2)
+					 && !target.hasStatusEffect(CHASTITY_3);
+		}
+		@Override
+		public boolean isSexEffect() {
+			return true;
+		}
+	};
+
+	public static AbstractStatusEffect CHASTITY_REMOVED_2 = new AbstractStatusEffect(80,
+			"Released from chastity (restless)",
+			"chastityRemoved2",
+			PresetColour.GENERIC_ARCANE,
+			false,
+			Util.newHashMapOfValues(
+					new Value<>(Attribute.RESISTANCE_LUST, -5f),
+					new Value<>(Attribute.RESTING_LUST, 5f)),
+			Util.newArrayListOfValues(
+					"[style.colourSex(Orgasming)] will remove this effect!")) {
+		@Override
+		public String getDescription(GameCharacter target) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("Recently released from a short spell of being locked in chastity, [npc.name] [npc.is] now feeling very horny!");
+			sb.append("<br/>");
+			sb.append("[style.italicsSex(If [npc.sheIsFull] locked back into chastity while still under this effect, [npc.she] will remain in the 'restless' stage!)]");
+			return UtilText.parse(target, sb.toString());
+		}
+		@Override
+		public String applyEffect(GameCharacter target, int secondsPassed, long totalSecondsPassed) {
+			if(totalSecondsPassed==0) {
+				target.removeStatusEffect(CHASTITY_2);
+			}
+			if(target.getLastTimeOrgasmedSeconds()>=Main.game.getSecondsPassed()-(60*60*24)) {
+				target.removeStatusEffect(CHASTITY_REMOVED_2); // Remove this effect if orgasmed within the last day (the duration of this effect)
+			}
+			return "";
+		}
+		@Override
+		public boolean isConditionsMet(GameCharacter target) {
+			return !target.isWearingChastity() && target.hasStatusEffect(CHASTITY_2);
+		}
+		@Override
+		public int getApplicationLength() {
+			return 60*60*24*1; // 1 day
+		}
+		@Override
+		public boolean isConstantRefresh() {
+			return false;
+		}
+		@Override
+		public boolean isSexEffect() {
+			return true;
+		}
+	};
+	
+	public static AbstractStatusEffect CHASTITY_REMOVED_3 = new AbstractStatusEffect(80,
+			"Released from chastity (pent-up)",
+			"chastityRemoved3",
+			PresetColour.GENERIC_ARCANE,
+			false,
+			Util.newHashMapOfValues(
+					new Value<>(Attribute.RESISTANCE_LUST, -15f),
+					new Value<>(Attribute.RESTING_LUST, 10f)),
+			Util.newArrayListOfValues(
+					"[style.colourSex(Orgasming)] will remove this effect!")) {
+		@Override
+		public String getDescription(GameCharacter target) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("Recently released from a long spell of being locked in chastity, [npc.name] [npc.is] now feeling extremely horny!");
+			sb.append("<br/>");
+			sb.append("[style.italicsSex(If [npc.sheIsFull] locked back into chastity while still under this effect, [npc.she] will remain in the 'pent-up' stage!)]");
+			return UtilText.parse(target, sb.toString());
+		}
+		@Override
+		public String applyEffect(GameCharacter target, int secondsPassed, long totalSecondsPassed) {
+			if(totalSecondsPassed==0) {
+				target.removeStatusEffect(CHASTITY_3);
+			}
+			if(target.getLastTimeOrgasmedSeconds()>=Main.game.getSecondsPassed()-(60*60*24)) {
+				target.removeStatusEffect(CHASTITY_REMOVED_3); // Remove this effect if orgasmed within the last day (the duration of this effect)
+			}
+			return "";
+		}
+		@Override
+		public boolean isConditionsMet(GameCharacter target) {
+			return !target.isWearingChastity() && target.hasStatusEffect(CHASTITY_3);
+		}
+		@Override
+		public int getApplicationLength() {
+			return 60*60*24*1; // 1 day
+		}
+		@Override
+		public boolean isConstantRefresh() {
+			return false;
+		}
+		@Override
+		public boolean isSexEffect() {
+			return true;
+		}
+	};
+	
+	public static AbstractStatusEffect CHASTITY_REMOVED_4 = new AbstractStatusEffect(80,
+			"Released from chastity (desperate)",
+			"chastityRemoved4",
+			PresetColour.GENERIC_ARCANE,
+			false,
+			Util.newHashMapOfValues(
+					new Value<>(Attribute.RESISTANCE_LUST, -25f),
+					new Value<>(Attribute.RESTING_LUST, 15f)),
+			Util.newArrayListOfValues(
+					"[style.colourSex(Orgasming)] will remove this effect!")) {
+		@Override
+		public String getDescription(GameCharacter target) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("Recently released from an excruciatingly-long spell of being locked in chastity, [npc.name] [npc.is] now feeling unbelievably horny!");
+			sb.append("<br/>");
+			sb.append("[style.italicsSex(If [npc.sheIsFull] locked back into chastity while still under this effect, [npc.she] will remain in the 'desperate' stage!)]");
+			return UtilText.parse(target, sb.toString());
+		}
+		@Override
+		public String applyEffect(GameCharacter target, int secondsPassed, long totalSecondsPassed) {
+			if(target.getLastTimeOrgasmedSeconds()>=Main.game.getSecondsPassed()-(60*60*24)) {
+				target.removeStatusEffect(CHASTITY_REMOVED_4); // Remove this effect if orgasmed within the last day (the duration of this effect)
+			}
+			return "";
+		}
+		@Override
+		public boolean isSexEffect() {
+			return true;
+		}
+//		@Override
+//		public String applyEffect(GameCharacter target, int secondsPassed, long totalSecondsPassed) {
+//			if(totalSecondsPassed==0) {
+//				target.removeStatusEffect(CHASTITY_4);
+//			}
+//			return "";
+//		}
+//		@Override
+//		public boolean isConditionsMet(GameCharacter target) {
+//			return !target.isWearingChastity() && target.hasStatusEffect(CHASTITY_4);
+//		}
+//		@Override
+//		public int getApplicationLength() {
+//			return 60*60*24*1; // 1 day
+//		}
+//		@Override
+//		public boolean isConstantRefresh() {
+//			return false;
+//		}
 	};
 	
 	public static AbstractStatusEffect RECOVERING_AURA = new AbstractStatusEffect(80,
@@ -8449,7 +8779,7 @@ public class StatusEffect {
 			"Tentacle-grabbed",
 			"restrain_tentacles_1",
 			PresetColour.GENERIC_BAD,
-			PresetColour.BASE_ORANGE,
+			PresetColour.getColourFromId("NoStepOnSnek_octopus"),
 			null,
 			false,
 			Util.newHashMapOfValues(
@@ -8471,7 +8801,7 @@ public class StatusEffect {
 			"Tentacle-embraced",
 			"restrain_tentacles_2",
 			PresetColour.GENERIC_BAD,
-			PresetColour.BASE_ORANGE,
+			PresetColour.getColourFromId("NoStepOnSnek_octopus"),
 			null,
 			false,
 			Util.newHashMapOfValues(
@@ -8500,7 +8830,7 @@ public class StatusEffect {
 			"Tentacle-constricted",
 			"restrain_tentacles_3",
 			PresetColour.GENERIC_BAD,
-			PresetColour.BASE_ORANGE,
+			PresetColour.getColourFromId("NoStepOnSnek_octopus"),
 			null,
 			false,
 			Util.newHashMapOfValues(
@@ -8529,7 +8859,7 @@ public class StatusEffect {
 	public static AbstractStatusEffect TENTACLE_RESTRICTION_SEX = new AbstractStatusEffect(10,
 			"Tentacle-bound",
 			"immobilised_tentacles",
-			PresetColour.BASE_ORANGE,
+			PresetColour.getColourFromId("NoStepOnSnek_octopus"),
 			false,
 			null,
 			Util.newArrayListOfValues("[style.colourTerrible(Cannot move!)]")) {
@@ -10774,15 +11104,22 @@ public class StatusEffect {
 				
 			} else if(Main.game.isInSex()) {
 				GameCharacter targetedCharacter = Main.sex.getTargetedPartner(target);
-				SexType preference = Main.sex.isInForeplay(target)?Main.sex.getForeplayPreference((NPC) target, targetedCharacter):Main.sex.getMainSexPreference((NPC) target, targetedCharacter);
+				SexType foreplayPreference = Main.sex.getForeplayPreference((NPC) target, targetedCharacter);
+				SexType mainPreference = Main.sex.getMainSexPreference((NPC) target, targetedCharacter);
+				
 				return UtilText.parse(target, targetedCharacter,
 						(Main.game.isInNewWorld()
 								?"The power of your arcane aura allows you to sense [npc.namePos] sexual preferences:"
-								:"Somehow, you're able to instinctively sense what [npc.namePos] sexual preferences are: ")
-						+ " [style.italicsSex("
-						+ (preference!=null
-								?"[npc.She] wants to use [npc.her] "+preference.getPerformingSexArea().getName(target)+" and [npc2.namePos] "+preference.getTargetedSexArea().getName(Main.sex.getTargetedPartner(target))+"."
-								:"[npc.She] has no preference in how to fuck [npc2.name]...")
+								:"Somehow, you're able to instinctively sense what [npc.namePos] sexual preferences are:")
+						+ "<br/>[style.italics"+(Main.sex.isInForeplay(target)?"PinkLight(<b>Foreplay</b>: ":"Disabled(Foreplay: ")
+							+ (foreplayPreference!=null
+									?"[npc.Her] "+foreplayPreference.getPerformingSexArea().getName(target)+" and [npc2.namePos] "+foreplayPreference.getTargetedSexArea().getName(Main.sex.getTargetedPartner(target))+"."
+									:"[npc.She] [npc.has] no preference...")
+							+ ")]"
+						+ "<br/>[style.italics"+(!Main.sex.isInForeplay(target)?"Pink(<b>Sex</b>: ":"Disabled(Sex: ")
+						+ (mainPreference!=null
+								?"[npc.Her] "+mainPreference.getPerformingSexArea().getName(target)+" and [npc2.namePos] "+mainPreference.getTargetedSexArea().getName(Main.sex.getTargetedPartner(target))+"."
+								:"[npc.She] [npc.has] no preference...")
 						+ ")]")
 						+ (Main.sex.isCharacterObeyingTarget(target, Main.game.getPlayer())
 							?"<br/>[style.italicsMinorGood([npc.She] will listen to your requests.)]"
@@ -10817,6 +11154,10 @@ public class StatusEffect {
 			
 			return modList;
 		}
+//		@Override
+//		public List<Value<Integer, String>> getAdditionalDescriptions(GameCharacter target) {
+//			return Util.newArrayListOfValues(new Value<>(1, ""));
+//		}
 		@Override
 		public String extraRemovalEffects(GameCharacter target) {
 			return "";
@@ -13330,6 +13671,7 @@ public class StatusEffect {
 					allStatusEffects.add(statusEffect);
 					statusEffectToIdMap.put(statusEffect, innerEntry.getKey());
 					idToStatusEffectMap.put(innerEntry.getKey(), statusEffect);
+//					System.out.println("modded SE: "+innerEntry.getKey());
 				} catch(Exception ex) {
 					System.err.println("Loading modded status effect failed at 'StatusEffect'. File path: "+innerEntry.getValue().getAbsolutePath());
 					System.err.println("Actual exception: ");
@@ -13348,7 +13690,7 @@ public class StatusEffect {
 					allStatusEffects.add(statusEffect);
 					statusEffectToIdMap.put(statusEffect, innerEntry.getKey());
 					idToStatusEffectMap.put(innerEntry.getKey(), statusEffect);
-//					System.out.println("SE: "+innerEntry.getKey());
+//					System.out.println("res SE: "+innerEntry.getKey());
 				} catch(Exception ex) {
 					System.err.println("Loading status effect failed at 'StatusEffect'. File path: "+innerEntry.getValue().getAbsolutePath());
 					System.err.println("Actual exception: ");

@@ -4,17 +4,27 @@ import com.lilithsthrone.utils.colours.Colour;
 import com.lilithsthrone.utils.colours.PresetColour;
 
 /**
- * Anything over ZERO_AVERAGE is basically a pseudo penis
+ * Anything of size TWO_LARGE and over is treated as a pseudo penis.
  * 
  * @since 0.1.0
- * @version 0.3.2
+ * @version 0.4
  * @author Innoxia
  */
 public enum ClitorisSize {
 	
-	ZERO_AVERAGE("small", 0, 1, PresetColour.GENERIC_SIZE_ONE),
+	ZERO_AVERAGE("small", 0, 1, PresetColour.GENERIC_SIZE_ONE) {
+		@Override
+		public boolean isPseudoPenisSize() {
+			return false;
+		}
+	},
 	
-	ONE_BIG("big", 1, 5, PresetColour.GENERIC_SIZE_TWO),
+	ONE_BIG("big", 1, 5, PresetColour.GENERIC_SIZE_TWO) {
+		@Override
+		public boolean isPseudoPenisSize() {
+			return false;
+		}
+	},
 	
 	TWO_LARGE("large", 5, 10, PresetColour.GENERIC_SIZE_THREE),
 	
@@ -38,7 +48,15 @@ public enum ClitorisSize {
 		this.maximumValue = maximumValue;
 		this.colour = colour;
 	}
-
+	
+	public static ClitorisSize getMinimumClitorisSizeForPseudoPenis() {
+		return TWO_LARGE;
+	}
+	
+	public boolean isPseudoPenisSize() {
+		return true;
+	}
+	
 	public int getMinimumValue() {
 		return minimumValue;
 	}

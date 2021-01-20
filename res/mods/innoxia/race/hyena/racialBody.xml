@@ -103,6 +103,10 @@
 	<maleAssSize>2</maleAssSize>
 	<femaleAssSize>3</femaleAssSize>
 	
+	<!-- Hip sizes are from 0 to 7. Values: https://github.com/Innoxia/liliths-throne-public/blob/dev/src/com/lilithsthrone/game/character/body/valueEnums/HipSize.java -->
+	<maleHipSize>2</maleHipSize>
+	<femaleHipSize>3</femaleHipSize>
+	
 	<!-- Capacity is a float from 0.0 to 25.0. Values: https://github.com/Innoxia/liliths-throne-public/blob/dev/src/com/lilithsthrone/game/character/body/valueEnums/Capacity.java -->
 	<anusCapacity>1.5</anusCapacity>
 	<!-- Depth is from 0 to 7. Values: https://github.com/Innoxia/liliths-throne-public/blob/dev/src/com/lilithsthrone/game/character/body/valueEnums/OrificeDepth.java -->
@@ -184,7 +188,8 @@
 	
 	<!-- This section defines the attributes for crotch-boobs.
 	Crotch-boobs are only present on feminine characters, so there is no section for masculine crotch-boob definitions.
-	All of these attributes use the same value definitions as those for normal breasts above. -->
+	All of these attributes use the same value definitions as those for normal breasts above.
+	Define the 'breastCrotchType' as NONE if you want this race to always spawn without crotch boobs. -->
 	<breastCrotchType>innoxia_hyena_breast</breastCrotchType>
 	<breastCrotchShapes udderShapes="false"/>
 	
@@ -295,7 +300,7 @@
 	<!-- https://github.com/Innoxia/liliths-throne-public/blob/dev/src/com/lilithsthrone/game/character/body/types/VaginaType.java -->
 	<vaginaType>innoxia_hyena_vagina</vaginaType>
 	
-	<!-- Values from 0 to 100, with any value over 0 enabling the clit to be used as a penetrative object in sex (i.e. as a pseudo-penis).
+	<!-- Values from 0 to 100, with any value over 4 enabling the clit to be used as a penetrative object in sex (i.e. as a pseudo-penis).
 	Values: https://github.com/Innoxia/liliths-throne-public/blob/dev/src/com/lilithsthrone/game/character/body/valueEnums/ClitorisSize.java -->
 	<clitSize>18</clitSize> <!-- As with all other values, this can be changed in the individual subspecies XML files, so striped hyenas will be given a 0-length clit from the adjustment in that file. -->
 	
