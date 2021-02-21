@@ -23,13 +23,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -106,10 +102,12 @@ import com.lilithsthrone.game.character.npc.dominion.Wes;
 import com.lilithsthrone.game.character.npc.dominion.Zaranix;
 import com.lilithsthrone.game.character.npc.dominion.ZaranixMaidKatherine;
 import com.lilithsthrone.game.character.npc.dominion.ZaranixMaidKelly;
+import com.lilithsthrone.game.character.npc.misc.Elemental;
 import com.lilithsthrone.game.character.npc.misc.GenericAndrogynousNPC;
 import com.lilithsthrone.game.character.npc.misc.GenericFemaleNPC;
 import com.lilithsthrone.game.character.npc.misc.GenericMaleNPC;
 import com.lilithsthrone.game.character.npc.misc.GenericSexualPartner;
+import com.lilithsthrone.game.character.npc.misc.LodgerImport;
 import com.lilithsthrone.game.character.npc.misc.NPCOffspring;
 import com.lilithsthrone.game.character.npc.misc.PrologueFemale;
 import com.lilithsthrone.game.character.npc.misc.PrologueMale;
@@ -137,6 +135,7 @@ import com.lilithsthrone.game.character.npc.submission.Vengar;
 import com.lilithsthrone.game.character.persona.Occupation;
 import com.lilithsthrone.game.character.quests.Quest;
 import com.lilithsthrone.game.character.quests.QuestLine;
+import com.lilithsthrone.game.character.race.Race;
 import com.lilithsthrone.game.character.race.RaceStage;
 import com.lilithsthrone.game.character.race.RacialBody;
 import com.lilithsthrone.game.character.race.Subspecies;
@@ -324,7 +323,7 @@ public class Game implements XMLSaving {
 		savedEnforcers = new HashMap<>();
 		
 		savedInventories = new HashMap<>();
-		
+
 		// Start in clouds:
 		currentWeather = Weather.CLOUD;
 		weatherTimeRemainingInSeconds = 5*60*60;
@@ -343,12 +342,8 @@ public class Game implements XMLSaving {
 				System.out.println(timeStart);
 			}
 			// Starting stuff:
-			
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			
-			Document doc = docBuilder.newDocument();
-			
+
+			Document doc = Main.getDocBuilder().newDocument();
 
 			// Writing game stuff to export:
 			
@@ -358,17 +353,16 @@ public class Game implements XMLSaving {
 			character.saveAsXML(characterNode, doc);
 			
 			// Ending stuff:
-			
-			TransformerFactory tf = TransformerFactory.newInstance();
-			Transformer transformer1 = tf.newTransformer();
+
+			Transformer transformer1 = Main.transformerFactory.newTransformer();
 			transformer1.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			StringWriter writer = new StringWriter();
 
 			transformer1.transform(new DOMSource(doc), new StreamResult(writer));
 			
 			// Save this xml:
-			TransformerFactory transformerFactory = TransformerFactory.newInstance();
-			Transformer transformer = transformerFactory.newTransformer();
+
+			Transformer transformer = Main.transformerFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 			DOMSource source = new DOMSource(doc);
@@ -405,8 +399,6 @@ public class Game implements XMLSaving {
 			if(timeLog) {
 				System.out.println("Difference: "+(System.nanoTime()-timeStart)/1000000000f);
 			}
-		} catch (ParserConfigurationException pce) {
-			pce.printStackTrace();
 		} catch (TransformerException tfe) {
 			tfe.printStackTrace();
 		}
@@ -417,9 +409,7 @@ public class Game implements XMLSaving {
 		
 		if (file.exists()) {
 			try {
-				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-				Document doc = dBuilder.parse(file);
+				Document doc = Main.getDocBuilder().parse(file);
 				
 				// Cast magic:
 				doc.getDocumentElement().normalize();
@@ -457,6 +447,50 @@ public class Game implements XMLSaving {
 		
 		return null;
 	}
+
+	public static GameCharacter importCharacterAsLodger(String name) {
+		File file = new File("data/characters/"+name+".xml");
+		
+		if (file.exists()) {
+			try {
+				Document doc = Main.getDocBuilder().parse(file);
+				
+				// Cast magic:
+				doc.getDocumentElement().normalize();
+				
+				Element characterElement = (Element) doc.getElementsByTagName("exportedCharacter").item(0);
+				if(characterElement == null) {
+					characterElement = (Element) doc.getElementsByTagName("playerCharacter").item(0);
+				}
+				
+				// Load NPCs:
+				LodgerImport importedLodger = new LodgerImport();
+				importedLodger.loadFromXML(characterElement, doc,
+						CharacterImportSetting.NO_PREGNANCY,
+						CharacterImportSetting.NO_COMPANIONS,
+						CharacterImportSetting.NO_ELEMENTAL,
+						CharacterImportSetting.CLEAR_SLAVERY,
+						CharacterImportSetting.NO_LOCATION_SETUP,
+						CharacterImportSetting.CLEAR_KEY_ITEMS,
+						CharacterImportSetting.CLEAR_COMBAT_HISTORY,
+						CharacterImportSetting.CLEAR_SEX_HISTORY,
+						CharacterImportSetting.REMOVE_RACE_CONCEALED);
+				try {
+					if(((Element)((Element)((Element)characterElement.getElementsByTagName("character").item(0)).getElementsByTagName("core").item(0)).getElementsByTagName("id").item(0)).getAttribute("value").equals("PlayerCharacter")) {
+						importedLodger.setBirthday(importedLodger.getBirthday().plusYears(18)); // If the imported character is a player character, they need to have their age adjusted to fit with the fact that NPCs start at age 18
+					}
+				} catch(Exception ex) {	
+				}
+				Main.game.addNPC(importedLodger, false);
+				importedLodger.applyNewlyImportedLodgerVariables();
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return null;
+	}
 	
 	public static void exportGame(String exportFileName, boolean allowOverwrite) {
 		
@@ -482,189 +516,179 @@ public class Game implements XMLSaving {
 				}
 			}
 		}
-		
+
+		if(timeLog) {
+			timeStart = System.nanoTime();
+			System.out.println(timeStart);
+		}
+		// Starting stuff:
+
+		Document doc = Main.getDocBuilder().newDocument();
+
+		// Writing game stuff to export:
+
+		Element game = doc.createElement("game");
+		doc.appendChild(game);
+
 		try {
-			if(timeLog) {
-				timeStart = System.nanoTime();
-				System.out.println(timeStart);
+			Element informationNode = doc.createElement("coreInfo");
+			game.appendChild(informationNode);
+			XMLUtil.addAttribute(doc, informationNode, "version", Main.VERSION_NUMBER);
+			XMLUtil.addAttribute(doc, informationNode, "lastAutoSaveTime", String.valueOf(Main.game.lastAutoSaveTime));
+			XMLUtil.addAttribute(doc, informationNode, "secondsPassed", String.valueOf(Main.game.secondsPassed));
+			XMLUtil.addAttribute(doc, informationNode, "weather", Main.game.currentWeather.toString());
+			XMLUtil.addAttribute(doc, informationNode, "nextStormTimeInSeconds", String.valueOf(Main.game.nextStormTimeInSeconds));
+			XMLUtil.addAttribute(doc, informationNode, "gatheringStormDurationInSeconds", String.valueOf(Main.game.gatheringStormDurationInSeconds));
+			XMLUtil.addAttribute(doc, informationNode, "weatherTimeRemainingInSeconds", String.valueOf(Main.game.weatherTimeRemainingInSeconds));
+
+			Element inventoryNode = doc.createElement("savedInventories");
+			game.appendChild(inventoryNode);
+			for(Entry<String, CharacterInventory> entry : savedInventories.entrySet()) {
+				Element element = doc.createElement("savedInventory");
+				XMLUtil.addAttribute(doc, element, "character", entry.getKey());
+				inventoryNode.appendChild(element);
+				entry.getValue().saveAsXML(element, doc);
 			}
-			// Starting stuff:
-			
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			
-			Document doc = docBuilder.newDocument();
-			
 
-			// Writing game stuff to export:
-			
-			Element game = doc.createElement("game");
-			doc.appendChild(game);
-			
-			try {
-				Element informationNode = doc.createElement("coreInfo");
-				game.appendChild(informationNode);
-				XMLUtil.addAttribute(doc, informationNode, "version", Main.VERSION_NUMBER);
-				XMLUtil.addAttribute(doc, informationNode, "lastAutoSaveTime", String.valueOf(Main.game.lastAutoSaveTime));
-				XMLUtil.addAttribute(doc, informationNode, "secondsPassed", String.valueOf(Main.game.secondsPassed));
-				XMLUtil.addAttribute(doc, informationNode, "weather", Main.game.currentWeather.toString());
-				XMLUtil.addAttribute(doc, informationNode, "nextStormTimeInSeconds", String.valueOf(Main.game.nextStormTimeInSeconds));
-				XMLUtil.addAttribute(doc, informationNode, "gatheringStormDurationInSeconds", String.valueOf(Main.game.gatheringStormDurationInSeconds));
-				XMLUtil.addAttribute(doc, informationNode, "weatherTimeRemainingInSeconds", String.valueOf(Main.game.weatherTimeRemainingInSeconds));
-
-				Element inventoryNode = doc.createElement("savedInventories");
-				game.appendChild(inventoryNode);
-				for(Entry<String, CharacterInventory> entry : savedInventories.entrySet()) {
-					Element element = doc.createElement("savedInventory");
-					XMLUtil.addAttribute(doc, element, "character", entry.getKey());
-					inventoryNode.appendChild(element);
-					entry.getValue().saveAsXML(element, doc);
-				}
-
-				Element savedEnforcersNode = doc.createElement("savedEnforcers");
-				game.appendChild(savedEnforcersNode);
-				for(Entry<AbstractWorldType, List<List<String>>> entrySet : Main.game.savedEnforcers.entrySet()) {
-					Element element = doc.createElement("world");
-					savedEnforcersNode.appendChild(element);
-					XMLUtil.addAttribute(doc, element, "type", WorldType.getIdFromWorldType(entrySet.getKey()));
-					for(List<String> ids : entrySet.getValue()) {
-						Element enforcersElement = doc.createElement("enforcers");
-						element.appendChild(enforcersElement);
-						for(String s : ids) {
-							Element idElement = doc.createElement("id");
-							enforcersElement.appendChild(idElement);
-							idElement.setTextContent(s);
-						}
+			Element savedEnforcersNode = doc.createElement("savedEnforcers");
+			game.appendChild(savedEnforcersNode);
+			for(Entry<AbstractWorldType, List<List<String>>> entrySet : Main.game.savedEnforcers.entrySet()) {
+				Element element = doc.createElement("world");
+				savedEnforcersNode.appendChild(element);
+				XMLUtil.addAttribute(doc, element, "type", WorldType.getIdFromWorldType(entrySet.getKey()));
+				for(List<String> ids : entrySet.getValue()) {
+					Element enforcersElement = doc.createElement("enforcers");
+					element.appendChild(enforcersElement);
+					for(String s : ids) {
+						Element idElement = doc.createElement("id");
+						enforcersElement.appendChild(idElement);
+						idElement.setTextContent(s);
 					}
 				}
-				
-				try {
-					Main.game.getOccupancyUtil().saveAsXML(game, doc);
-				}catch(Exception ex) {
-					System.err.println("SlaveryUtil saving failed!");
-					Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "SlaveryUtil failure"), false);
-				}
-				
-				Element dateNode = doc.createElement("date");
-				informationNode.appendChild(dateNode);
-				XMLUtil.addAttribute(doc, dateNode, "year", String.valueOf(Main.game.startingDate.getYear()));
-				XMLUtil.addAttribute(doc, dateNode, "month", String.valueOf(Main.game.startingDate.getMonthValue()));
-				XMLUtil.addAttribute(doc, dateNode, "dayOfMonth", String.valueOf(Main.game.startingDate.getDayOfMonth()));
-				XMLUtil.addAttribute(doc, dateNode, "hour", String.valueOf(Main.game.startingDate.getHour()));
-				XMLUtil.addAttribute(doc, dateNode, "minute", String.valueOf(Main.game.startingDate.getMinute()));
-			} catch(Exception ex) {
-				System.err.println("coreInfo saving failed!");
-				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "coreInfo failure"), false);
 			}
-			
-			Main.game.dialogueFlags.saveAsXML(game, doc);
-			
+
 			try {
-				Element eventLogNode = doc.createElement("eventLog");
-				game.appendChild(eventLogNode);
-				for(EventLogEntry event : Main.game.getEventLog().subList(Math.max(0, Main.game.getEventLog().size()-50), Main.game.getEventLog().size())) {
-					event.saveAsXML(eventLogNode, doc);
-				}
-			} catch(Exception ex) {
-				System.err.println("eventLog saving failed!");
-				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "eventLog failure"), false);
+				Main.game.getOccupancyUtil().saveAsXML(game, doc);
+			}catch(Exception ex) {
+				System.err.println("SlaveryUtil saving failed!");
+				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "SlaveryUtil failure"), false);
 			}
-		
-			try {
-				Element slaveryEventLogNode = doc.createElement("slaveryEventLog");
-				game.appendChild(slaveryEventLogNode);
-				for(Value<Integer, List<SlaveryEventLogEntry>> entry : Main.game.getSlaveryEventLog()) {
-					Element element = doc.createElement("day");
-					slaveryEventLogNode.appendChild(element);
-					XMLUtil.addAttribute(doc, element, "value", String.valueOf(entry.getKey()));
-					for(SlaveryEventLogEntry event : entry.getValue()) {
-						event.saveAsXML(element, doc);
-					}
-				}
-			} catch(Exception ex) {
-				System.err.println("slaveryEventLog saving failed!");
-				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "slaveryEventLog failure"), false);
+
+			Element dateNode = doc.createElement("date");
+			informationNode.appendChild(dateNode);
+			XMLUtil.addAttribute(doc, dateNode, "year", String.valueOf(Main.game.startingDate.getYear()));
+			XMLUtil.addAttribute(doc, dateNode, "month", String.valueOf(Main.game.startingDate.getMonthValue()));
+			XMLUtil.addAttribute(doc, dateNode, "dayOfMonth", String.valueOf(Main.game.startingDate.getDayOfMonth()));
+			XMLUtil.addAttribute(doc, dateNode, "hour", String.valueOf(Main.game.startingDate.getHour()));
+			XMLUtil.addAttribute(doc, dateNode, "minute", String.valueOf(Main.game.startingDate.getMinute()));
+		} catch(Exception ex) {
+			System.err.println("coreInfo saving failed!");
+			Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "coreInfo failure"), false);
+		}
+
+		Main.game.dialogueFlags.saveAsXML(game, doc);
+
+		try {
+			Element eventLogNode = doc.createElement("eventLog");
+			game.appendChild(eventLogNode);
+			for(EventLogEntry event : Main.game.getEventLog().subList(Math.max(0, Main.game.getEventLog().size()-50), Main.game.getEventLog().size())) {
+				event.saveAsXML(eventLogNode, doc);
 			}
-			
-			// Add maps:
-			try {
-				Element mapNode = doc.createElement("maps");
-				game.appendChild(mapNode);
-				for(World world : Main.game.getWorlds().values()) {
+		} catch(Exception ex) {
+			System.err.println("eventLog saving failed!");
+			Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "eventLog failure"), false);
+		}
+
+		try {
+			Element slaveryEventLogNode = doc.createElement("slaveryEventLog");
+			game.appendChild(slaveryEventLogNode);
+			for(Value<Integer, List<SlaveryEventLogEntry>> entry : Main.game.getSlaveryEventLog()) {
+				Element element = doc.createElement("day");
+				slaveryEventLogNode.appendChild(element);
+				XMLUtil.addAttribute(doc, element, "value", String.valueOf(entry.getKey()));
+				for(SlaveryEventLogEntry event : entry.getValue()) {
+					event.saveAsXML(element, doc);
+				}
+			}
+		} catch(Exception ex) {
+			System.err.println("slaveryEventLog saving failed!");
+			Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "slaveryEventLog failure"), false);
+		}
+
+		// Add maps:
+		try {
+			Element mapNode = doc.createElement("maps");
+			game.appendChild(mapNode);
+			for(World world : Main.game.getWorlds().values()) {
 //					if(world!=null && world.getWorldType()!=WorldType.WORLD_MAP) { // Do not save world map, as it is for all intents and purposes immutable.
-						world.saveAsXML(mapNode, doc);
+					world.saveAsXML(mapNode, doc);
 //					}
-				}
-			} catch(Exception ex) {
-				System.err.println("maps saving failed!");
-				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "maps failure"), false);
 			}
-			
-			// Add player:
-			try {
-				Element characterNode = doc.createElement("playerCharacter");
+		} catch(Exception ex) {
+			System.err.println("maps saving failed!");
+			Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "maps failure"), false);
+		}
+
+		// Add player:
+		try {
+			Element characterNode = doc.createElement("playerCharacter");
+			game.appendChild(characterNode);
+			Main.game.getPlayer().saveAsXML(characterNode, doc);
+		} catch(Exception ex) {
+			System.err.println("playerCharacter saving failed!");
+			Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "playerCharacter failure"), false);
+		}
+
+		// Add all NPCs:
+		try {
+			for(GameCharacter character : Main.game.getNPCMap().values()) {
+				Element characterNode = doc.createElement("NPC");
 				game.appendChild(characterNode);
-				Main.game.getPlayer().saveAsXML(characterNode, doc);
-			} catch(Exception ex) {
-				System.err.println("playerCharacter saving failed!");
-				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "playerCharacter failure"), false);
+				character.saveAsXML(characterNode, doc);
 			}
-		
-			// Add all NPCs:
-			try {
-				for(GameCharacter character : Main.game.getNPCMap().values()) {
-					Element characterNode = doc.createElement("NPC");
-					game.appendChild(characterNode);
-					character.saveAsXML(characterNode, doc);
+		} catch(Exception ex) {
+			System.err.println("NPC saving failed!");
+			ex.printStackTrace();
+			Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "NPC failure"), false);
+		}
+
+
+		// Ending stuff:
+		try {
+			Transformer transformer1 = Main.transformerFactory.newTransformer();
+			transformer1.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+			StringWriter writer = new StringWriter();
+
+			transformer1.transform(new DOMSource(doc), new StreamResult(writer));
+
+			// Save this xml:
+			Transformer transformer = Main.transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+			DOMSource source = new DOMSource(doc);
+
+			String saveLocation = "data/saves/"+exportFileName+".xml";
+			StreamResult result = new StreamResult(saveLocation);
+
+			transformer.transform(source, result);
+
+			if(!exportFileName.startsWith("AutoSave")) {
+				if(overwrite) {
+					Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "[style.colourGood(Game saved)]", saveLocation), false);
+					Main.game.setContent(new Response("", "", Main.game.getCurrentDialogueNode()), false, PresetColour.GENERIC_GOOD, "Save game overwritten!");
+				} else {
+					Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "[style.colourGood(Game saved)]", saveLocation), false);
+					Main.game.setContent(new Response("", "", Main.game.getCurrentDialogueNode()), false, PresetColour.GENERIC_GOOD, "Game saved!");
 				}
-			} catch(Exception ex) {
-				System.err.println("NPC saving failed!");
-				ex.printStackTrace();
-				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "NPC failure"), false);
 			}
-			
-			
-			// Ending stuff:
-			try {
-				TransformerFactory tf = TransformerFactory.newInstance();
-				Transformer transformer1 = tf.newTransformer();
-				transformer1.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-				StringWriter writer = new StringWriter();
-	
-				transformer1.transform(new DOMSource(doc), new StreamResult(writer));
-				
-				// Save this xml:
-				TransformerFactory transformerFactory = TransformerFactory.newInstance();
-				Transformer transformer = transformerFactory.newTransformer();
-				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-				transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-				DOMSource source = new DOMSource(doc);
-				
-				String saveLocation = "data/saves/"+exportFileName+".xml";
-				StreamResult result = new StreamResult(saveLocation);
-				
-				transformer.transform(source, result);
-				
-				if(!exportFileName.startsWith("AutoSave")) {
-					if(overwrite) {
-						Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "[style.colourGood(Game saved)]", saveLocation), false);
-						Main.game.setContent(new Response("", "", Main.game.getCurrentDialogueNode()), false, PresetColour.GENERIC_GOOD, "Save game overwritten!");
-					} else {
-						Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "[style.colourGood(Game saved)]", saveLocation), false);
-						Main.game.setContent(new Response("", "", Main.game.getCurrentDialogueNode()), false, PresetColour.GENERIC_GOOD, "Game saved!");
-					}
-				}
-			} catch(Exception ex) {
-				System.err.println("XML writing failed!");
-				ex.printStackTrace();
-				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail</span>", "XML writing failure"), false);
-			}
-			
-			if(timeLog) {
-				System.out.println("Difference: "+(System.nanoTime()-timeStart)/1000000000f);
-			}
-		} catch (ParserConfigurationException pce) {
-			pce.printStackTrace();
+		} catch(Exception ex) {
+			System.err.println("XML writing failed!");
+			ex.printStackTrace();
+			Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+PresetColour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail</span>", "XML writing failure"), false);
+		}
+
+		if(timeLog) {
+			System.out.println("Difference: "+(System.nanoTime()-timeStart)/1000000000f);
 		}
 	}
 	
@@ -681,9 +705,7 @@ public class Game implements XMLSaving {
 		
 		if (file.exists()) {
 			try {
-				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-				Document doc = dBuilder.parse(file);
+				Document doc = Main.getDocBuilder().parse(file);
 
 				long time = System.nanoTime();
 				if(debug) {
@@ -1518,9 +1540,28 @@ public class Game implements XMLSaving {
 					}
 					Main.game.getPlayer().getWorldsVisited().remove(WorldType.TEXTILES_WAREHOUSE);
 					// Remove supplier den tile:
-					
+				}
+				if(Main.isVersionOlderThan(loadingVersion, "0.3.15")) {
+					Main.game.getNpc(Nyan.class).setAffection(Main.game.getNpc(Ashley.class), AffectionLevel.POSITIVE_TWO_LIKE.getMedianValue());
+					Main.game.getNpc(Ashley.class).setAffection(Main.game.getNpc(Ashley.class), AffectionLevel.POSITIVE_ONE_FRIENDLY.getMedianValue());
+				}
+
+				if(Main.isVersionOlderThan(loadingVersion, "0.3.17") && Main.game.getPlayer().getTrueRace()==Race.DEMON) {
+					if(Main.game.getNpc(Lyssieth.class).getAffection(Main.game.getPlayer())<75) {
+						Main.game.getNpc(Lyssieth.class).setAffection(Main.game.getPlayer(), 75);
+					}
 				}
 				
+				if(Main.isVersionOlderThan(loadingVersion, "0.3.17")) { // Reset home loactions:
+					for(NPC npc : Main.game.getAllNPCs()) {
+						if(npc instanceof EnforcerPatrol) {
+							npc.setHomeLocation(WorldType.ENFORCER_HQ, PlaceType.ENFORCER_HQ_CELLS_OFFICE);
+						}
+					}
+					Main.game.getNpc(Wes.class).setLocation(WorldType.ENFORCER_HQ, PlaceType.ENFORCER_HQ_REQUISITIONS, true);
+					Main.game.getNpc(Elle.class).setLocation(WorldType.ENFORCER_HQ, PlaceType.ENFORCER_HQ_REQUISITIONS, true);
+				}
+						
 				Main.game.pendingSlaveInStocksReset = false;
 				
 				
@@ -1755,6 +1796,9 @@ public class Game implements XMLSaving {
 			if(addedNpcs.contains(Nyan.class) || addedNpcs.contains(NyanMum.class)) {
 				Main.game.getNpc(Nyan.class).setAffection(Main.game.getNpc(NyanMum.class), AffectionLevel.POSITIVE_FOUR_LOVE.getMedianValue());
 				Main.game.getNpc(NyanMum.class).setAffection(Main.game.getNpc(Nyan.class), AffectionLevel.POSITIVE_FOUR_LOVE.getMedianValue());
+				
+				Main.game.getNpc(Nyan.class).setAffection(Main.game.getNpc(Ashley.class), AffectionLevel.POSITIVE_TWO_LIKE.getMedianValue());
+				Main.game.getNpc(Ashley.class).setAffection(Main.game.getNpc(Ashley.class), AffectionLevel.POSITIVE_ONE_FRIENDLY.getMedianValue());
 			}
 			
 			if(addedNpcs.contains(SupplierLeader.class)) {
@@ -1860,7 +1904,7 @@ public class Game implements XMLSaving {
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Angel.class))) { addNPC(new Angel(), false); addedNpcs.add(Angel.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Bunny.class))) { addNPC(new Bunny(), false); addedNpcs.add(Bunny.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Loppy.class))) { addNPC(new Loppy(), false); addedNpcs.add(Loppy.class); }
-
+			
 			// Slime queen:
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(SlimeQueen.class))) { addNPC(new SlimeQueen(), false); addedNpcs.add(SlimeQueen.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(SlimeGuardIce.class))) { addNPC(new SlimeGuardIce(), false); addedNpcs.add(SlimeGuardIce.class); }
@@ -2081,7 +2125,8 @@ public class Game implements XMLSaving {
 			System.out.println("NPC loop start");
 		}
 		for(NPC npc : NPCMap.values()) {
-			boolean inGame = !npc.getLocationPlace().getPlaceType().equals(PlaceType.GENERIC_EMPTY_TILE);
+			boolean inGame = !npc.getLocationPlace().getPlaceType().equals(PlaceType.GENERIC_EMPTY_TILE)
+					|| (npc instanceof Elemental && ((Elemental)npc).getSummoner()!=null && ((Elemental)npc).getSummoner().isElementalSummoned());
 			
 			// Non-slave NPCs clean clothes:
 			if(inGame) {
@@ -2105,6 +2150,7 @@ public class Game implements XMLSaving {
 								npc.setManaPercentage(1);
 							}
 							npc.alignLustToRestingLust(secondsPassedThisTurn*10);
+							
 						} else {
 							// Regenerate health and stamina over time:
 							if (npc.getHealthPercentage() < 1) {
@@ -3665,6 +3711,13 @@ public class Game implements XMLSaving {
 		nonCompanionCharactersPresent.removeIf((npc) -> Main.game.getPlayer().hasCompanion(npc) || (npc.getPartyLeader()!=null && Main.game.getPlayer().hasCompanion(npc.getPartyLeader())));
 		return nonCompanionCharactersPresent;
 	}
+
+	/**
+	 * Uses the player's current location.
+	 */
+	public List<NPC> getCharactersTreatingCellAsHome() {
+		return getCharactersTreatingCellAsHome(Main.game.getPlayerCell());
+	}
 	
 	public List<NPC> getCharactersTreatingCellAsHome(Cell cell) {
 		List<NPC> charactersHome = new ArrayList<>();
@@ -4034,18 +4087,24 @@ public class Game implements XMLSaving {
 		}
 	}
 
-	public List<NPC> getOffspring(boolean includeNotBorn, boolean includeEggIncubations) {
+	public List<NPC> getOffspring(boolean includeNotBorn) {
 		List<NPC> offspring = new ArrayList<>();
 		
 		for(NPC npc : NPCMap.values()) {
 			if((npc.getMother()!=null && npc.getMother().isPlayer())
-					|| (npc.getFather()!=null && npc.getFather().isPlayer())
-					|| (includeEggIncubations && npc.getIncubator()!=null && npc.getIncubator().isPlayer())) {
+					|| (npc.getFather()!=null && npc.getFather().isPlayer())) {
 				if(npc.getMother()!=null) {
-					if(includeNotBorn || npc.getMother().getPregnantLitter()==null || !npc.getMother().getPregnantLitter().getOffspring().contains(npc.getId())) {
+					if(includeNotBorn
+							|| npc.getMother().getPregnantLitter()==null
+							|| !npc.getMother().getPregnantLitter().getOffspring().contains(npc.getId())) {
 						offspring.add(npc);
 					}
 				} else {
+					offspring.add(npc);
+				}
+				
+			} else if((npc.getIncubator()!=null && npc.getIncubator().isPlayer())){
+				if(includeNotBorn || !npc.getIncubator().getIncubatingLitters().values().stream().anyMatch(l->l.getOffspring().contains(npc.getId()))) {
 					offspring.add(npc);
 				}
 			}
@@ -4054,19 +4113,21 @@ public class Game implements XMLSaving {
 		return offspring;
 	}
 	
-	public List<NPC> getOffspringSpawned(boolean includeEggIncubations) {
-		List<NPC> offspringSpawned = new ArrayList<>(getOffspring(false, includeEggIncubations));
+	public List<NPC> getOffspringSpawned() {
+		List<NPC> offspringSpawned = new ArrayList<>(getOffspring(false));
 		
 		offspringSpawned.removeIf(npc -> npc.getWorldLocation()==WorldType.EMPTY);
 		
 		return offspringSpawned;
 	}
 
-	public List<NPC> getOffspringNotSpawned(Predicate<NPC> matcher, boolean includeEggIncubations) {
-		List<NPC> offspringAvailable = Main.game.getOffspring(false, includeEggIncubations).stream().filter(npc -> !npc.isSlave())
+	public List<NPC> getOffspringNotSpawned(Predicate<NPC> matcher) {
+		List<NPC> offspringAvailable = Main.game.getOffspring(false).stream()
+										.filter(npc -> !npc.isSlave())
 										.filter(npc -> npc.getWorldLocation()==WorldType.EMPTY)
 										.filter(npc -> npc.getLastTimeEncountered()==NPC.DEFAULT_TIME_START_VALUE)
-										.filter(matcher).collect(Collectors.toList());
+										.filter(matcher)
+										.collect(Collectors.toList());
 		return offspringAvailable;
 	}
 	
@@ -4456,6 +4517,10 @@ public class Game implements XMLSaving {
 		return Main.getProperties().hasValue(PropertyValue.debugMode);
 	}
 
+	public boolean isAllStickersUnlocked() {
+		return Main.getProperties().hasValue(PropertyValue.allStickersUnlocked);
+	}
+
 	public boolean isMetricSizes() {
 		return Main.getProperties().hasValue(PropertyValue.metricSizes);
 	}
@@ -4664,7 +4729,7 @@ public class Game implements XMLSaving {
 	}
 	
 	/**
-	 *  Be careful using this, as it has a chance to trigger the tile's random encounter.
+	 *  <b>Be careful using this</b>, as it has a chance to trigger the tile's random encounter.
 	 */
 	public DialogueNode getDefaultDialogue() {
 		return Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getDialogue(true);

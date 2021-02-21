@@ -4,13 +4,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.w3c.dom.Document;
 
 import com.lilithsthrone.controller.xmlParsing.Element;
-import com.lilithsthrone.game.PropertyValue;
 import com.lilithsthrone.game.character.GameCharacter;
 import com.lilithsthrone.game.character.body.Body;
 import com.lilithsthrone.game.character.body.coverings.AbstractBodyCoveringType;
@@ -138,9 +134,7 @@ public abstract class AbstractTailType implements BodyPartTypeInterface {
 	public AbstractTailType(File XMLFile, String author, boolean mod) {
 		if (XMLFile.exists()) {
 			try {
-				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-				Document doc = dBuilder.parse(XMLFile);
+				Document doc = Main.getDocBuilder().parse(XMLFile);
 				
 				// Cast magic:
 				doc.getDocumentElement().normalize();
@@ -939,13 +933,6 @@ public abstract class AbstractTailType implements BodyPartTypeInterface {
 	
 	public boolean isPrehensile() {
 		return tags.contains(BodyPartTag.TAIL_PREHENSILE);
-	}
-
-	/**
-	 * Takes into account whether player has 'Allow furry tail penetrations' turned on or off.
-	 */
-	public boolean isSuitableForPenetration() {
-		return this.isPrehensile() && (tags.contains(BodyPartTag.TAIL_SUTABLE_FOR_PENETRATION) || Main.getProperties().hasValue(PropertyValue.furryTailPenetrationContent));
 	}
 	
 	public boolean isSuitableForSleepHugging() {

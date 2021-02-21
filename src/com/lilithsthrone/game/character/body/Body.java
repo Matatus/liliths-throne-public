@@ -31,6 +31,7 @@ import com.lilithsthrone.game.character.body.abstractTypes.AbstractTailType;
 import com.lilithsthrone.game.character.body.abstractTypes.AbstractTentacleType;
 import com.lilithsthrone.game.character.body.abstractTypes.AbstractTongueType;
 import com.lilithsthrone.game.character.body.abstractTypes.AbstractTorsoType;
+import com.lilithsthrone.game.character.body.abstractTypes.AbstractVaginaType;
 import com.lilithsthrone.game.character.body.abstractTypes.AbstractWingType;
 import com.lilithsthrone.game.character.body.coverings.AbstractBodyCoveringType;
 import com.lilithsthrone.game.character.body.coverings.BodyCoveringCategory;
@@ -41,6 +42,7 @@ import com.lilithsthrone.game.character.body.tags.BodyPartTag;
 import com.lilithsthrone.game.character.body.types.AntennaType;
 import com.lilithsthrone.game.character.body.types.ArmType;
 import com.lilithsthrone.game.character.body.types.AssType;
+import com.lilithsthrone.game.character.body.types.BodyPartTypeInterface;
 import com.lilithsthrone.game.character.body.types.BreastType;
 import com.lilithsthrone.game.character.body.types.EarType;
 import com.lilithsthrone.game.character.body.types.EyeType;
@@ -478,6 +480,7 @@ public class Body implements XMLSaving {
 							|| bct == BodyCoveringType.MAKEUP_NAIL_POLISH_HANDS)
 							&& this.coverings.get(bct).getPrimaryColour()!=PresetColour.COVERING_NONE)
 					|| bct == BodyCoveringType.EYE_PUPILS
+					|| bct.getCategory()==BodyCoveringCategory.FLUID
 					|| bct == getBodyHairCoveringType(this.getRace())) {
 				Element element = doc.createElement("bodyCovering");
 				bodyCore.appendChild(element);
@@ -774,6 +777,7 @@ public class Body implements XMLSaving {
 				XMLUtil.addAttribute(doc, clitModifiers, pm.toString(), "true");
 			}
 			XMLUtil.addAttribute(doc, bodyVagina, "pierced", String.valueOf(this.vagina.pierced));
+			XMLUtil.addAttribute(doc, bodyVagina, "eggLayer", String.valueOf(this.vagina.eggLayer));
 			
 			XMLUtil.addAttribute(doc, bodyVagina, "wetness", String.valueOf(this.vagina.orificeVagina.wetness));
 			XMLUtil.addAttribute(doc, bodyVagina, "depth", String.valueOf(this.vagina.orificeVagina.depth));
@@ -1549,6 +1553,13 @@ public class Body implements XMLSaving {
 		}
 		
 		importedVagina.pierced = (Boolean.valueOf(vagina.getAttribute("pierced")));
+		
+		if(vagina.hasAttribute("eggLayer")) {
+			importedVagina.eggLayer = (Boolean.valueOf(vagina.getAttribute("eggLayer")));
+		} else if(vagina.getAttribute("type").equals("DEMON_EGGS") || vagina.getAttribute("type").equals("NoStepOnSnek_snake_vagina_e")){ // Removed egg-laying vagina variants in 0.4
+			importedVagina.eggLayer = true;
+		}
+		
 		importedVagina.orificeVagina.stretchedCapacity = handleCapacityLoading(Float.valueOf(vagina.getAttribute("stretchedCapacity")));
 		try {
 			importedVagina.orificeVagina.squirter = (Boolean.valueOf(vagina.getAttribute("squirter")));
@@ -2201,94 +2212,90 @@ public class Body implements XMLSaving {
 		} else {
 			sb.append(" "+hair.getType().getBodyDescription(owner));
 			
+			if(hair.getType().getTags().contains(BodyPartTag.HAIR_NATURAL_MANE) && owner.getFaceType().getRace()==hair.getType().getRace()) {
+				sb.append(", which forms a mane running down the back of [npc.her] neck and which "); // If hair and face races match, the mane is fully formed
+			} else {
+				sb.append(", which ");
+			}
+			
 			switch (hair.getStyle()) {
 				case NONE:
-					if(owner.isFeral()) {
-						if(owner.getLegConfiguration()==LegConfiguration.AVIAN) {
-							sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"are":"is")+" naturally styled into a plume of head-feathers.");
-						} else {
-							sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"are":"is")+" naturally styled into a mane.");
-						}
-					} else if(owner.getFaceType()==FaceType.HORSE_MORPH) {
-						sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"are":"is")+" naturally styled into a horse-like mane.");
-					} else {
-						sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"are":"is")+" unstyled.");
-					}
+					sb.append((hair.getType().isDefaultPlural(owner)?"are":"is")+" unstyled.");
 					break;
 				case BRAIDED:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been woven into a long braid.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been woven into a long braid.");
 					break;
 				case CURLY:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been curled and left loose.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been curled and left loose.");
 					break;
 				case LOOSE:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"are":"is")+" left loose and unstyled.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"are":"is")+" left loose and unstyled.");
 					break;
 				case PONYTAIL:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a ponytail.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a ponytail.");
 					break;
 				case STRAIGHT:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been straightened and left loose.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been straightened and left loose.");
 					break;
 				case TWIN_TAILS:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into twin tails.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into twin tails.");
 					break;
 				case WAVY:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into waves and left loose.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into waves and left loose.");
 					break;
 				case MOHAWK:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a mohawk.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a mohawk.");
 					break;
 				case AFRO:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into an afro.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into an afro.");
 					break;
 				case SIDECUT:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a sidecut.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a sidecut.");
 					break;
 				case BOB_CUT:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a bob cut.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a bob cut.");
 					break;
 				case PIXIE:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a pixie-cut.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a pixie-cut.");
 					break;
 				case SLICKED_BACK:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been slicked back.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been slicked back.");
 					break;
 				case MESSY:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"are":"is")+" unstyled and very messy.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"are":"is")+" unstyled and very messy.");
 					break;
 				case HIME_CUT:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been straightened and styled into a hime cut.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been straightened and styled into a hime cut.");
 					break;
 				case CHONMAGE:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been straightened, oiled and styled into a chonmage topknot.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been straightened, oiled and styled into a chonmage topknot.");
 					break;
 				case TOPKNOT:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a topknot.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a topknot.");
 					break;
 				case DREADLOCKS:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into dreadlocks.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into dreadlocks.");
 					break;
 				case BIRD_CAGE:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into an elaborate bird cage"+UtilText.returnStringAtRandom(".",", birds not included."));
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into an elaborate bird cage"+UtilText.returnStringAtRandom(".",", birds not included."));
 					break;
 				case TWIN_BRAIDS:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been woven into long twin braids.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been woven into long twin braids.");
 					break;
 				case DRILLS:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into drills.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into drills.");
 					break;
 				case LOW_PONYTAIL:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a low ponytail.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a low ponytail.");
 					break;
 				case CROWN_BRAID:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been woven into a "+UtilText.returnStringAtRandom("crown of braids.","braided crown."));
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been woven into a "+UtilText.returnStringAtRandom("crown of braids.","braided crown."));
 					break;
 				case BUN:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a bun.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been styled into a bun.");
 					break;
 				case CHIGNON:
-					sb.append(", which "+(hair.getType().isDefaultPlural(owner)?"have":"has")+" been tied up into a chignon.");
+					sb.append((hair.getType().isDefaultPlural(owner)?"have":"has")+" been tied up into a chignon.");
 					break;
 			}
 		}
@@ -2800,8 +2807,10 @@ public class Body implements XMLSaving {
 				}
 			}
 			
-			sb.append(" [npc.Her] [npc.arms] are "+(Util.randomItemFrom(owner.getBodyShape().getLimbDescriptors()))
-					+", and are <span style='color:"+owner.getFemininity().getColour().toWebHexString()+";'>"+owner.getFemininity().getName(false)+" in appearance.");
+			if (!(owner.isFeral() && owner.getArmType().allowsFlight())) {
+				sb.append(" [npc.Her] [npc.arms] are "+(Util.randomItemFrom(owner.getBodyShape().getLimbDescriptors()))
+						+", and are <span style='color:"+owner.getFemininity().getColour().toWebHexString()+";'>"+owner.getFemininity().getName(false)+" in appearance.");
+			}
 			
 			if(arm.getType().allowsFlight()) {
 				if(this.getBodyMaterial() == BodyMaterial.SLIME) {
@@ -3031,7 +3040,7 @@ public class Body implements XMLSaving {
 				}
 			}
 			
-			if(owner.getTailType().isSuitableForPenetration()) {
+			if(owner.isTailSuitableForPenetration()) {
 				sb.append(" When used to penetrate an orifice, a maximum of [npc.tailPenetrationLength(true)] can be inserted.");
 			} else {
 				sb.append(" It is not suitable for penetrating orifices.");
@@ -3447,6 +3456,10 @@ public class Body implements XMLSaving {
 		return vagina;
 	}
 
+	public AbstractVaginaType getVaginaType() {
+		return vagina.getType();
+	}
+
 	public Wing getWing() {
 		return wing;
 	}
@@ -3599,6 +3612,14 @@ public class Body implements XMLSaving {
 		this.vagina = vagina;
 	}
 
+	public String setVaginaType(AbstractVaginaType type) {
+		return this.vagina.setType(null, type);
+	}
+
+	public String setVaginaType(GameCharacter owner, AbstractVaginaType type) {
+		return this.vagina.setType(owner, type);
+	}
+
 	public void setWing(Wing wing) {
 		this.wing = wing;
 	}
@@ -3619,6 +3640,11 @@ public class Body implements XMLSaving {
 		return this.wing.setType(owner, type);
 	}
 
+	public void applyLegConfigurationTransformation(AbstractLegType legType, LegConfiguration legConfiguration, boolean applyFullEffects) {
+		this.setLegType(legType);
+		this.leg.getType().applyLegConfigurationTransformation(this, legConfiguration, applyFullEffects);
+	}
+
 	public Boolean hasTongueModifier(TongueModifier modifier) {
 		return face.getTongue().hasTongueModifier(modifier);
 	}
@@ -3633,6 +3659,14 @@ public class Body implements XMLSaving {
 
 	public void resetTongueModifiers() {
 		face.getTongue().resetTongueModifiers();
+	}
+
+	public boolean hasWings() {
+		return getWingType() != WingType.NONE;
+	}
+
+	public boolean isFaceHuman() {
+		return face.getType().getRace() == Race.HUMAN;
 	}
 
 	// Descriptions:
@@ -3851,8 +3885,10 @@ public class Body implements XMLSaving {
 			
 			switch(owner.getNippleShape()) {
 				case NORMAL:
-				case INVERTED:
 					descriptionSB.append(" [npc.nipplePrimaryColour(true)]");
+					break;
+				case INVERTED:
+					descriptionSB.append(" [npc.nipplePrimaryColour(true)], inverted");
 					break;
 				case LIPS:
 					descriptionSB.append(" [npc.nipplePrimaryColour(true)]-lipped");
@@ -4117,9 +4153,11 @@ public class Body implements XMLSaving {
 			}
 			
 			switch(owner.getNippleCrotchShape()) {
-				case INVERTED:
 				case NORMAL:
 					descriptionSB.append(" [npc.crotchNipplePrimaryColour(true)]");
+					break;
+				case INVERTED:
+					descriptionSB.append(" [npc.crotchNipplePrimaryColour(true)], inverted");
 					break;
 				case LIPS:
 					descriptionSB.append(" [npc.crotchNipplePrimaryColour(true)]-lipped");
@@ -4794,10 +4832,10 @@ public class Body implements XMLSaving {
 		
 		descriptionSB.append(viewedVagina.getType().getBodyDescription(owner));
 		
-		if(viewedVagina.getType().isEggLayer()) {
-			descriptionSB.append(" Due to the configuration of [npc.her] reproductive organs, [npc.she] lays eggs instead of giving birth to live young.");
+		if(owner.isVaginaEggLayer()) {
+			descriptionSB.append(" Due to the configuration of [npc.her] reproductive organs, [npc.she] [style.colourEgg([npc.verb(lay)] eggs instead of giving birth to live young)].");
 		} else {
-			descriptionSB.append(" Due to the configuration of [npc.her] reproductive organs, [npc.she] gives birth to live young.");
+			descriptionSB.append(" Due to the configuration of [npc.her] reproductive organs, [npc.she] [style.colourSex([npc.verb(give)] birth to live young)].");
 		}
 		
 		if(owner.isFeral()) {
@@ -6055,12 +6093,13 @@ public class Body implements XMLSaving {
 	 * @param feralAttributes Pass in the AbstractSubspecies to which this character should be transformed into a feral version of. Pass in null to transform back from feral to a standard anthro.
 	 */
 	public void setFeral(AbstractSubspecies subspecies) {
-		FeralAttributes attributes = subspecies.getFeralAttributes();
+		this.feral = subspecies!=null;
+		
+		FeralAttributes attributes = subspecies==null?null:subspecies.getFeralAttributes();
 		if(attributes==null) {
 			System.err.println("Error in Body.setFeral(): subspecies '"+Subspecies.getIdFromSubspecies(subspecies)+"' does not support FeralAttributes!");
 			return;
 		}
-		this.feral = subspecies!=null;
 		
 		// Set body to full subspecies:
 		Main.game.getCharacterUtils().reassignBody(
@@ -6358,12 +6397,7 @@ public class Body implements XMLSaving {
 	}
 
 	public boolean isAbleToFlyFromExtraParts() {
-		for(BodyPartInterface bpi : getAllBodyParts()) {
-			if(bpi.getType().getTags().contains(BodyPartTag.ALLOWS_FLIGHT)) {
-				return true;
-			}
-		}
-		return false;
+		return getAllBodyParts().stream().anyMatch(bpi -> bpi.getType().getTags().contains(BodyPartTag.ALLOWS_FLIGHT));
 	}
 
 	/**
@@ -6386,4 +6420,13 @@ public class Body implements XMLSaving {
 		this.takesAfterMother = takesAfterMother;
 	}
 
+	/**
+	 * Returns a randomly chosen BodyPart-type from the list of types (e. g. multiple WingTypes)
+	 * provided as parameters. To give one or more types more weight these types can be repeated.
+	 * @param values List of BodyPartTypes to choose from randomly
+	 * @return The randomly chosen type of the corresponding BodyPart
+	 */
+	public BodyPartTypeInterface randomTypeFrom(BodyPartTypeInterface... values) {
+		return Util.randomItemFrom(Util.newArrayListOfValues(values));
+	}
 }
