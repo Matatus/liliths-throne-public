@@ -9,7 +9,7 @@
 	<name>lilithsthrone</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<javafx.version>15.0.1</javafx.version>
+		<javafx.version>16</javafx.version>
 		<mainClass>com.lilithsthrone.main.Main</mainClass>
 		<launcher>com.lilithsthrone.main.Launcher</launcher>
 		<maven-shade-plugin.version>3.2.2</maven-shade-plugin.version>
@@ -104,5 +104,11 @@
 			<artifactId>javafx-web</artifactId>
 			<version>${javafx.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.openjdk.nashorn</groupId>
+			<artifactId>nashorn-core</artifactId>
+			<version>15.2</version>
+		</dependency>
+
 	</dependencies>
 </project>
